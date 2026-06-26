@@ -9,7 +9,7 @@ export class StaffRepository {
   constructor(
     @InjectModel(Staff.name)
     private readonly staffModel: Model<StaffDocument>,
-  ) {}
+  ) { }
 
   async findAll(filter: object = {}): Promise<StaffDocument[]> {
     return this.staffModel.find(filter).populate('hospitalId').exec();
@@ -25,10 +25,6 @@ export class StaffRepository {
 
   async findByHospital(hospitalId: string): Promise<StaffDocument[]> {
     return this.staffModel.find({ hospitalId }).populate('hospitalId').exec();
-  }
-
-  async findByRole(role: string): Promise<StaffDocument[]> {
-    return this.staffModel.find({ role }).populate('hospitalId').exec();
   }
 
   async create(data: Partial<Staff>): Promise<StaffDocument> {

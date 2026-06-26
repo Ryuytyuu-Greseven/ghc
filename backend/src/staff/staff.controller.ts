@@ -3,7 +3,7 @@ import { StaffService } from './staff.service';
 
 @Controller('staff')
 export class StaffController {
-  constructor(private readonly staffService: StaffService) {}
+  constructor(private readonly staffService: StaffService) { }
 
   @Get()
   findAll() {
@@ -15,10 +15,7 @@ export class StaffController {
     return this.staffService.findByHospital(hospitalId);
   }
 
-  @Get('by-role/:role')
-  findByRole(@Param('role') role: string) {
-    return this.staffService.findByRole(role);
-  }
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {
