@@ -8,19 +8,22 @@ export class Medicine {
   @Prop({ required: true, trim: true })
   name: string;
 
-  @Prop({ required: true, trim: true })
+  @Prop({ required: true, trim: true, default: 'N/A' })
   dosage: string;
 
   @Prop({ required: true })
   stock: number;
 
-  @Prop({ trim: true })
+  @Prop({ trim: true, default: 'N/A' })
   manufacturer: string;
 
   @Prop({ trim: true })
   category: string;
 
-  @Prop()
+  @Prop({ trim: true, default: 'units' })
+  unit: string;
+
+  @Prop({ type: Date, default: null })
   expiryDate: Date;
 
   @Prop({ required: true, default: 0 })
