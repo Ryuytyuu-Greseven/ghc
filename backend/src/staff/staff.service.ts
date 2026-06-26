@@ -4,7 +4,7 @@ import { Staff } from '../schemas/staff.schema';
 
 @Injectable()
 export class StaffService {
-  constructor(private readonly staffRepository: StaffRepository) {}
+  constructor(private readonly staffRepository: StaffRepository) { }
 
   async findAll() {
     return this.staffRepository.findAll({ isActive: true });
@@ -18,10 +18,6 @@ export class StaffService {
 
   async findByHospital(hospitalId: string) {
     return this.staffRepository.findByHospital(hospitalId);
-  }
-
-  async findByRole(role: string) {
-    return this.staffRepository.findByRole(role);
   }
 
   async create(data: Partial<Staff>) {
