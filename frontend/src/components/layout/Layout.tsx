@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
 import { useSidebar } from '../../context/SidebarContext';
+import { ChatBot } from '../chat/ChatBot';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { isOpen, close } = useSidebar();
@@ -23,6 +24,9 @@ export function Layout({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Global chat bot — floats above all content */}
+      <ChatBot />
     </div>
   );
 }
