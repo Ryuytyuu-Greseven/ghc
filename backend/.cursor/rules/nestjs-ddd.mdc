@@ -1,0 +1,169 @@
+---
+description: NestJS DDD patterns — schema, repository, service, controller, module templates
+globs: src/**/*.ts
+alwaysApply: false
+---
+
+# NestJS DDD Patterns
+
+## Schema template (`src/schemas/<singular>.schema.ts`)
+```typescript
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+
+export type EntityDocument = Entity & Document;
+
+@Schema({ timestamps: true })
+export class Entity {
+  @Prop({ required: true, trim: true })
+  name: string;
+
+  @Prop({ default: true })
+  isActive: boolean;
+}
+
+export const EntitySchema = SchemaFactory.createForClass(Entity);
+```
+
+For ObjectId references to other collections:
+```typescript
+import { Types } from 'mongoose';
+@Prop({ type: Types.ObjectId, ref: 'OtherEntity' })
+otherId: Types.ObjectId;
+```
+
+## Repository template (`src/repositories/<singular>.repository.ts`)
+```typescript
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import type { UpdateQuery } from 'mongoose';
+import { Entity, EntityDocument } from '../schemas/entity.schema';
+
+@Injectable()
+export class EntityRepository {
+  constructor(
+    @InjectModel(Entity.name)
+    private readonly entityModel: Model<EntityDocument>,
+  ) {}
+
+  async findAll(filter: object = {}): Promise<EntityDocument[]> {
+    return this.entityModel.find(filter).exec();
+  }
+
+  async findById(id: string): Promise<EntityDocument | null> {
+    return this.entityModel.findById(id).exec();
+  }
+
+  async findOne(filter: object): Promise<EntityDocument | null> {
+    return this.entityModel.findOne(filter).exec();
+  }
+
+  async create(data: Partial<Entity>): Promise<EntityDocument> {
+    return this.entityModel.create(data);
+  }
+
+  async update(id: string, data: UpdateQuery<EntityDocument>): Promise<EntityDocument | null> {
+    return this.entityModel.findByIdAndUpdate(id, data, { new: true }).exec();
+  }
+
+  async delete(id: string): Promise<EntityDocument | null> {
+    return this.entityModel.findByIdAndDelete(id).exec();
+  }
+
+  async count(filter: object = {}): Promise<number> {
+    return this.entityModel.countDocuments(filter).exec();
+  }
+}
+```
+
+## Service template (`src/<plural>/<plural>.service.ts`)
+```typescript
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { EntityRepository } from '../repositories/entity.repository';
+import { Entity } from '../schemas/entity.schema';
+
+@Injectable()
+export class EntitiesService {
+  constructor(private readonly entityRepository: EntityRepository) {}
+
+  async findAll() {
+    return this.entityRepository.findAll({ isActive: true });
+  }
+
+  async findOne(id: string) {
+    const record = await this.entityRepository.findById(id);
+    if (!record) throw new NotFoundException(`Entity ${id} not found`);
+    return record;
+  }
+
+  async create(data: Partial<Entity>) {
+    return this.entityRepository.create(data);
+  }
+
+  async update(id: string, data: Partial<Entity>) {
+    const record = await this.entityRepository.update(id, data);
+    if (!record) throw new NotFoundException(`Entity ${id} not found`);
+    return record;
+  }
+
+  async remove(id: string) {
+    const record = await this.entityRepository.delete(id);
+    if (!record) throw new NotFoundException(`Entity ${id} not found`);
+    return { id, removed: true };
+  }
+}
+```
+
+## Controller template (`src/<plural>/<plural>.controller.ts`)
+```typescript
+import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { EntitiesService } from './entities.service';
+
+@Controller('entities')
+export class EntitiesController {
+  constructor(private readonly entitiesService: EntitiesService) {}
+
+  // IMPORTANT: specific sub-routes always before /:id
+  @Get('by-parent/:parentId')
+  findByParent(@Param('parentId') parentId: string) {
+    return this.entitiesService.findByParent(parentId);
+  }
+
+  @Get()
+  findAll() { return this.entitiesService.findAll(); }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) { return this.entitiesService.findOne(id); }
+
+  @Post()
+  create(@Body() body: Record<string, any>) { return this.entitiesService.create(body); }
+
+  @Put(':id')
+  update(@Param('id') id: string, @Body() body: Record<string, any>) {
+    return this.entitiesService.update(id, body);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) { return this.entitiesService.remove(id); }
+}
+```
+
+## Module template (`src/<plural>/<plural>.module.ts`)
+```typescript
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { EntitiesController } from './entities.controller';
+import { EntitiesService } from './entities.service';
+import { EntitiesHelperService } from './entities-helper.service';
+import { Entity, EntitySchema } from '../schemas/entity.schema';
+import { EntityRepository } from '../repositories/entity.repository';
+
+@Module({
+  imports: [MongooseModule.forFeature([{ name: Entity.name, schema: EntitySchema }])],
+  controllers: [EntitiesController],
+  providers: [EntitiesService, EntitiesHelperService, EntityRepository],
+  exports: [EntityRepository],
+})
+export class EntitiesModule {}
+```

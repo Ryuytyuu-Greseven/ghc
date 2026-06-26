@@ -1,0 +1,17 @@
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { PatientsController } from './patients.controller';
+import { PatientsService } from './patients.service';
+import { PatientsHelperService } from './patients-helper.service';
+import { Patient, PatientSchema } from '../schemas/patient.schema';
+import { PatientRepository } from '../repositories/patient.repository';
+
+@Module({
+  imports: [
+    MongooseModule.forFeature([{ name: Patient.name, schema: PatientSchema }]),
+  ],
+  controllers: [PatientsController],
+  providers: [PatientsService, PatientsHelperService, PatientRepository],
+  exports: [PatientRepository],
+})
+export class PatientsModule {}

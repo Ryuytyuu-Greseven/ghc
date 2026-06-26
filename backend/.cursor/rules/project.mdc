@@ -1,0 +1,39 @@
+---
+description: Healthcare platform NestJS backend — project-wide rules
+alwaysApply: true
+---
+
+# Healthcare Platform Backend
+
+NestJS 11 + MongoDB (Mongoose 9) REST API following Domain-Driven Design.
+
+## Strict layer order — never skip or reverse
+```
+Controller → Service → Repository → MongoDB
+```
+
+## Directory layout
+- `src/schemas/` — Mongoose schemas (shared, singular filenames: `hospital.schema.ts`)
+- `src/repositories/` — data access (shared, singular filenames: `hospital.repository.ts`)
+- `src/<plural>/` — domain module folder containing module, controller, service, helper service
+
+## When adding a new domain
+1. Create `src/schemas/<singular>.schema.ts`
+2. Create `src/repositories/<singular>.repository.ts`
+3. Create `src/<plural>/` with module, controller, service, helper service
+4. Register `MongooseModule.forFeature([{ name: Entity.name, schema: EntitySchema }])` in the module
+5. Add the module to `src/app.module.ts` imports
+
+## TypeScript gotchas
+- `FilterQuery` does not exist in Mongoose 9 — use `object` for filter params
+- Import `UpdateQuery` as: `import type { UpdateQuery } from 'mongoose'`
+- `moduleResolution: nodenext` is active — prefer named imports; fall back to default import for CJS packages
+
+## Route ordering
+Specific routes (`/available`, `/by-hospital/:id`) must appear **before** `/:id` in every controller.
+
+## No comments
+Only add a comment when the WHY is non-obvious to a future reader. Never comment what the code does.
+
+## No unnecessary abstractions
+Three similar lines is better than a premature abstraction. No DTOs, validation pipes, or interceptors unless explicitly requested.

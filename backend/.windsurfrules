@@ -1,0 +1,60 @@
+# Healthcare Platform Backend — Windsurf Rules
+
+## Project
+NestJS 11 REST API | MongoDB via Mongoose 9 | TypeScript 5 | Domain-Driven Design
+
+## Architecture — enforce this strictly
+```
+HTTP → Controller → Service → Repository → MongoDB
+```
+- Controllers: HTTP only, no business logic
+- Services: business logic, calls Repository
+- Repositories: all Mongoose queries live here
+- Schemas: `src/schemas/` (shared across domains)
+- Helper services: utility/formatting logic within a domain, injected by Service
+
+## File conventions
+| Artifact | Path | Example |
+|---|---|---|
+| Schema | `src/schemas/<singular>.schema.ts` | `hospital.schema.ts` |
+| Repository | `src/repositories/<singular>.repository.ts` | `hospital.repository.ts` |
+| Module folder | `src/<plural>/` | `hospitals/` |
+| Module file | `src/<plural>/<plural>.module.ts` | `hospitals.module.ts` |
+| Controller | `src/<plural>/<plural>.controller.ts` | `hospitals.controller.ts` |
+| Service | `src/<plural>/<plural>.service.ts` | `hospitals.service.ts` |
+| Helper | `src/<plural>/<plural>-helper.service.ts` | `hospitals-helper.service.ts` |
+
+## Mongoose 9 — critical rules
+- `FilterQuery` was **removed** — use `object` for filter parameters
+- `UpdateQuery` exists — import as `import type { UpdateQuery } from 'mongoose'`
+- `moduleResolution: nodenext` is active
+
+## Module wiring (every domain module must follow this)
+```typescript
+@Module({
+  imports: [MongooseModule.forFeature([{ name: Entity.name, schema: EntitySchema }])],
+  controllers: [EntityController],
+  providers: [EntityService, EntityHelperService, EntityRepository],
+  exports: [EntityRepository],
+})
+```
+
+## Route ordering — specific before wildcard
+```typescript
+@Get('available')          // ✅ specific first
+@Get('category/:cat')      // ✅ specific first
+@Get(':id')                // ✅ wildcard last
+```
+
+## Never do
+- Query the DB in a Service (use the Repository)
+- Import a Service from another domain (export and use the Repository)
+- Add `FilterQuery` from mongoose (removed in v9)
+- Add DTOs or validation pipes unless explicitly asked
+
+## Run locally
+```bash
+npm install && cp .env.example .env
+# set MONGODB_URI in .env
+npm run start:dev
+```
