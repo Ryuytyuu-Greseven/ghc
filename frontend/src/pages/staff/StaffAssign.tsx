@@ -20,28 +20,35 @@ export function StaffAssign({ staff, onClose }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-slate-50 rounded-lg p-3">
-        <p className="font-medium text-slate-800">{staff.name}</p>
-        <p className="text-sm text-slate-500">{staff.specialization} · {staff.role}</p>
+      <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 border border-slate-100 dark:border-slate-700">
+        <p className="font-medium text-slate-800 dark:text-slate-100">{staff.name}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          {staff.specialization} · {staff.role}
+        </p>
       </div>
 
-      <p className="text-sm text-slate-600 font-medium">Select a facility to assign to:</p>
+      <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">
+        Select a facility to assign to:
+      </p>
 
-      <div className="space-y-2 max-h-56 overflow-y-auto">
+      <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
         {hospitals.map(h => (
           <button
             key={h.id}
             onClick={() => setSelected(h.id)}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border text-left transition-colors ${
               selected === h.id
-                ? 'border-primary-500 bg-primary-50'
-                : 'border-slate-200 hover:bg-slate-50'
+                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
+                : 'border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700/50'
             }`}
           >
-            <Building2 size={16} className={selected === h.id ? 'text-primary-600' : 'text-slate-400'} />
-            <div>
-              <p className="text-sm font-medium text-slate-800">{h.name}</p>
-              <p className="text-xs text-slate-400">{h.city} · {h.type}</p>
+            <Building2
+              size={16}
+              className={selected === h.id ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'}
+            />
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{h.name}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500">{h.city} · {h.type}</p>
             </div>
           </button>
         ))}
@@ -50,14 +57,16 @@ export function StaffAssign({ staff, onClose }: Props) {
       {selected && (
         <button
           onClick={() => setSelected(null)}
-          className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700"
+          className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors"
         >
           <X size={14} /> Remove assignment
         </button>
       )}
 
       <div className="flex justify-end gap-3 pt-2">
-        <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
+        <Button type="button" variant="secondary" onClick={onClose}>
+          Cancel
+        </Button>
         <Button onClick={handleSave}>Save Assignment</Button>
       </div>
     </div>
