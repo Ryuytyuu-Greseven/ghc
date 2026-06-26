@@ -20,15 +20,25 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@google-cloud/speech": "^7.5.0",
+    "@google-cloud/text-to-speech": "^6.4.1",
+    "@langchain/core": "^1.2.1",
+    "@langchain/google-vertexai": "^2.2.0",
+    "@langchain/langgraph": "^1.4.7",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
     "@nestjs/mongoose": "^11.0.4",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.1.27",
+    "@nestjs/websockets": "^11.1.27",
     "dotenv": "^17.4.2",
+    "langchain": "^1.5.2",
     "mongoose": "^9.7.2",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.8.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

@@ -7,6 +7,7 @@ import { HospitalsModule } from './hospitals/hospitals.module';
 import { PatientsModule } from './patients/patients.module';
 import { MedicinesModule } from './medicines/medicines.module';
 import { StaffModule } from './staff/staff.module';
+import { VoiceGatewayModule } from './voice-gateway/voice-gateway.module';
 import { config } from 'dotenv';
 config();
 
@@ -25,6 +26,7 @@ config();
     PatientsModule,
     MedicinesModule,
     StaffModule,
+    VoiceGatewayModule,
   ],
   controllers: [AppController],
   providers: [AppService],
