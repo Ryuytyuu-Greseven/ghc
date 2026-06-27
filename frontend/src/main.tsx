@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { environment } from './config/environment.local'
+import { environment } from './config/environment'
 
 // Listen for browser navigation from cache (back/forward history) and force reload to rerun checks
 window.addEventListener('pageshow', (event) => {

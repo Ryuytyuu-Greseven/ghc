@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
-import { environment } from '../../config/environment.local';
+import { environment } from '../../config/environment';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },

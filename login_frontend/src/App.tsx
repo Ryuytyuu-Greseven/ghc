@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Lock, User, AlertCircle, Loader2, ShieldCheck } from 'lucide-react';
 import logo from './assets/logo.png';
-import { environment } from './config/environment.local';
+import { environment } from './config/environment';
 
 export default function App() {
   const [username, setUsername] = useState('');

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { hospitalApi } from '../services/hospitalApi';
 import type { ReactNode } from 'react';
-import { environment } from '../config/environment.local';
+import { environment } from '../config/environment';
 import type { Hospital, Staff, Patient, PatientDraft, Medicine, HospitalMedicine } from '../types';
 import {
   mockHospitals,
