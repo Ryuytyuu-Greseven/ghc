@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Plus, Warehouse, Trash2, AlertTriangle, Clock, Search } from 'lucide-react';
+import { Plus, Warehouse, Trash2, AlertTriangle, Clock, Search, Eye, X } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { StatCard } from '../../components/ui/StatCard';
 import { useInventory } from '../../context/InventoryContext';
 import { AddStockForm } from './AddStockForm';
+import { InventoryDetailModal } from './InventoryDetailModal';
 import { PaginationControls } from '../../components/ui/PaginationControls';
 import { clsx } from 'clsx';
 
@@ -26,6 +27,8 @@ export function CentralInventoryTab() {
     centralSummary,
     loadingCentral,
     error,
+    actionError,
+    clearActionError,
     loadCentralStock,
     removeCentralStock,
   } = useInventory();
@@ -41,6 +44,7 @@ export function CentralInventoryTab() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [viewEntry, setViewEntry] = useState<typeof centralStock[number] | null>(null);
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -194,6 +198,15 @@ export function CentralInventoryTab() {
             {error}
           </div>
         )}
+        {/* Action error banner */}
+        {actionError && (
+          <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
+            <span className="flex-1">{actionError}</span>
+            <button onClick={clearActionError} className="shrink-0 hover:text-red-800 dark:hover:text-red-200 transition" aria-label="Dismiss">
+              <X size={14} />
+            </button>
+          </div>
+        )}
 
         {/* Table container */}
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col">
@@ -213,17 +226,6 @@ export function CentralInventoryTab() {
                       <div className="flex items-center gap-1">
                         Item Name
                         {sortBy === 'itemName' && (
-                          <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      onClick={() => handleSort('itemCode')}
-                      className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none hidden md:table-cell transition-colors"
-                    >
-                      <div className="flex items-center gap-1">
-                        Item Code
-                        {sortBy === 'itemCode' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
@@ -297,11 +299,6 @@ export function CentralInventoryTab() {
                             {lowStock && <Badge variant="warning">Low Stock</Badge>}
                           </div>
                         </td>
-                        <td className="px-5 py-3.5 hidden md:table-cell">
-                          <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">
-                            {entry.itemId?.itemCode ?? '—'}
-                          </span>
-                        </td>
                         <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
                           {entry.batchNo || '—'}
                         </td>
@@ -315,9 +312,6 @@ export function CentralInventoryTab() {
                             )}
                           >
                             {entry.availableQty.toLocaleString()}
-                          </span>
-                          <span className="text-xs text-slate-400 dark:text-slate-500 ml-1">
-                            {entry.itemId?.unit}
                           </span>
                         </td>
                         <td className="px-5 py-3.5 hidden lg:table-cell">
@@ -376,13 +370,22 @@ export function CentralInventoryTab() {
                           })}
                         </td>
                         <td className="px-5 py-3.5">
-                          <button
-                            onClick={() => handleRemove(entry._id)}
-                            className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition"
-                            title="Remove entry"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          <div className="flex items-center gap-1 justify-end">
+                            <button
+                              onClick={() => setViewEntry(entry)}
+                              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-primary-500 transition"
+                              title="View Details"
+                            >
+                              <Eye size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleRemove(entry._id)}
+                              className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition"
+                              title="Remove entry"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -419,6 +422,31 @@ export function CentralInventoryTab() {
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Central Stock">
         <AddStockForm onClose={() => setAddOpen(false)} />
       </Modal>
+
+      {viewEntry && (
+        <InventoryDetailModal
+          open={true}
+          onClose={() => setViewEntry(null)}
+          title="Central Stock Details"
+          fields={[
+            { label: 'Item Name', value: viewEntry.itemId?.itemName },
+            { label: 'Category', value: viewEntry.itemId?.category },
+            { label: 'Batch No', value: viewEntry.batchNo || '—' },
+            { label: 'Available Qty', value: viewEntry.availableQty.toLocaleString() },
+            { label: 'Damaged Qty', value: viewEntry.damagedQty.toLocaleString() },
+            {
+              label: 'Expiry Date',
+              value: viewEntry.expiryDate
+                ? new Date(viewEntry.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                : '—',
+            },
+            {
+              label: 'Last Updated',
+              value: new Date(viewEntry.updatedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+            },
+          ]}
+        />
+      )}
     </div>
   );
 }

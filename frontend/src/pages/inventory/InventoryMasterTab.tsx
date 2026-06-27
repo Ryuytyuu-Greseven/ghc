@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Plus, Package, Pencil, PowerOff, Search } from 'lucide-react';
+import { Plus, Package, Pencil, PowerOff, Search, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { useInventory } from '../../context/InventoryContext';
 import type { InventoryMaster, InventoryCategory } from '../../types';
 import { InventoryMasterForm } from './InventoryMasterForm';
+import { InventoryDetailModal } from './InventoryDetailModal';
 import { PaginationControls } from '../../components/ui/PaginationControls';
 import { clsx } from 'clsx';
 
@@ -46,6 +47,7 @@ export function InventoryMasterTab() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [viewItem, setViewItem] = useState<InventoryMaster | null>(null);
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -167,17 +169,6 @@ export function InventoryMasterTab() {
                 <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     <th
-                      onClick={() => handleSort('itemCode')}
-                      className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
-                    >
-                      <div className="flex items-center gap-1">
-                        Item Code
-                        {sortBy === 'itemCode' && (
-                          <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
                       onClick={() => handleSort('itemName')}
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
@@ -195,17 +186,6 @@ export function InventoryMasterTab() {
                       <div className="flex items-center gap-1">
                         Category
                         {sortBy === 'category' && (
-                          <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      onClick={() => handleSort('unit')}
-                      className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none hidden md:table-cell transition-colors"
-                    >
-                      <div className="flex items-center gap-1">
-                        Unit
-                        {sortBy === 'unit' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
@@ -231,11 +211,6 @@ export function InventoryMasterTab() {
                       className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
                     >
                       <td className="px-5 py-3.5">
-                        <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">
-                          {m.itemCode}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
                           <Package
                             size={14}
@@ -249,9 +224,6 @@ export function InventoryMasterTab() {
                       <td className="px-5 py-3.5">
                         <Badge variant={categoryVariant[m.category]}>{m.category}</Badge>
                       </td>
-                      <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 hidden md:table-cell">
-                        {m.unit}
-                      </td>
                       <td className="px-5 py-3.5">
                         <Badge variant={m.status === 'Active' ? 'success' : 'danger'}>
                           {m.status}
@@ -259,6 +231,13 @@ export function InventoryMasterTab() {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-1 justify-end">
+                          <button
+                            onClick={() => setViewItem(m)}
+                            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-primary-500 transition"
+                            title="View Details"
+                          >
+                            <Eye size={14} />
+                          </button>
                           <button
                             onClick={() => openEdit(m)}
                             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
@@ -313,6 +292,19 @@ export function InventoryMasterTab() {
       >
         <InventoryMasterForm initial={editing} onClose={() => setFormOpen(false)} />
       </Modal>
+
+      {viewItem && (
+        <InventoryDetailModal
+          open={true}
+          onClose={() => setViewItem(null)}
+          title="Inventory Item Details"
+          fields={[
+            { label: 'Item Name', value: viewItem.itemName },
+            { label: 'Category', value: <Badge variant={categoryVariant[viewItem.category]}>{viewItem.category}</Badge> },
+            { label: 'Status', value: <Badge variant={viewItem.status === 'Active' ? 'success' : 'danger'}>{viewItem.status}</Badge> },
+          ]}
+        />
+      )}
     </div>
   );
 }

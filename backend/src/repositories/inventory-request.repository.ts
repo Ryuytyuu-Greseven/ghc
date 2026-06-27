@@ -17,7 +17,7 @@ export class InventoryRequestRepository {
     return this.model
       .find(filter)
       .populate('branchId', 'name city')
-      .populate('items.itemId', 'itemName itemCode unit')
+      .populate('items.itemId', 'itemName')
       .sort({ createdAt: -1 })
       .exec();
   }
@@ -26,7 +26,7 @@ export class InventoryRequestRepository {
     return this.model
       .findById(id)
       .populate('branchId', 'name city')
-      .populate('items.itemId', 'itemName itemCode unit')
+      .populate('items.itemId', 'itemName')
       .exec();
   }
 
@@ -128,7 +128,7 @@ export class InventoryRequestRepository {
     const rawData = await this.model.aggregate(pipeline).exec();
     const data = await this.model.populate(rawData, [
       { path: 'branchId', select: 'name city' },
-      { path: 'items.itemId', select: 'itemName itemCode unit' },
+      { path: 'items.itemId', select: 'itemName' },
     ]);
 
     return { data, total, page, pageSize };

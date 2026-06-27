@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InventoryMasterRepository } from '../../repositories/inventory-master.repository';
 import { InventoryMasterHelperService } from './inventory-master-helper.service';
 import { InventoryStatus } from '../../common/enums';
@@ -27,8 +27,6 @@ export class InventoryMasterService {
   }
 
   async create(data: Record<string, any>) {
-    const existing = await this.repo.findOne({ itemCode: data.itemCode?.toUpperCase() });
-    if (existing) throw new ConflictException(`Item code ${data.itemCode} already exists`);
     return this.repo.create(data);
   }
 

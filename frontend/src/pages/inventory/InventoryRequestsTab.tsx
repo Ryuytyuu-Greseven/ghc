@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, ClipboardList, Eye, CheckCircle, Search } from 'lucide-react';
+import { Plus, ClipboardList, Eye, CheckCircle, Search, X } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
@@ -18,7 +18,7 @@ const statusVariant: Record<RequestStatus, 'warning' | 'success' | 'danger' | 'p
 };
 
 export function InventoryRequestsTab() {
-  const { requests, requestsPagination, loadingRequests, error, loadRequests } = useInventory();
+  const { requests, requestsPagination, loadingRequests, error, actionError, clearActionError, loadRequests } = useInventory();
   const { hospitals } = useApp();
 
   const [newReqOpen, setNewReqOpen] = useState(false);
@@ -176,6 +176,15 @@ export function InventoryRequestsTab() {
         {error && (
           <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
             {error}
+          </div>
+        )}
+        {/* Action error banner */}
+        {actionError && (
+          <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
+            <span className="flex-1">{actionError}</span>
+            <button onClick={clearActionError} className="shrink-0 hover:text-red-800 dark:hover:text-red-200 transition" aria-label="Dismiss">
+              <X size={14} />
+            </button>
           </div>
         )}
 

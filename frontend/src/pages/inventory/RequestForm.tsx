@@ -17,7 +17,7 @@ interface Props {
 
 export function RequestForm({ onClose }: Props) {
   const { hospitals, staff } = useApp();
-  const { masters, createRequest } = useInventory();
+  const { masters, centralStock, createRequest } = useInventory();
   const [submitting, setSubmitting] = useState(false);
 
   const [branchId, setBranchId] = useState('');
@@ -27,9 +27,18 @@ export function RequestForm({ onClose }: Props) {
   const branchOptions = hospitals.map((h) => ({ value: h.id, label: h.name }));
   const activeItemOptions = masters
     .filter((m) => m.status === 'Active')
-    .map((m) => ({ value: m._id, label: `${m.itemCode} — ${m.itemName}` }));
+    .map((m) => ({ value: m._id, label: m.itemName }));
 
   const staffOptions = staff.map((s) => ({ value: s.name, label: `${s.name} (${s.role})` }));
+
+  const getCentralStockQty = (itemId: string) => {
+    return centralStock
+      .filter((entry) => {
+        const entryItemId = entry.itemId?._id || entry.itemId;
+        return entryItemId === itemId;
+      })
+      .reduce((sum, entry) => sum + entry.availableQty, 0);
+  };
 
   const addItemRow = () => {
     setItems((prev) => [...prev, { itemId: '', requestedQty: '' }]);
@@ -45,9 +54,13 @@ export function RequestForm({ onClose }: Props) {
     );
   };
 
+  const hasValidationError = items.some(
+    (it) => it.itemId && Number(it.requestedQty) > getCentralStockQty(it.itemId)
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (items.length === 0) return;
+    if (items.length === 0 || hasValidationError) return;
 
     setSubmitting(true);
     try {
@@ -103,44 +116,60 @@ export function RequestForm({ onClose }: Props) {
           </button>
         </div>
 
-        <div className="space-y-3">
-          {items.map((item, index) => (
-            <div
-              key={index}
-              className="flex items-end gap-3 bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 rounded-lg p-3"
-            >
-              <div className="flex-1">
-                <Select
-                  label={index === 0 ? 'Item' : undefined}
-                  required
-                  value={item.itemId}
-                  onChange={(e) => updateItem(index, 'itemId', e.target.value)}
-                  options={activeItemOptions}
-                  placeholder="Select item…"
-                />
-              </div>
-              <div className="w-32 shrink-0">
-                <Input
-                  label={index === 0 ? 'Qty' : undefined}
-                  type="number"
-                  required
-                  min="1"
-                  value={item.requestedQty}
-                  onChange={(e) => updateItem(index, 'requestedQty', e.target.value)}
-                  placeholder="0"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => removeItemRow(index)}
-                disabled={items.length === 1}
-                className="mb-0.5 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
-                title="Remove item"
+        <div className="space-y-4">
+          {items.map((item, index) => {
+            const availQty = item.itemId ? getCentralStockQty(item.itemId) : 0;
+            const exceedsStock = item.itemId && Number(item.requestedQty) > availQty;
+
+            return (
+              <div
+                key={index}
+                className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 rounded-lg p-3"
               >
-                <X size={14} />
-              </button>
-            </div>
-          ))}
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <Select
+                      label={index === 0 ? 'Item' : undefined}
+                      required
+                      value={item.itemId}
+                      onChange={(e) => updateItem(index, 'itemId', e.target.value)}
+                      options={activeItemOptions}
+                      placeholder="Select item…"
+                    />
+                  </div>
+                  <div className="w-32 shrink-0">
+                    <Input
+                      label={index === 0 ? 'Qty' : undefined}
+                      type="number"
+                      required
+                      min="1"
+                      value={item.requestedQty}
+                      onChange={(e) => updateItem(index, 'requestedQty', e.target.value)}
+                      placeholder="0"
+                      error={exceedsStock ? `Exceeds stock (${availQty} available)` : undefined}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeItemRow(index)}
+                    disabled={items.length === 1}
+                    className="mb-0.5 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+                    title="Remove item"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+
+                {item.itemId && (
+                  <div className="text-xs text-slate-500 dark:text-slate-400 px-1 flex justify-between">
+                    <span>
+                      Available Central Stock: <strong className="font-semibold">{availQty}</strong>
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -148,7 +177,7 @@ export function RequestForm({ onClose }: Props) {
         <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
           Cancel
         </Button>
-        <Button type="submit" disabled={submitting || items.length === 0}>
+        <Button type="submit" disabled={submitting || items.length === 0 || hasValidationError}>
           {submitting ? 'Submitting…' : 'Submit Request'}
         </Button>
       </div>

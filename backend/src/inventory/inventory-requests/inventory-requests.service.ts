@@ -5,6 +5,7 @@ import { CentralInventoryRepository } from '../../repositories/central-inventory
 import { BranchInventoryRepository } from '../../repositories/branch-inventory.repository';
 import { InventoryTransactionRepository } from '../../repositories/inventory-transaction.repository';
 import { InventoryRequestsHelperService } from './inventory-requests-helper.service';
+import { InventoryMasterRepository } from '../../repositories/inventory-master.repository';
 import { RequestStatus, TransactionType } from '../../common/enums';
 import { buildPaginatedResponse } from '../utils/pagination.util';
 
@@ -15,6 +16,7 @@ export class InventoryRequestsService {
     private readonly centralRepo: CentralInventoryRepository,
     private readonly branchRepo: BranchInventoryRepository,
     private readonly transactionRepo: InventoryTransactionRepository,
+    private readonly masterRepo: InventoryMasterRepository,
     private readonly helper: InventoryRequestsHelperService,
   ) {}
 
@@ -34,6 +36,35 @@ export class InventoryRequestsService {
   }
 
   async create(data: Record<string, any>) {
+    const items = data.items || [];
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new BadRequestException('At least one item must be requested.');
+    }
+
+    for (const item of items) {
+      const itemId = item.itemId;
+      const requestedQty = Number(item.requestedQty);
+
+      if (!itemId) {
+        throw new BadRequestException('Item ID is required for each request item.');
+      }
+      if (isNaN(requestedQty) || requestedQty <= 0) {
+        throw new BadRequestException('Requested quantity must be a positive number.');
+      }
+
+      // Check available quantity in Central Inventory
+      const batches = await this.centralRepo.findByItem(itemId.toString());
+      const totalAvailable = batches.reduce((s, b) => s + b.availableQty, 0);
+
+      if (totalAvailable < requestedQty) {
+        const masterItem = await this.masterRepo.findById(itemId.toString());
+        const itemName = masterItem ? masterItem.itemName : 'Unknown Item';
+        throw new BadRequestException(
+          `Requested quantity for item "${itemName}" exceeds available Central Inventory stock. Available: ${totalAvailable}, Requested: ${requestedQty}`
+        );
+      }
+    }
+
     const requestNumber = await this.requestRepo.generateRequestNumber();
     return this.requestRepo.create({ ...data, requestNumber, status: RequestStatus.PENDING });
   }

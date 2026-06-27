@@ -138,10 +138,8 @@ export type TransactionType =
 
 export interface InventoryMaster {
   _id: string;
-  itemCode: string;
   itemName: string;
   category: InventoryCategory;
-  unit: string;
   status: InventoryStatus;
   createdAt: string;
 }
@@ -149,8 +147,7 @@ export interface InventoryMaster {
 export interface PopulatedItem {
   _id: string;
   itemName: string;
-  itemCode: string;
-  unit: string;
+  category: InventoryCategory;
 }
 
 export interface CentralInventoryEntry {

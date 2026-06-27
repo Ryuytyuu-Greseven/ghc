@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { GitBranch, Info, Clock, Search } from 'lucide-react';
+import { GitBranch, Info, Clock, Search, Eye, X } from 'lucide-react';
 import { Select as CustomSelect } from '../../components/ui/Select';
 import { Badge } from '../../components/ui/Badge';
+import { InventoryDetailModal } from './InventoryDetailModal';
 import { useApp } from '../../context/AppContext';
 import { useInventory } from '../../context/InventoryContext';
 import { PaginationControls } from '../../components/ui/PaginationControls';
@@ -19,7 +20,7 @@ const isExpiringSoon = (date: string | null): boolean => {
 
 export function BranchInventoryTab() {
   const { hospitals } = useApp();
-  const { branchStock, branchPagination, loadingBranch, error, loadBranchStock } = useInventory();
+  const { branchStock, branchPagination, loadingBranch, error, actionError, clearActionError, loadBranchStock } = useInventory();
   const [selectedBranchId, setSelectedBranchId] = useState('');
 
   // Search, Sort, Filter, Page States
@@ -31,6 +32,7 @@ export function BranchInventoryTab() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [viewEntry, setViewEntry] = useState<typeof branchStock[number] | null>(null);
 
   const branchOptions = hospitals.map((h) => ({ value: h.id, label: h.name }));
 
@@ -170,6 +172,15 @@ export function BranchInventoryTab() {
             {error}
           </div>
         )}
+        {/* Action error banner */}
+        {actionError && (
+          <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
+            <span className="flex-1">{actionError}</span>
+            <button onClick={clearActionError} className="shrink-0 hover:text-red-800 dark:hover:text-red-200 transition" aria-label="Dismiss">
+              <X size={14} />
+            </button>
+          </div>
+        )}
 
         {/* Content area */}
         {!selectedBranchId ? (
@@ -200,17 +211,6 @@ export function BranchInventoryTab() {
                         <div className="flex items-center gap-1">
                           Item Name
                           {sortBy === 'itemName' && (
-                            <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        onClick={() => handleSort('itemCode')}
-                        className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none hidden md:table-cell transition-colors"
-                      >
-                        <div className="flex items-center gap-1">
-                          Item Code
-                          {sortBy === 'itemCode' && (
                             <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                           )}
                         </div>
@@ -259,6 +259,7 @@ export function BranchInventoryTab() {
                           )}
                         </div>
                       </th>
+                      <th className="px-5 py-3 w-10" />
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -279,11 +280,6 @@ export function BranchInventoryTab() {
                               {lowStock && <Badge variant="warning">Low</Badge>}
                             </div>
                           </td>
-                          <td className="px-5 py-3.5 hidden md:table-cell">
-                            <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">
-                              {entry.itemId?.itemCode ?? '—'}
-                            </span>
-                          </td>
                           <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
                             {entry.batchNo || '—'}
                           </td>
@@ -297,9 +293,6 @@ export function BranchInventoryTab() {
                               )}
                             >
                               {entry.availableQty.toLocaleString()}
-                            </span>
-                            <span className="text-xs text-slate-400 dark:text-slate-500 ml-1">
-                              {entry.itemId?.unit}
                             </span>
                           </td>
                           <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 hidden lg:table-cell tabular-nums">
@@ -341,6 +334,15 @@ export function BranchInventoryTab() {
                               <span className="text-slate-400 dark:text-slate-500">—</span>
                             )}
                           </td>
+                          <td className="px-5 py-3.5">
+                            <button
+                              onClick={() => setViewEntry(entry)}
+                              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-primary-500 transition"
+                              title="View Details"
+                            >
+                              <Eye size={14} />
+                            </button>
+                          </td>
                         </tr>
                       );
                     })}
@@ -373,6 +375,27 @@ export function BranchInventoryTab() {
           </div>
         )}
       </div>
+
+      {viewEntry && (
+        <InventoryDetailModal
+          open={true}
+          onClose={() => setViewEntry(null)}
+          title="Branch Stock Details"
+          fields={[
+            { label: 'Item Name', value: viewEntry.itemId?.itemName },
+            { label: 'Category', value: viewEntry.itemId?.category },
+            { label: 'Batch No', value: viewEntry.batchNo || '—' },
+            { label: 'Available Qty', value: viewEntry.availableQty.toLocaleString() },
+            { label: 'Damaged Qty', value: viewEntry.damagedQty.toLocaleString() },
+            {
+              label: 'Expiry Date',
+              value: viewEntry.expiryDate
+                ? new Date(viewEntry.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                : '—',
+            },
+          ]}
+        />
+      )}
     </div>
   );
 }
