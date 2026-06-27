@@ -41,7 +41,6 @@ export interface Staff {
   id: string;
   name: string; // compatibility
   phone: string; // compatibility
-  employeeId?: string;
   firstName?: string;
   lastName?: string;
   displayName?: string;

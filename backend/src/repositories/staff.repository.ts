@@ -12,19 +12,19 @@ export class StaffRepository {
   ) { }
 
   async findAll(filter: object = {}): Promise<StaffDocument[]> {
-    return this.staffModel.find(filter).populate('hospitalId').exec();
+    return this.staffModel.find(filter).populate('hospitalId').populate('userId').exec();
   }
 
   async findById(id: string): Promise<StaffDocument | null> {
-    return this.staffModel.findById(id).populate('hospitalId').exec();
+    return this.staffModel.findById(id).populate('hospitalId').populate('userId').exec();
   }
 
   async findOne(filter: object): Promise<StaffDocument | null> {
-    return this.staffModel.findOne(filter).populate('hospitalId').exec();
+    return this.staffModel.findOne(filter).populate('hospitalId').populate('userId').exec();
   }
 
   async findByHospital(hospitalId: string): Promise<StaffDocument[]> {
-    return this.staffModel.find({ hospitalId }).populate('hospitalId').exec();
+    return this.staffModel.find({ hospitalId }).populate('hospitalId').populate('userId').exec();
   }
 
   async create(data: Partial<Staff>): Promise<StaffDocument> {

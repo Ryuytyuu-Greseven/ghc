@@ -12,6 +12,7 @@ import { VoiceGatewayModule } from './voice-gateway/voice-gateway.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { InventoryModule } from './inventory/inventory.module';
+import { UsersModule } from './users/users.module';
 import { config } from 'dotenv';
 config();
 
@@ -33,6 +34,7 @@ config();
     VoiceGatewayModule,
     AuthModule,
     InventoryModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [

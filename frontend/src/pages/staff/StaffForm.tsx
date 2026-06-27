@@ -41,7 +41,6 @@ export function StaffForm({ initial, onClose }: Props) {
   const { addStaff, updateStaff } = useApp();
 
   const [form, setForm] = useState({
-    employeeId: initial?.employeeId ?? '',
     firstName: initial?.firstName ?? (initial?.name ? initial.name.split(' ')[0] : ''),
     lastName: initial?.lastName ?? (initial?.name ? initial.name.split(' ').slice(1).join(' ') : ''),
     displayName: initial?.displayName ?? '',
@@ -79,7 +78,6 @@ export function StaffForm({ initial, onClose }: Props) {
     e.preventDefault();
     const data = {
       ...initial,
-      employeeId: form.employeeId,
       firstName: form.firstName,
       lastName: form.lastName,
       displayName: form.displayName || undefined,

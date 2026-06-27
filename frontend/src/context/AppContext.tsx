@@ -15,6 +15,7 @@ interface AppContextValue {
   patients: Patient[];
   medicines: Medicine[];
   hospitalMedicines: HospitalMedicine[];
+  currentUser: { id: string; username: string; role: string } | null;
 
   addHospital: (h: Omit<Hospital, 'id' | 'createdAt'>) => void;
   updateHospital: (id: string, h: Partial<Hospital>) => void;
@@ -116,7 +117,6 @@ function mapStaffFromBackend(item: any): Staff {
     assignedHospitalId: item.hospitalId?._id ?? item.hospitalId ?? null,
     createdAt: item.createdAt ? new Date(item.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
 
-    employeeId: item.employeeId,
     firstName: item.firstName,
     lastName: item.lastName,
     displayName: item.displayName,
@@ -149,7 +149,6 @@ function mapStaffFromBackend(item: any): Staff {
 function mapStaffToBackend(s: any): any {
   const capRole = s.role ? s.role.charAt(0).toUpperCase() + s.role.slice(1) : 'Doctor';
   return {
-    employeeId: s.employeeId,
     firstName: s.firstName,
     lastName: s.lastName,
     displayName: s.displayName,
@@ -253,6 +252,29 @@ function mapMedicineToBackend(m: any): any {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; role: string } | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('ghc_auth_token');
+    if (token) {
+      try {
+        const payloadBase64 = token.split('.')[1];
+        if (payloadBase64) {
+          const payloadDecoded = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+          const parsed = JSON.parse(payloadDecoded);
+          if (parsed && parsed.sub) {
+            setCurrentUser({
+              id: parsed.sub,
+              username: parsed.username || '',
+              role: parsed.role || 'Doctor',
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse token in AppContext', e);
+      }
+    }
+  }, []);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [hospitalMedicines, setHospitalMedicines] = useState<HospitalMedicine[]>(() => {
@@ -557,6 +579,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider
       value={{
         hospitals, staff, patients, medicines, hospitalMedicines,
+        currentUser,
         addHospital, updateHospital, deleteHospital,
         addStaff, updateStaff, deleteStaff, assignStaff,
         addPatient, updatePatient, deletePatient,
