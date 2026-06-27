@@ -1,8 +1,12 @@
 import { useState } from 'react';
+import { ShieldCheck, Pencil } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
+import { MultiSelect } from '../../components/ui/MultiSelect';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
 import { useApp } from '../../context/AppContext';
+import { SPECIALIST_LIST } from '../../data/specialists';
 import type { Hospital, FacilityType } from '../../types';
 
 interface Props {
@@ -11,7 +15,7 @@ interface Props {
 }
 
 export function HospitalForm({ initial, onClose }: Props) {
-  const { addHospital, updateHospital, hospitals } = useApp();
+  const { addHospital, updateHospital, hospitals, staff } = useApp();
 
   const [form, setForm] = useState({
     name: initial?.name ?? '',
@@ -24,15 +28,18 @@ export function HospitalForm({ initial, onClose }: Props) {
     availableBeds: String(initial?.availableBeds ?? ''),
     parentCHCId: initial?.parentCHCId ?? '',
     medicalOfficer: initial?.medicalOfficer ?? '',
-    specialists: initial?.specialists?.join(', ') ?? '',
+    specialists: initial?.specialists ?? [],
     hasOT: initial?.hasOT ?? false,
     hasXRay: initial?.hasXRay ?? false,
     hasAmbulance: initial?.hasAmbulance ?? false,
   });
 
+  const [pendingData, setPendingData] = useState<Partial<Hospital> | null>(null);
+
   const set = (key: string, value: any) => setForm(f => ({ ...f, [key]: value }));
 
   const chcs = hospitals.filter(h => h.type === 'CHC' && h.id !== initial?.id);
+  const doctors = staff.filter(s => s.isMedicalIncharge === true);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,20 +54,29 @@ export function HospitalForm({ initial, onClose }: Props) {
       availableBeds: Number(form.availableBeds),
       parentCHCId: form.type === 'PHC' && form.parentCHCId ? form.parentCHCId : null,
       medicalOfficer: (form.type === 'PHC' || form.type === 'CHC') && form.medicalOfficer ? form.medicalOfficer : null,
-      specialists: form.type === 'CHC' ? form.specialists.split(',').map(s => s.trim()).filter(Boolean) : [],
+      specialists: form.type === 'CHC' ? form.specialists : [],
       hasOT: form.type === 'CHC' ? form.hasOT : false,
       hasXRay: form.type === 'CHC' ? form.hasXRay : false,
       hasAmbulance: (form.type === 'CHC' || form.type === 'PHC') ? form.hasAmbulance : false,
     };
     if (initial) {
-      updateHospital(initial.id, data);
+      // Show confirmation modal before saving edits
+      setPendingData(data);
     } else {
       addHospital(data);
+      onClose();
     }
+  };
+
+  const confirmSave = () => {
+    if (initial && pendingData) {
+      updateHospital(initial.id, pendingData);
+    }
+    setPendingData(null);
     onClose();
   };
 
-  return (
+  return (<>
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
       <Input
         label="Facility Name"
@@ -133,11 +149,14 @@ export function HospitalForm({ initial, onClose }: Props) {
       {form.type === 'PHC' && (
         <div className="border-t border-slate-100 pt-3 space-y-3">
           <h4 className="text-sm font-semibold text-slate-700">Primary Health Centre (PHC) Details</h4>
-          <Input
+          <Select
             label="Medical Officer In-Charge"
             value={form.medicalOfficer}
             onChange={e => set('medicalOfficer', e.target.value)}
-            placeholder="Dr. Rajesh Kumar"
+            options={[
+              { value: '', label: '— Select Medical Officer —' },
+              ...doctors.map(d => ({ value: d.name, label: `${d.name}${d.specialization ? ` (${d.specialization})` : ''}` })),
+            ]}
           />
           <Select
             label="Parent CHC (Referral Link)"
@@ -166,17 +185,21 @@ export function HospitalForm({ initial, onClose }: Props) {
       {form.type === 'CHC' && (
         <div className="border-t border-slate-100 pt-3 space-y-3">
           <h4 className="text-sm font-semibold text-slate-700">Community Health Centre (CHC) Details</h4>
-          <Input
+          <Select
             label="Medical Officer In-Charge"
             value={form.medicalOfficer}
             onChange={e => set('medicalOfficer', e.target.value)}
-            placeholder="Dr. Rajesh Kumar"
+            options={[
+              { value: '', label: '— Select Medical Officer —' },
+              ...doctors.map(d => ({ value: d.name, label: `${d.name}${d.specialization ? ` (${d.specialization})` : ''}` })),
+            ]}
           />
-          <Input
-            label="Available Specialists (Comma-separated)"
-            value={form.specialists}
-            onChange={e => set('specialists', e.target.value)}
-            placeholder="e.g. Surgeon, Gynecologist, Pediatrician, Physician"
+          <MultiSelect
+            label="Available Specialists"
+            options={SPECIALIST_LIST}
+            selected={form.specialists}
+            onChange={val => set('specialists', val)}
+            placeholder="No specialists registered"
           />
           <div className="space-y-2 mt-2">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Facilities Available</label>
@@ -229,5 +252,36 @@ export function HospitalForm({ initial, onClose }: Props) {
         <Button type="submit">{initial ? 'Save Changes' : 'Add Facility'}</Button>
       </div>
     </form>
-  );
+
+    {/* Save Confirmation Modal — shown only when editing */}
+    <Modal
+      open={!!pendingData}
+      onClose={() => setPendingData(null)}
+      title="Confirm Save Changes"
+      size="sm"
+    >
+      <div className="flex flex-col items-center text-center gap-4 py-2">
+        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-full">
+          <ShieldCheck size={32} className="text-blue-500 dark:text-blue-400" />
+        </div>
+        <div>
+          <p className="text-slate-700 dark:text-slate-200 font-semibold text-base">
+            Save changes to{' '}
+            <span className="text-primary-600 dark:text-primary-400">{initial?.name}</span>?
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            This will update the details of this {initial?.type} facility in the database.
+          </p>
+        </div>
+        <div className="flex gap-3 w-full pt-2">
+          <Button variant="secondary" className="flex-1" onClick={() => setPendingData(null)}>
+            Go Back
+          </Button>
+          <Button variant="primary" className="flex-1" onClick={confirmSave}>
+            <Pencil size={14} /> Yes, Save
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  </>);
 }
