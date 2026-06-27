@@ -50,7 +50,7 @@ export const mockStaff: Staff[] = [
   {
     id: 's1',
     name: 'Dr. Priya Sharma',
-    role: 'doctor',
+    role: 'Doctor',
     specialization: 'Cardiology',
     phone: '+91 9811001100',
     email: 'priya.sharma@ghc.health',
@@ -60,7 +60,7 @@ export const mockStaff: Staff[] = [
   {
     id: 's2',
     name: 'Nurse Anjali Mehta',
-    role: 'nurse',
+    role: 'Nurse',
     specialization: 'ICU',
     phone: '+91 9811002200',
     email: 'anjali.mehta@ghc.health',
@@ -70,7 +70,7 @@ export const mockStaff: Staff[] = [
   {
     id: 's3',
     name: 'Dr. Rohan Verma',
-    role: 'doctor',
+    role: 'Doctor',
     specialization: 'Orthopedics',
     phone: '+91 9811003300',
     email: 'rohan.verma@ghc.health',
@@ -80,7 +80,7 @@ export const mockStaff: Staff[] = [
   {
     id: 's4',
     name: 'Raj Kumar',
-    role: 'technician',
+    role: 'Lab Technician',
     specialization: 'Radiology',
     phone: '+91 9811004400',
     email: 'raj.kumar@ghc.health',
@@ -90,7 +90,7 @@ export const mockStaff: Staff[] = [
   {
     id: 's5',
     name: 'Sonia Kapoor',
-    role: 'pharmacist',
+    role: 'Pharmacist',
     specialization: 'Clinical Pharmacy',
     phone: '+91 9811005500',
     email: 'sonia.kapoor@ghc.health',
@@ -100,7 +100,7 @@ export const mockStaff: Staff[] = [
   {
     id: 's6',
     name: 'Amit Singh',
-    role: 'admin',
+    role: 'Receptionist',
     specialization: 'Hospital Administration',
     phone: '+91 9811006600',
     email: 'amit.singh@ghc.health',

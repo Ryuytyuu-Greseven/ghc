@@ -63,36 +63,97 @@ function mapHospitalFromBackend(item: any): Hospital {
   };
 }
 
+function mapRoleFromBackend(backendRole: string): any {
+  if (!backendRole) return 'Doctor';
+  const normalized = backendRole.trim();
+  const lower = normalized.toLowerCase();
+  if (lower === 'doctor') return 'Doctor';
+  if (lower === 'nurse') return 'Nurse';
+  if (lower === 'receptionist') return 'Receptionist';
+  if (lower === 'pharmacist') return 'Pharmacist';
+  if (lower === 'lab technician' || lower === 'technician') return 'Lab Technician';
+  if (lower === 'compounder') return 'Compounder';
+  if (lower === 'cashier') return 'Cashier';
+  return normalized.replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function mapStaffFromBackend(item: any): Staff {
-  const roleMap: Record<string, string> = {
-    'Doctor': 'doctor',
-    'Nurse': 'nurse',
-    'Pharmacist': 'pharmacist',
-    'Technician': 'technician',
-    'Admin': 'admin',
-  };
   return {
     id: item._id ?? item.id ?? '',
-    name: item.name,
-    role: (roleMap[item.role] || item.role || 'doctor').toLowerCase() as any,
-    specialization: item.department ?? '',
-    phone: item.phone ?? '',
+    name: item.name || `${item.firstName || ''} ${item.lastName || ''}`.trim() || 'Unnamed',
+    role: mapRoleFromBackend(item.role),
+    phone: item.phone ?? item.mobileNumber ?? '',
     email: item.email ?? '',
-    assignedHospitalId: item.hospitalId ?? null,
+    assignedHospitalId: item.hospitalId?._id ?? item.hospitalId ?? null,
     createdAt: item.createdAt ? new Date(item.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+
+    employeeId: item.employeeId,
+    firstName: item.firstName,
+    lastName: item.lastName,
+    displayName: item.displayName,
+    gender: item.gender,
+    dateOfBirth: item.dateOfBirth ? new Date(item.dateOfBirth).toISOString().split('T')[0] : undefined,
+    mobileNumber: item.mobileNumber,
+    department: item.department,
+    designation: item.designation,
+    joiningDate: item.joiningDate ? new Date(item.joiningDate).toISOString().split('T')[0] : undefined,
+    employmentType: item.employmentType,
+    username: item.username,
+    specialization: item.specialization,
+    qualification: item.qualification,
+    registrationNumber: item.registrationNumber,
+    experience: item.experience,
+    licenseNumber: item.licenseNumber,
+    emergencyContactName: item.emergencyContactName,
+    emergencyContactRelationship: item.emergencyContactRelationship,
+    emergencyContactMobile: item.emergencyContactMobile,
+    addressLine1: item.addressLine1,
+    addressLine2: item.addressLine2,
+    city: item.city,
+    state: item.state,
+    pincode: item.pincode,
+    isMedicalIncharge: item.isMedicalIncharge ?? false,
+    isActive: item.isActive ?? true,
   };
 }
 
 function mapStaffToBackend(s: any): any {
   const capRole = s.role ? s.role.charAt(0).toUpperCase() + s.role.slice(1) : 'Doctor';
   return {
-    name: s.name,
+    employeeId: s.employeeId,
+    firstName: s.firstName,
+    lastName: s.lastName,
+    displayName: s.displayName,
+    gender: s.gender,
+    dateOfBirth: s.dateOfBirth ? new Date(s.dateOfBirth) : undefined,
+    mobileNumber: s.mobileNumber || s.phone,
+    email: s.email,
     role: capRole,
-    department: s.specialization ?? s.department ?? '',
-    phone: s.phone ?? '',
-    email: s.email ?? '',
+    department: s.department ?? s.specialization ?? 'General',
+    designation: s.designation,
+    joiningDate: s.joiningDate ? new Date(s.joiningDate) : undefined,
+    employmentType: s.employmentType || 'Full Time',
+    username: s.username,
+    passwordHash: s.password,
+    specialization: s.specialization ?? s.department,
+    qualification: s.qualification,
+    registrationNumber: s.registrationNumber,
+    experience: s.experience ? Number(s.experience) : undefined,
+    licenseNumber: s.licenseNumber,
+    emergencyContactName: s.emergencyContactName,
+    emergencyContactRelationship: s.emergencyContactRelationship,
+    emergencyContactMobile: s.emergencyContactMobile,
+    addressLine1: s.addressLine1,
+    addressLine2: s.addressLine2,
+    city: s.city,
+    state: s.state,
+    pincode: s.pincode,
     hospitalId: s.assignedHospitalId || s.hospitalId || null,
-    isActive: true,
+    isActive: s.isActive ?? true,
+    isMedicalIncharge: s.isMedicalIncharge ?? false,
+
+    name: s.name || `${s.firstName || ''} ${s.lastName || ''}`.trim(),
+    phone: s.phone || s.mobileNumber,
   };
 }
 
