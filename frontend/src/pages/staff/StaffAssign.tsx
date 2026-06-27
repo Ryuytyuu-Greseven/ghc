@@ -32,7 +32,7 @@ export function StaffAssign({ staff, onClose }: Props) {
       </p>
 
       <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-        {hospitals.map(h => (
+        {hospitals.filter((h, idx, self) => self.findIndex(x => x.id === h.id) === idx).map(h => (
           <button
             key={h.id}
             onClick={() => setSelected(h.id)}
