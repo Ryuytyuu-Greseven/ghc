@@ -2,13 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
-import { CentralInventory, CentralInventoryDocument } from '../inventory/schemas/central-inventory.schema';
+import { CentralInventory, CentralInventoryDocument } from '../schemas/central-inventory.schema';
+import { QueryService } from '../common/services/query.service';
 
 @Injectable()
 export class CentralInventoryRepository {
   constructor(
     @InjectModel(CentralInventory.name)
     private readonly model: Model<CentralInventoryDocument>,
+    private readonly queryService: QueryService,
   ) {}
 
   async findAll(filter: object = {}): Promise<CentralInventoryDocument[]> {
@@ -34,36 +36,11 @@ export class CentralInventoryRepository {
     return this.model.find({ availableQty: { $lte: threshold } }).populate('itemId').exec();
   }
 
-  async create(data: Partial<CentralInventory>): Promise<CentralInventoryDocument> {
-    return this.model.create(data);
-  }
-
-  async update(
-    id: string,
-    data: UpdateQuery<CentralInventoryDocument>,
-  ): Promise<CentralInventoryDocument | null> {
-    return this.model.findByIdAndUpdate(id, data, { new: true }).exec();
-  }
-
-  async delete(id: string): Promise<CentralInventoryDocument | null> {
-    return this.model.findByIdAndDelete(id).exec();
-  }
-
-  async findPaginated(params: {
-    skip: number;
-    limit: number;
-    search?: string;
-    category?: string;
-    lowStock?: boolean;
-    expired?: boolean;
-    expiringSoon?: boolean;
-    batch?: string;
-    status?: string;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  }): Promise<{
+  async findPaginated(options: any): Promise<{
     data: any[];
     total: number;
+    page: number;
+    pageSize: number;
     summary: {
       totalAvailable: number;
       totalDamaged: number;
@@ -71,6 +48,46 @@ export class CentralInventoryRepository {
       expiringCount: number;
     };
   }> {
+    const queryOptions = { ...options };
+    if (options.category) {
+      queryOptions['item.category'] = options.category;
+      delete queryOptions.category;
+    }
+    if (options.status) {
+      queryOptions['item.status'] = options.status;
+      delete queryOptions.status;
+    }
+    if (options.batch) {
+      queryOptions.batchNo = options.batch;
+      delete queryOptions.batch;
+    }
+
+    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
+      searchFields: ['item.itemName', 'item.itemCode'],
+      exactFilters: ['item.category', 'item.status', 'batchNo'],
+      sortMapping: {
+        itemName: 'item.itemName',
+        itemCode: 'item.itemCode',
+      },
+      defaultSort: { field: 'createdAt', order: 'desc' },
+    });
+
+    // Special handlers for alert types mapping to filter
+    if (options.lowStock === 'true' || options.lowStock === true) {
+      filter.availableQty = { $lte: 50 };
+    }
+    if (options.expired === 'true' || options.expired === true) {
+      filter.expiryDate = { $ne: null, $lt: new Date() };
+    } else if (options.expiringSoon === 'true' || options.expiringSoon === true) {
+      const ninetyDaysFromNow = new Date();
+      ninetyDaysFromNow.setDate(ninetyDaysFromNow.getDate() + 90);
+      filter.expiryDate = {
+        $ne: null,
+        $gte: new Date(),
+        $lte: ninetyDaysFromNow,
+      };
+    }
+
     const pipeline: any[] = [
       {
         $lookup: {
@@ -81,66 +98,16 @@ export class CentralInventoryRepository {
         },
       },
       { $unwind: '$item' },
+      { $match: filter },
     ];
-
-    const match: any = {};
-
-    if (params.search) {
-      match.$or = [
-        { 'item.itemName': { $regex: params.search, $options: 'i' } },
-        { 'item.itemCode': { $regex: params.search, $options: 'i' } },
-      ];
-    }
-
-    if (params.category) {
-      match['item.category'] = params.category;
-    }
-
-    if (params.status) {
-      match['item.status'] = params.status;
-    }
-
-    if (params.batch) {
-      match.batchNo = { $regex: params.batch, $options: 'i' };
-    }
-
-    if (params.lowStock) {
-      match.availableQty = { $lte: 50 };
-    }
-
-    if (params.expired) {
-      match.expiryDate = { $ne: null, $lt: new Date() };
-    } else if (params.expiringSoon) {
-      const ninetyDaysFromNow = new Date();
-      ninetyDaysFromNow.setDate(ninetyDaysFromNow.getDate() + 90);
-      match.expiryDate = {
-        $ne: null,
-        $gte: new Date(),
-        $lte: ninetyDaysFromNow,
-      };
-    }
-
-    pipeline.push({ $match: match });
 
     // Count query
     const countPipeline = [...pipeline, { $count: 'total' }];
     const countResult = await this.model.aggregate(countPipeline).exec();
     const total = countResult[0]?.total ?? 0;
 
-    // Sorting
-    const sortBy = params.sortBy ?? 'createdAt';
-    const sortOrder = params.sortOrder ?? 'desc';
-    const sortVal = sortOrder === 'desc' ? -1 : 1;
-
-    let sortField = sortBy;
-    if (sortBy === 'itemName') {
-      sortField = 'item.itemName';
-    } else if (sortBy === 'itemCode') {
-      sortField = 'item.itemCode';
-    }
-
-    pipeline.push({ $sort: { [sortField]: sortVal } });
-    pipeline.push({ $skip: params.skip }, { $limit: params.limit });
+    pipeline.push({ $sort: sort });
+    pipeline.push({ $skip: skip }, { $limit: limit });
 
     // Project to map back to expected DTO structure (itemId)
     pipeline.push({
@@ -159,7 +126,16 @@ export class CentralInventoryRepository {
     const [data, statsResult, lowStockCount, expiringCount] = await Promise.all([
       this.model.aggregate(pipeline).exec(),
       this.model.aggregate([
-        { $match: match },
+        {
+          $lookup: {
+            from: 'inventorymasters',
+            localField: 'itemId',
+            foreignField: '_id',
+            as: 'item',
+          },
+        },
+        { $unwind: '$item' },
+        { $match: filter },
         {
           $group: {
             _id: null,
@@ -168,15 +144,46 @@ export class CentralInventoryRepository {
           },
         },
       ]).exec(),
-      this.model.countDocuments({ ...match, availableQty: { $lte: 50 } }).exec(),
-      this.model.countDocuments({
-        ...match,
-        expiryDate: {
-          $ne: null,
-          $gte: new Date(),
-          $lte: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      this.model.aggregate([
+        {
+          $lookup: {
+            from: 'inventorymasters',
+            localField: 'itemId',
+            foreignField: '_id',
+            as: 'item',
+          },
         },
-      }).exec(),
+        { $unwind: '$item' },
+        {
+          $match: {
+            ...filter,
+            availableQty: { $lte: 50 },
+          },
+        },
+        { $count: 'count' },
+      ]).exec(),
+      this.model.aggregate([
+        {
+          $lookup: {
+            from: 'inventorymasters',
+            localField: 'itemId',
+            foreignField: '_id',
+            as: 'item',
+          },
+        },
+        { $unwind: '$item' },
+        {
+          $match: {
+            ...filter,
+            expiryDate: {
+              $ne: null,
+              $gte: new Date(),
+              $lte: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+            },
+          },
+        },
+        { $count: 'count' },
+      ]).exec(),
     ]);
 
     const totalAvailable = statsResult[0]?.totalAvailable ?? 0;
@@ -185,13 +192,30 @@ export class CentralInventoryRepository {
     return {
       data,
       total,
+      page,
+      pageSize,
       summary: {
         totalAvailable,
         totalDamaged,
-        lowStockCount,
-        expiringCount,
+        lowStockCount: lowStockCount[0]?.count ?? 0,
+        expiringCount: expiringCount[0]?.count ?? 0,
       },
     };
+  }
+
+  async create(data: Partial<CentralInventory>): Promise<CentralInventoryDocument> {
+    return this.model.create(data);
+  }
+
+  async update(
+    id: string,
+    data: UpdateQuery<CentralInventoryDocument>,
+  ): Promise<CentralInventoryDocument | null> {
+    return this.model.findByIdAndUpdate(id, data, { new: true }).exec();
+  }
+
+  async delete(id: string): Promise<CentralInventoryDocument | null> {
+    return this.model.findByIdAndDelete(id).exec();
   }
 
   async count(filter: object = {}): Promise<number> {

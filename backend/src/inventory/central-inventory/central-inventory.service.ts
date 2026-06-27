@@ -15,24 +15,7 @@ export class CentralInventoryService {
   ) {}
 
   async findAll(query: Record<string, any> = {}) {
-    const page = Math.max(1, Number(query.page ?? 1));
-    const pageSize = Math.max(1, Number(query.pageSize ?? 10));
-    const skip = (page - 1) * pageSize;
-
-    const { data, total, summary } = await this.repo.findPaginated({
-      skip,
-      limit: pageSize,
-      search: query.search,
-      category: query.category,
-      lowStock: query.lowStock === 'true' || query.lowStock === true,
-      expired: query.expired === 'true' || query.expired === true,
-      expiringSoon: query.expiringSoon === 'true' || query.expiringSoon === true,
-      batch: query.batch,
-      status: query.status,
-      sortBy: query.sortBy,
-      sortOrder: query.sortOrder,
-    });
-
+    const { data, total, summary, page, pageSize } = await this.repo.findPaginated(query);
     const paginatedRes = buildPaginatedResponse(data, total, page, pageSize);
     return {
       ...paginatedRes,

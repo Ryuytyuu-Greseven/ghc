@@ -2,13 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
-import { InventoryMaster, InventoryMasterDocument } from '../inventory/schemas/inventory-master.schema';
+import { InventoryMaster, InventoryMasterDocument } from '../schemas/inventory-master.schema';
+import { QueryService } from '../common/services/query.service';
 
 @Injectable()
 export class InventoryMasterRepository {
   constructor(
     @InjectModel(InventoryMaster.name)
     private readonly model: Model<InventoryMasterDocument>,
+    private readonly queryService: QueryService,
   ) {}
 
   async findAll(filter: object = {}): Promise<InventoryMasterDocument[]> {
@@ -35,20 +37,19 @@ export class InventoryMasterRepository {
       .exec();
   }
 
-  async findPaginated(
-    filter: object,
-    skip: number,
-    limit: number,
-    sortBy = 'itemName',
-    sortOrder: 'asc' | 'desc' = 'asc',
-  ): Promise<InventoryMasterDocument[]> {
-    const sortVal = sortOrder === 'desc' ? -1 : 1;
-    return this.model
-      .find(filter)
-      .sort({ [sortBy]: sortVal })
-      .skip(skip)
-      .limit(limit)
-      .exec();
+  async findPaginated(options: any) {
+    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(options, {
+      searchFields: ['itemName', 'itemCode'],
+      exactFilters: ['category', 'unit', 'status'],
+      defaultSort: { field: 'itemName', order: 'asc' },
+    });
+
+    const [data, total] = await Promise.all([
+      this.model.find(filter).sort(sort).skip(skip).limit(limit).exec(),
+      this.model.countDocuments(filter).exec(),
+    ]);
+
+    return { data, total, page, pageSize };
   }
 
   async create(data: Partial<InventoryMaster>): Promise<InventoryMasterDocument> {

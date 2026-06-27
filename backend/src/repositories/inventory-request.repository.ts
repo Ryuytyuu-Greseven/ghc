@@ -2,13 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
-import { InventoryRequest, InventoryRequestDocument } from '../inventory/schemas/inventory-request.schema';
+import { InventoryRequest, InventoryRequestDocument } from '../schemas/inventory-request.schema';
+import { QueryService } from '../common/services/query.service';
 
 @Injectable()
 export class InventoryRequestRepository {
   constructor(
     @InjectModel(InventoryRequest.name)
     private readonly model: Model<InventoryRequestDocument>,
+    private readonly queryService: QueryService,
   ) {}
 
   async findAll(filter: object = {}): Promise<InventoryRequestDocument[]> {
@@ -69,18 +71,31 @@ export class InventoryRequestRepository {
     return this.model.findByIdAndUpdate(id, data, { new: true }).populate('branchId', 'name city').exec();
   }
 
-  async findPaginated(params: {
-    skip: number;
-    limit: number;
-    branchId?: string;
-    status?: string;
-    requestedBy?: string;
-    fromDate?: string;
-    toDate?: string;
-    search?: string;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  }): Promise<{ data: any[]; total: number }> {
+  async findPaginated(options: any): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
+    const queryOptions = { ...options };
+
+    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
+      searchFields: [
+        'requestNumber',
+        'requestedBy',
+        'branch.name',
+        'matchedItems.itemName',
+      ],
+      exactFilters: ['status', 'branchId'],
+      objectIdFilters: ['branchId'],
+      regexFilters: ['requestedBy'],
+      dateFilters: {
+        createdAt: { fromParam: 'fromDate', toParam: 'toDate' },
+      },
+      sortMapping: {
+        requestNumber: 'requestNumber',
+        requestedBy: 'requestedBy',
+        branchName: 'branch.name',
+        status: 'status',
+      },
+      defaultSort: { field: 'createdAt', order: 'desc' },
+    });
+
     const pipeline: any[] = [
       {
         $lookup: {
@@ -99,66 +114,24 @@ export class InventoryRequestRepository {
           as: 'matchedItems',
         },
       },
+      { $match: filter },
     ];
 
-    const match: any = {};
-
-    if (params.branchId) {
-      match.branchId = new Types.ObjectId(params.branchId);
-    }
-
-    if (params.status) {
-      match.status = params.status;
-    }
-
-    if (params.requestedBy) {
-      match.requestedBy = { $regex: params.requestedBy, $options: 'i' };
-    }
-
-    if (params.fromDate || params.toDate) {
-      match.createdAt = {};
-      if (params.fromDate) match.createdAt.$gte = new Date(params.fromDate);
-      if (params.toDate) match.createdAt.$lte = new Date(params.toDate);
-    }
-
-    if (params.search) {
-      match.$or = [
-        { requestNumber: { $regex: params.search, $options: 'i' } },
-        { requestedBy: { $regex: params.search, $options: 'i' } },
-        { 'branch.name': { $regex: params.search, $options: 'i' } },
-        { 'matchedItems.itemName': { $regex: params.search, $options: 'i' } },
-      ];
-    }
-
-    pipeline.push({ $match: match });
-
-    // Count
+    // Count query
     const countPipeline = [...pipeline, { $count: 'total' }];
     const countResult = await this.model.aggregate(countPipeline).exec();
     const total = countResult[0]?.total ?? 0;
 
-    // Sorting
-    const sortBy = params.sortBy ?? 'createdAt';
-    const sortOrder = params.sortOrder ?? 'desc';
-    const sortVal = sortOrder === 'desc' ? -1 : 1;
-
-    let sortField = sortBy;
-    if (sortBy === 'branchName') {
-      sortField = 'branch.name';
-    }
-
-    pipeline.push({ $sort: { [sortField]: sortVal } });
-    pipeline.push({ $skip: params.skip }, { $limit: params.limit });
+    pipeline.push({ $sort: sort });
+    pipeline.push({ $skip: skip }, { $limit: limit });
 
     const rawData = await this.model.aggregate(pipeline).exec();
-
-    // Populate the paginated results using Mongoose model populate to get full nested paths cleanly
     const data = await this.model.populate(rawData, [
       { path: 'branchId', select: 'name city' },
       { path: 'items.itemId', select: 'itemName itemCode unit' },
     ]);
 
-    return { data, total };
+    return { data, total, page, pageSize };
   }
 
   async count(filter: object = {}): Promise<number> {

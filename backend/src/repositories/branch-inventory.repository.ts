@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
-import { BranchInventory, BranchInventoryDocument } from '../inventory/schemas/branch-inventory.schema';
+import { BranchInventory, BranchInventoryDocument } from '../schemas/branch-inventory.schema';
+import { QueryService } from '../common/services/query.service';
 
 @Injectable()
 export class BranchInventoryRepository {
   constructor(
     @InjectModel(BranchInventory.name)
     private readonly model: Model<BranchInventoryDocument>,
+    private readonly queryService: QueryService,
   ) {}
 
   async findAll(filter: object = {}): Promise<BranchInventoryDocument[]> {
@@ -69,18 +71,40 @@ export class BranchInventoryRepository {
     return this.model.findByIdAndDelete(id).exec();
   }
 
-  async findPaginated(params: {
-    skip: number;
-    limit: number;
-    branchId?: string;
-    search?: string;
-    category?: string;
-    lowStock?: boolean;
-    expired?: boolean;
-    expiringSoon?: boolean;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  }): Promise<{ data: any[]; total: number }> {
+  async findPaginated(options: any): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
+    const queryOptions = { ...options };
+    if (options.category) {
+      queryOptions['item.category'] = options.category;
+      delete queryOptions.category;
+    }
+
+    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
+      searchFields: ['branch.name', 'item.itemName', 'item.itemCode', 'batchNo'],
+      exactFilters: ['item.category', 'branchId'],
+      objectIdFilters: ['branchId'],
+      sortMapping: {
+        itemName: 'item.itemName',
+        itemCode: 'item.itemCode',
+        branchName: 'branch.name',
+      },
+      defaultSort: { field: 'createdAt', order: 'desc' },
+    });
+
+    if (options.lowStock === 'true' || options.lowStock === true) {
+      filter.availableQty = { $lte: 50 };
+    }
+    if (options.expired === 'true' || options.expired === true) {
+      filter.expiryDate = { $ne: null, $lt: new Date() };
+    } else if (options.expiringSoon === 'true' || options.expiringSoon === true) {
+      const ninetyDaysFromNow = new Date();
+      ninetyDaysFromNow.setDate(ninetyDaysFromNow.getDate() + 90);
+      filter.expiryDate = {
+        $ne: null,
+        $gte: new Date(),
+        $lte: ninetyDaysFromNow,
+      };
+    }
+
     const pipeline: any[] = [
       {
         $lookup: {
@@ -100,66 +124,16 @@ export class BranchInventoryRepository {
         },
       },
       { $unwind: '$branch' },
+      { $match: filter },
     ];
-
-    const match: any = {};
-
-    if (params.branchId) {
-      match.branchId = new Types.ObjectId(params.branchId);
-    }
-
-    if (params.search) {
-      match.$or = [
-        { 'branch.name': { $regex: params.search, $options: 'i' } },
-        { 'item.itemName': { $regex: params.search, $options: 'i' } },
-        { 'item.itemCode': { $regex: params.search, $options: 'i' } },
-        { batchNo: { $regex: params.search, $options: 'i' } },
-      ];
-    }
-
-    if (params.category) {
-      match['item.category'] = params.category;
-    }
-
-    if (params.lowStock) {
-      match.availableQty = { $lte: 50 };
-    }
-
-    if (params.expired) {
-      match.expiryDate = { $ne: null, $lt: new Date() };
-    } else if (params.expiringSoon) {
-      const ninetyDaysFromNow = new Date();
-      ninetyDaysFromNow.setDate(ninetyDaysFromNow.getDate() + 90);
-      match.expiryDate = {
-        $ne: null,
-        $gte: new Date(),
-        $lte: ninetyDaysFromNow,
-      };
-    }
-
-    pipeline.push({ $match: match });
 
     // Count query
     const countPipeline = [...pipeline, { $count: 'total' }];
     const countResult = await this.model.aggregate(countPipeline).exec();
     const total = countResult[0]?.total ?? 0;
 
-    // Sorting
-    const sortBy = params.sortBy ?? 'createdAt';
-    const sortOrder = params.sortOrder ?? 'desc';
-    const sortVal = sortOrder === 'desc' ? -1 : 1;
-
-    let sortField = sortBy;
-    if (sortBy === 'itemName') {
-      sortField = 'item.itemName';
-    } else if (sortBy === 'itemCode') {
-      sortField = 'item.itemCode';
-    } else if (sortBy === 'branchName') {
-      sortField = 'branch.name';
-    }
-
-    pipeline.push({ $sort: { [sortField]: sortVal } });
-    pipeline.push({ $skip: params.skip }, { $limit: params.limit });
+    pipeline.push({ $sort: sort });
+    pipeline.push({ $skip: skip }, { $limit: limit });
 
     // Project to map back to expected populated DTO structure
     pipeline.push({
@@ -177,7 +151,7 @@ export class BranchInventoryRepository {
     });
 
     const data = await this.model.aggregate(pipeline).exec();
-    return { data, total };
+    return { data, total, page, pageSize };
   }
 
   async count(filter: object = {}): Promise<number> {

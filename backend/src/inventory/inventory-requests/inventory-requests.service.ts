@@ -19,23 +19,7 @@ export class InventoryRequestsService {
   ) {}
 
   async findAll(query: Record<string, any> = {}) {
-    const page = Math.max(1, Number(query.page ?? 1));
-    const pageSize = Math.max(1, Number(query.pageSize ?? 10));
-    const skip = (page - 1) * pageSize;
-
-    const { data, total } = await this.requestRepo.findPaginated({
-      skip,
-      limit: pageSize,
-      branchId: query.branchId,
-      status: query.status,
-      requestedBy: query.requestedBy,
-      fromDate: query.fromDate,
-      toDate: query.toDate,
-      search: query.search,
-      sortBy: query.sortBy,
-      sortOrder: query.sortOrder,
-    });
-
+    const { data, total, page, pageSize } = await this.requestRepo.findPaginated(query);
     return buildPaginatedResponse(data, total, page, pageSize);
   }
 

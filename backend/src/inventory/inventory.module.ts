@@ -1,12 +1,13 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { MongooseModule, InjectConnection } from '@nestjs/mongoose';
 import { Connection, Types } from 'mongoose';
+import { QueryService } from '../common/services/query.service';
 
-import { InventoryMaster, InventoryMasterSchema } from './schemas/inventory-master.schema';
-import { CentralInventory, CentralInventorySchema } from './schemas/central-inventory.schema';
-import { BranchInventory, BranchInventorySchema } from './schemas/branch-inventory.schema';
-import { InventoryRequest, InventoryRequestSchema } from './schemas/inventory-request.schema';
-import { InventoryTransaction, InventoryTransactionSchema } from './schemas/inventory-transaction.schema';
+import { InventoryMaster, InventoryMasterSchema } from '../schemas/inventory-master.schema';
+import { CentralInventory, CentralInventorySchema } from '../schemas/central-inventory.schema';
+import { BranchInventory, BranchInventorySchema } from '../schemas/branch-inventory.schema';
+import { InventoryRequest, InventoryRequestSchema } from '../schemas/inventory-request.schema';
+import { InventoryTransaction, InventoryTransactionSchema } from '../schemas/inventory-transaction.schema';
 
 import { InventoryMasterController } from './inventory-master/inventory-master.controller';
 import { CentralInventoryController } from './central-inventory/central-inventory.controller';
@@ -48,6 +49,7 @@ import { InventoryTransactionsService } from './inventory-transactions/inventory
     InventoryTransactionsController,
   ],
   providers: [
+    QueryService,
     InventoryMasterRepository,
     InventoryMasterService,
     InventoryMasterHelperService,

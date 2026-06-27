@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types, Schema as MongooseSchema } from 'mongoose';
-import { RequestStatus } from '../../common/enums';
+import { RequestStatus } from '../common/enums';
 
 @Schema({ _id: false })
 class RequestItem {

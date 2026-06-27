@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { InventoryTransaction, InventoryTransactionDocument } from '../inventory/schemas/inventory-transaction.schema';
+import { InventoryTransaction, InventoryTransactionDocument } from '../schemas/inventory-transaction.schema';
+import { QueryService } from '../common/services/query.service';
 
 @Injectable()
 export class InventoryTransactionRepository {
   constructor(
     @InjectModel(InventoryTransaction.name)
     private readonly model: Model<InventoryTransactionDocument>,
+    private readonly queryService: QueryService,
   ) {}
 
   async findAll(filter: object = {}): Promise<InventoryTransactionDocument[]> {
@@ -66,19 +68,64 @@ export class InventoryTransactionRepository {
     return this.model.create(data);
   }
 
-  async findPaginated(params: {
-    skip: number;
-    limit: number;
-    transactionType?: string;
-    branchId?: string;
-    itemId?: string;
-    fromDate?: string;
-    toDate?: string;
-    performedBy?: string;
-    search?: string;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  }): Promise<{ data: any[]; total: number }> {
+  async findPaginated(options: any): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
+    const queryOptions = { ...options };
+
+    let branchFilter: any = null;
+    if (options.branchId) {
+      branchFilter = {
+        $or: [
+          { fromLocation: options.branchId },
+          { toLocation: options.branchId }
+        ]
+      };
+      delete queryOptions.branchId;
+    }
+
+    let branchIds: string[] = [];
+    if (options.search) {
+      try {
+        const matchedHospitals = await this.model.db.model('Hospital').find({
+          name: { $regex: options.search, $options: 'i' },
+        }).select('_id').exec();
+        branchIds = matchedHospitals.map((h) => h._id.toString());
+      } catch (err) {
+        console.error('Failed to resolve hospitals for search:', err);
+      }
+    }
+
+    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
+      searchFields: [
+        'item.itemName',
+        'item.itemCode',
+        'transactionType',
+        'request.requestNumber',
+        'performedBy',
+      ],
+      exactFilters: ['transactionType', 'itemId'],
+      objectIdFilters: ['itemId'],
+      regexFilters: ['performedBy'],
+      dateFilters: {
+        createdAt: { fromParam: 'fromDate', toParam: 'toDate' },
+      },
+      sortMapping: {
+        itemName: 'item.itemName',
+        requestNumber: 'request.requestNumber',
+      },
+      defaultSort: { field: 'createdAt', order: 'desc' },
+    });
+
+    if (branchFilter) {
+      Object.assign(filter, branchFilter);
+    }
+
+    if (options.search && branchIds.length > 0) {
+      filter.$or.push(
+        { fromLocation: { $in: branchIds } },
+        { toLocation: { $in: branchIds } }
+      );
+    }
+
     const pipeline: any[] = [
       {
         $lookup: {
@@ -98,87 +145,16 @@ export class InventoryTransactionRepository {
         },
       },
       { $unwind: { path: '$request', preserveNullAndEmptyArrays: true } },
+      { $match: filter },
     ];
 
-    const match: any = {};
-
-    if (params.transactionType) {
-      match.transactionType = params.transactionType;
-    }
-
-    if (params.itemId) {
-      match.itemId = new Types.ObjectId(params.itemId);
-    }
-
-    if (params.branchId) {
-      // For transactions, branchId is stored as a string in fromLocation or toLocation
-      match.$or = [
-        { fromLocation: params.branchId },
-        { toLocation: params.branchId }
-      ];
-    }
-
-    if (params.performedBy) {
-      match.performedBy = { $regex: params.performedBy, $options: 'i' };
-    }
-
-    if (params.fromDate || params.toDate) {
-      match.createdAt = {};
-      if (params.fromDate) match.createdAt.$gte = new Date(params.fromDate);
-      if (params.toDate) match.createdAt.$lte = new Date(params.toDate);
-    }
-
-    let branchIds: string[] = [];
-    if (params.search) {
-      // Resolve hospital IDs for searching
-      try {
-        const matchedHospitals = await this.model.db.model('Hospital').find({
-          name: { $regex: params.search, $options: 'i' },
-        }).select('_id').exec();
-        branchIds = matchedHospitals.map((h) => h._id.toString());
-      } catch (err) {
-        console.error('Failed to resolve hospitals for search:', err);
-      }
-    }
-
-    if (params.search) {
-      const searchMatch: any[] = [
-        { 'item.itemName': { $regex: params.search, $options: 'i' } },
-        { 'item.itemCode': { $regex: params.search, $options: 'i' } },
-        { transactionType: { $regex: params.search, $options: 'i' } },
-        { 'request.requestNumber': { $regex: params.search, $options: 'i' } },
-        { performedBy: { $regex: params.search, $options: 'i' } },
-      ];
-      if (branchIds.length > 0) {
-        searchMatch.push(
-          { fromLocation: { $in: branchIds } },
-          { toLocation: { $in: branchIds } },
-        );
-      }
-      match.$or = searchMatch;
-    }
-
-    pipeline.push({ $match: match });
-
-    // Count
+    // Count query
     const countPipeline = [...pipeline, { $count: 'total' }];
     const countResult = await this.model.aggregate(countPipeline).exec();
     const total = countResult[0]?.total ?? 0;
 
-    // Sorting
-    const sortBy = params.sortBy ?? 'createdAt';
-    const sortOrder = params.sortOrder ?? 'desc';
-    const sortVal = sortOrder === 'desc' ? -1 : 1;
-
-    let sortField = sortBy;
-    if (sortBy === 'itemName') {
-      sortField = 'item.itemName';
-    } else if (sortBy === 'requestNumber') {
-      sortField = 'request.requestNumber';
-    }
-
-    pipeline.push({ $sort: { [sortField]: sortVal } });
-    pipeline.push({ $skip: params.skip }, { $limit: params.limit });
+    pipeline.push({ $sort: sort });
+    pipeline.push({ $skip: skip }, { $limit: limit });
 
     const rawData = await this.model.aggregate(pipeline).exec();
 
@@ -188,7 +164,7 @@ export class InventoryTransactionRepository {
       { path: 'requestId', select: 'requestNumber' },
     ]);
 
-    return { data, total };
+    return { data, total, page, pageSize };
   }
 
   async count(filter: object = {}): Promise<number> {

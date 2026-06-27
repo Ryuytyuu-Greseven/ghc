@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { InventoryCategory, InventoryStatus } from '../../common/enums';
+import { InventoryCategory, InventoryStatus } from '../common/enums';
 
 export type InventoryMasterDocument = InventoryMaster & Document;
 
