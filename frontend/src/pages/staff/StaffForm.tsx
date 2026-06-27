@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
-import { useApp, authFetch } from '../../context/AppContext';
+import { useApp } from '../../context/AppContext';
+import { hospitalApi } from '../../services/hospitalApi';
 import type { Staff, StaffRole, Department } from '../../types';
 
 const roleOptions = [
@@ -127,9 +128,9 @@ export function StaffForm({ initial, onClose }: Props) {
   useEffect(() => {
     async function fetchFacilities() {
       try {
-        const res = await authFetch('http://localhost:3000/hospitals');
-        const data = await res.json();
-        setFacilities(data);
+        const data = await hospitalApi.getHospitals();
+        const list = Array.isArray(data) ? data : (data && Array.isArray((data as any).data) ? (data as any).data : []);
+        setFacilities(list);
       } catch (err) {
         console.error('Failed to fetch facilities:', err);
       }
@@ -137,8 +138,13 @@ export function StaffForm({ initial, onClose }: Props) {
     fetchFacilities();
   }, []);
 
-  const hospitalOptions = facilities.map(h => ({
-    value: h._id ?? h.id,
+  const uniqueFacilities = facilities.filter((h, idx, self) => {
+    const key = h.hospitalId || h._id || h.id || '';
+    return self.findIndex(x => (x.hospitalId || x._id || x.id || '') === key) === idx;
+  });
+
+  const hospitalOptions = uniqueFacilities.map(h => ({
+    value: h.hospitalId ?? h._id ?? h.id ?? '',
     label: `${h.name} (${h.city})`,
   }));
 

@@ -2,6 +2,7 @@ export type FacilityType = 'PHC' | 'CHC';
 
 export interface Hospital {
   id: string;
+  _id?: string;
   name: string;
   type: FacilityType;
   address: string;
@@ -17,6 +18,10 @@ export interface Hospital {
   hasOT?: boolean;
   hasXRay?: boolean;
   hasAmbulance?: boolean;
+  hospitalId?: string | null;
+  version?: number;
+  isCurrent?: boolean;
+  updatedAt?: string;
 }
 
 export type StaffRole = 'Doctor' | 'Nurse' | 'Receptionist' | 'Pharmacist' | 'Lab Technician' | 'Compounder' | 'Cashier';

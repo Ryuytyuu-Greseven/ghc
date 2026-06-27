@@ -50,6 +50,15 @@ export class Hospital {
 
   @Prop({ default: true })
   isActive: boolean;
+
+  @Prop({ type: String, default: null, index: true })
+  hospitalId: string | null;
+
+  @Prop({ type: Number, default: 1 })
+  version: number;
+
+  @Prop({ type: Boolean, default: true, index: true })
+  isCurrent: boolean;
 }
 
 export const HospitalSchema = SchemaFactory.createForClass(Hospital);
