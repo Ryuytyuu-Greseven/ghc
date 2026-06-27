@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { Hospital, Staff, Patient, Medicine, HospitalMedicine } from '../types';
+import type { Hospital, Staff, Patient, PatientDraft, Medicine, HospitalMedicine } from '../types';
 import {
   mockHospitals,
   mockStaff,
@@ -25,8 +25,8 @@ interface AppContextValue {
   deleteStaff: (id: string) => void;
   assignStaff: (staffId: string, hospitalId: string | null) => void;
 
-  addPatient: (p: Omit<Patient, 'id' | 'admittedAt'>) => void;
-  updatePatient: (id: string, p: Partial<Patient>) => void;
+  addPatient: (p: PatientDraft) => Promise<void>;
+  updatePatient: (id: string, p: PatientDraft) => Promise<void>;
   deletePatient: (id: string) => void;
 
   addMedicine: (m: Omit<Medicine, 'id' | 'createdAt'>) => void;
@@ -41,6 +41,18 @@ interface AppContextValue {
 const AppContext = createContext<AppContextValue | null>(null);
 
 const API_BASE = 'http://localhost:3000';
+
+// Preserve backend validation/conflict messages so forms can show them directly.
+async function getApiErrorMessage(res: Response, fallback: string): Promise<string> {
+  try {
+    const data = await res.json();
+    if (Array.isArray(data.message)) return data.message.join(', ');
+    if (typeof data.message === 'string') return data.message;
+  } catch {
+    return fallback;
+  }
+  return fallback;
+}
 
 function mapHospitalFromBackend(item: any): Hospital {
   return {
@@ -157,15 +169,22 @@ function mapStaffToBackend(s: any): any {
   };
 }
 
+function getBackendId(value: any): string {
+  return value?._id ?? value?.id ?? value ?? '';
+}
+
 function mapPatientFromBackend(item: any): Patient {
   return {
     id: item._id ?? item.id ?? '',
     name: item.name,
     age: item.age ?? 0,
     gender: item.gender ?? 'male',
+    bloodGroup: item.bloodGroup,
     phone: item.phone ?? '',
+    email: item.email ?? '',
     address: item.address ?? '',
-    hospitalId: item.hospitalId ?? '',
+    // Patient APIs may populate hospitalId; UI filters need the raw facility ID string.
+    hospitalId: getBackendId(item.hospitalId),
     bedRequired: item.bedRequired ?? false,
     admittedAt: item.admittedAt ? new Date(item.admittedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
     condition: item.condition ?? '',
@@ -176,14 +195,14 @@ function mapPatientToBackend(p: any): any {
   return {
     name: p.name,
     age: p.age,
-    gender: p.gender ?? 'male',
-    bloodGroup: p.bloodGroup ?? 'O+',
+    gender: p.gender,
+    bloodGroup: p.bloodGroup,
     phone: p.phone ?? '',
-    email: p.email ?? `${p.name.toLowerCase().replace(/\s/g, '')}@example.com`,
+    email: p.email ?? '',
     address: p.address ?? '',
     hospitalId: p.hospitalId || null,
     bedRequired: p.bedRequired ?? false,
-    admittedAt: p.admittedAt ? new Date(p.admittedAt) : new Date(),
+    ...(p.admittedAt ? { admittedAt: new Date(p.admittedAt) } : {}),
     condition: p.condition ?? '',
     isActive: true,
   };
@@ -413,7 +432,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addPatient = async (p: Omit<Patient, 'id' | 'admittedAt'>) => {
+  const addPatient = async (p: PatientDraft) => {
     try {
       const body = mapPatientToBackend(p);
       const res = await fetch(`${API_BASE}/patients`, {
@@ -421,14 +440,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, 'Failed to create patient in backend'));
+      }
       const created = await res.json();
       setPatients(prev => [...prev, mapPatientFromBackend(created)]);
     } catch (err) {
       console.error('Failed to create patient in backend:', err);
+      throw err;
     }
   };
 
-  const updatePatient = async (id: string, p: Partial<Patient>) => {
+  const updatePatient = async (id: string, p: PatientDraft) => {
     try {
       const body = mapPatientToBackend(p);
       const res = await fetch(`${API_BASE}/patients/${id}`, {
@@ -436,10 +459,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, 'Failed to update patient in backend'));
+      }
       const updated = await res.json();
       setPatients(prev => prev.map(x => (x.id === id ? mapPatientFromBackend(updated) : x)));
     } catch (err) {
       console.error('Failed to update patient in backend:', err);
+      throw err;
     }
   };
 

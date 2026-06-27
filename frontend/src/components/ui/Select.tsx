@@ -11,7 +11,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, options, placeholder, className, onChange, value, ...props }, ref) => {
+  ({ label, error, options, placeholder, className, onChange, onBlur, value, ...props }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
@@ -63,6 +63,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
+          onBlur={(event) => {
+            if (!containerRef.current?.contains(event.relatedTarget as Node | null)) {
+              onBlur?.(event as unknown as React.FocusEvent<HTMLSelectElement>);
+            }
+          }}
           className={clsx(
             'w-full flex items-center justify-between rounded-lg border px-3 py-2 text-sm text-left transition bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
             error

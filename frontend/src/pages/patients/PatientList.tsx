@@ -138,6 +138,12 @@ export function PatientList() {
                       </span>
                     </div>
                     <div className="flex justify-between gap-2">
+                      <span className="text-slate-500 dark:text-slate-400 shrink-0">Blood Group</span>
+                      <span className="text-slate-700 dark:text-slate-200 font-medium text-right">
+                        {p.bloodGroup}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-2">
                       <span className="text-slate-500 dark:text-slate-400 shrink-0">Facility</span>
                       <span className="text-slate-700 dark:text-slate-200 text-right truncate">
                         {hospital?.name ?? '—'}
@@ -150,6 +156,10 @@ export function PatientList() {
                     <div className="flex justify-between gap-2">
                       <span className="text-slate-500 dark:text-slate-400 shrink-0">Phone</span>
                       <span className="text-slate-700 dark:text-slate-200">{p.phone}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-slate-500 dark:text-slate-400 shrink-0">Email</span>
+                      <span className="text-slate-700 dark:text-slate-200 text-right truncate">{p.email || '—'}</span>
                     </div>
                   </div>
 
