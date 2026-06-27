@@ -36,6 +36,20 @@ const getPatient = tool(
   },
 );
 
+// const getPatientByName = tool(
+//   async ({ id }) => {
+//     const res = await fetch(`${BASE}/patients/by-name/${name}`);
+//     return JSON.stringify(await res.json());
+//   },
+//   {
+//     name: 'get_patient',
+//     description: 'Get a patient by their MongoDB ObjectId',
+//     schema: z.object({
+//       id: z.string().describe('MongoDB ObjectId of the patient'),
+//     }),
+//   },
+// );
+
 const createPatient = tool(
   async (data) => {
     const res = await fetch(`${BASE}/patients`, {

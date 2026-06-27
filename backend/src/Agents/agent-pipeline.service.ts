@@ -1,11 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AIMessage, HumanMessage } from '@langchain/core/messages';
-import { supervisorNode } from './nodes/supervisor.node';
-import { hospitalAgent } from './nodes/hospital.node';
-import { patientAgent } from './nodes/patient.node';
-import { medicineAgent } from './nodes/medicine.node';
-import { staffAgent } from './nodes/staff.node';
-import { inventoryAgent } from './nodes/inventory.node';
+import { voiceAgentGraph } from './voice-agent';
 import { synthesizeSpeech } from '../google/tts.service';
 import { toPlainSpeechText } from './prompts/guardrails.prompt';
 import type {
@@ -13,14 +8,6 @@ import type {
   ChatSession,
   ProcessUserMessageOptions,
 } from '../chat-gateway/chat-session.types';
-
-const domainAgentMap: Record<string, any> = {
-  hospital: hospitalAgent,
-  patient: patientAgent,
-  medicine: medicineAgent,
-  staff: staffAgent,
-  inventory: inventoryAgent,
-};
 
 const TTS_CHUNK_SIZE = 64 * 1024;
 
@@ -56,29 +43,28 @@ export class AgentPipelineService {
         emit('transcript:final', { text: trimmed });
       }
 
-      const supervisorResult = await supervisorNode({
+      const graphInput = {
         transcript: trimmed,
-        messages: session.conversationHistory,
-        domain: session.domain,
+        messages: [...session.conversationHistory, new HumanMessage(trimmed)],
+        domain: '',
         finalResponse: '',
-      });
-      if (signal.aborted) return;
-
-      session.domain = supervisorResult.domain;
-
-      const agentMessages = [
-        ...session.conversationHistory,
-        new HumanMessage(trimmed),
-      ];
-      const agent = domainAgentMap[session.domain] ?? patientAgent;
+      };
 
       let fullResponse = '';
 
-      for await (const event of agent.streamEvents(
-        { messages: agentMessages },
-        { version: 'v2' },
-      )) {
+      for await (const event of voiceAgentGraph.streamEvents(graphInput, {
+        version: 'v2',
+      })) {
         if (signal.aborted) break;
+
+        if (event.event === 'on_chain_end' && event.name === 'supervisor') {
+          const output = event.data?.output as { domain?: string } | undefined;
+          if (output?.domain) {
+            session.domain = output.domain;
+            console.log('[chat] routed domain:', output.domain);
+          }
+        }
+
         if (event.event === 'on_chat_model_stream') {
           const content = event.data?.chunk?.content;
           if (typeof content === 'string' && content) {
@@ -88,6 +74,16 @@ export class AgentPipelineService {
         }
       }
       if (signal.aborted) return;
+
+      if (!fullResponse) {
+        const result = await voiceAgentGraph.invoke(graphInput);
+        session.domain = result.domain || session.domain;
+        const last = result.messages[result.messages.length - 1];
+        fullResponse =
+          typeof last?.content === 'string'
+            ? last.content
+            : JSON.stringify(last?.content ?? '');
+      }
 
       const plainResponse = toPlainSpeechText(fullResponse);
       emit('agent:done', { text: plainResponse });
