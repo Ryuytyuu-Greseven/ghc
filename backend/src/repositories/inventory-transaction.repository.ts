@@ -15,7 +15,7 @@ export class InventoryTransactionRepository {
   async findAll(filter: object = {}): Promise<InventoryTransactionDocument[]> {
     return this.model
       .find(filter)
-      .populate('itemId', 'itemName itemCode unit')
+      .populate('itemId', 'itemName')
       .populate('requestId', 'requestNumber')
       .sort({ createdAt: -1 })
       .exec();
@@ -24,7 +24,7 @@ export class InventoryTransactionRepository {
   async findById(id: string): Promise<InventoryTransactionDocument | null> {
     return this.model
       .findById(id)
-      .populate('itemId', 'itemName itemCode unit')
+      .populate('itemId', 'itemName')
       .populate('requestId', 'requestNumber')
       .exec();
   }
@@ -32,7 +32,7 @@ export class InventoryTransactionRepository {
   async findByItem(itemId: string): Promise<InventoryTransactionDocument[]> {
     return this.model
       .find({ itemId })
-      .populate('itemId', 'itemName itemCode unit')
+      .populate('itemId', 'itemName')
       .sort({ createdAt: -1 })
       .exec();
   }
@@ -40,7 +40,7 @@ export class InventoryTransactionRepository {
   async findByLocation(location: string): Promise<InventoryTransactionDocument[]> {
     return this.model
       .find({ $or: [{ fromLocation: location }, { toLocation: location }] })
-      .populate('itemId', 'itemName itemCode unit')
+      .populate('itemId', 'itemName')
       .sort({ createdAt: -1 })
       .exec();
   }
@@ -51,7 +51,7 @@ export class InventoryTransactionRepository {
   ): Promise<InventoryTransactionDocument[]> {
     return this.model
       .find({ createdAt: { $gte: from, $lte: to } })
-      .populate('itemId', 'itemName itemCode unit')
+      .populate('itemId', 'itemName')
       .sort({ createdAt: -1 })
       .exec();
   }
@@ -59,7 +59,7 @@ export class InventoryTransactionRepository {
   async findByType(transactionType: string): Promise<InventoryTransactionDocument[]> {
     return this.model
       .find({ transactionType: transactionType as any })
-      .populate('itemId', 'itemName itemCode unit')
+      .populate('itemId', 'itemName')
       .sort({ createdAt: -1 })
       .exec();
   }
@@ -97,7 +97,6 @@ export class InventoryTransactionRepository {
     const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
       searchFields: [
         'item.itemName',
-        'item.itemCode',
         'transactionType',
         'request.requestNumber',
         'performedBy',
@@ -160,7 +159,7 @@ export class InventoryTransactionRepository {
 
     // Populate Mongoose paths
     const data = await this.model.populate(rawData, [
-      { path: 'itemId', select: 'itemName itemCode unit' },
+      { path: 'itemId', select: 'itemName' },
       { path: 'requestId', select: 'requestNumber' },
     ]);
 

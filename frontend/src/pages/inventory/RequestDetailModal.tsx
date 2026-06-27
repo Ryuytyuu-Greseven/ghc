@@ -150,9 +150,6 @@ export function RequestDetailModal({ request, onClose }: Props) {
                     Item
                   </th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Unit
-                  </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     Requested
                   </th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -168,9 +165,6 @@ export function RequestDetailModal({ request, onClose }: Props) {
                   <tr key={item.itemId._id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
                       {item.itemId.itemName}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">
-                      {item.itemId.unit}
                     </td>
                     <td className="px-4 py-3 tabular-nums text-slate-700 dark:text-slate-300 font-medium">
                       {item.requestedQty}

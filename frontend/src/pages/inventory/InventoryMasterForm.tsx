@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
 import { useInventory } from '../../context/InventoryContext';
 import type { InventoryMaster } from '../../types';
 
@@ -29,10 +29,8 @@ export function InventoryMasterForm({ initial, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false);
 
   const [form, setForm] = useState({
-    itemCode: initial?.itemCode ?? '',
     itemName: initial?.itemName ?? '',
     category: initial?.category ?? 'Medicine',
-    unit: initial?.unit ?? '',
     status: initial?.status ?? 'Active',
   });
 
@@ -60,11 +58,11 @@ export function InventoryMasterForm({ initial, onClose }: Props) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <Input
-          label="Item Code"
+          label="Item Name"
           required
-          value={form.itemCode}
-          onChange={(e) => set('itemCode', e.target.value.toUpperCase())}
-          placeholder="e.g. MED-001"
+          value={form.itemName}
+          onChange={(e) => set('itemName', e.target.value)}
+          placeholder="e.g. Paracetamol 500mg"
         />
         <Select
           label="Category"
@@ -73,22 +71,6 @@ export function InventoryMasterForm({ initial, onClose }: Props) {
           options={categoryOptions}
         />
       </div>
-
-      <Input
-        label="Item Name"
-        required
-        value={form.itemName}
-        onChange={(e) => set('itemName', e.target.value)}
-        placeholder="e.g. Paracetamol 500mg"
-      />
-
-      <Input
-        label="Unit"
-        required
-        value={form.unit}
-        onChange={(e) => set('unit', e.target.value)}
-        placeholder="e.g. tablets, units, bottles, strips"
-      />
 
       {initial && (
         <Select

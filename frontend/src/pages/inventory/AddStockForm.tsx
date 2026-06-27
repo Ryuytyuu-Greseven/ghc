@@ -28,7 +28,7 @@ export function AddStockForm({ onClose }: Props) {
 
   const activeItemOptions = masters
     .filter((m) => m.status === 'Active')
-    .map((m) => ({ value: m._id, label: `${m.itemCode} — ${m.itemName}` }));
+    .map((m) => ({ value: m._id, label: m.itemName }));
 
   const staffOptions = staff.map((s) => ({ value: s.name, label: `${s.name} (${s.role})` }));
 

@@ -10,6 +10,22 @@ import type {
 } from '../types';
 import { inventoryApi } from '../services/inventoryApi';
 
+/** Extract a human-readable error message from an axios or plain Error */
+function extractApiError(e: unknown): string {
+  if (e && typeof e === 'object') {
+    // Axios error response
+    const axiosErr = e as { response?: { data?: { message?: string | string[] } }; message?: string };
+    if (axiosErr.response?.data?.message) {
+      const msg = axiosErr.response.data.message;
+      return Array.isArray(msg) ? msg.join(', ') : msg;
+    }
+    if ('message' in axiosErr && typeof axiosErr.message === 'string') {
+      return axiosErr.message;
+    }
+  }
+  return 'An unexpected error occurred';
+}
+
 interface InventoryContextValue {
   // State
   masters: InventoryMaster[];
@@ -38,8 +54,11 @@ interface InventoryContextValue {
   loadingRequests: boolean;
   loadingTransactions: boolean;
 
-  // Error
+  // Errors
   error: string | null;
+  /** Error from a mutating action (approve, add stock, etc.) — auto-cleared after 6 s */
+  actionError: string | null;
+  clearActionError: () => void;
 
   // Actions
   loadMasters: (params?: string) => Promise<void>;
@@ -90,6 +109,18 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  let actionErrorTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const setTimedActionError = useCallback((msg: string) => {
+    setActionError(msg);
+    if (actionErrorTimer) clearTimeout(actionErrorTimer);
+    actionErrorTimer = setTimeout(() => setActionError(null), 6000);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const clearActionError = useCallback(() => setActionError(null), []);
 
   // ── Masters ────────────────────────────────────────────────────────────────
 
@@ -107,19 +138,34 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const createMaster = useCallback(async (data: object) => {
-    await inventoryApi.createMaster(data);
-    await loadMasters();
-  }, [loadMasters]);
+    try {
+      await inventoryApi.createMaster(data);
+      await loadMasters();
+    } catch (e) {
+      setTimedActionError(extractApiError(e));
+      throw e;
+    }
+  }, [loadMasters, setTimedActionError]);
 
   const updateMaster = useCallback(async (id: string, data: object) => {
-    await inventoryApi.updateMaster(id, data);
-    await loadMasters();
-  }, [loadMasters]);
+    try {
+      await inventoryApi.updateMaster(id, data);
+      await loadMasters();
+    } catch (e) {
+      setTimedActionError(extractApiError(e));
+      throw e;
+    }
+  }, [loadMasters, setTimedActionError]);
 
   const deleteMaster = useCallback(async (id: string) => {
-    await inventoryApi.deleteMaster(id);
-    await loadMasters();
-  }, [loadMasters]);
+    try {
+      await inventoryApi.deleteMaster(id);
+      await loadMasters();
+    } catch (e) {
+      setTimedActionError(extractApiError(e));
+      throw e;
+    }
+  }, [loadMasters, setTimedActionError]);
 
   // ── Central Stock ──────────────────────────────────────────────────────────
 
@@ -138,14 +184,24 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addCentralStock = useCallback(async (data: object) => {
-    await inventoryApi.addCentralStock(data);
-    await loadCentralStock();
-  }, [loadCentralStock]);
+    try {
+      await inventoryApi.addCentralStock(data);
+      await loadCentralStock();
+    } catch (e) {
+      setTimedActionError(extractApiError(e));
+      throw e;
+    }
+  }, [loadCentralStock, setTimedActionError]);
 
   const removeCentralStock = useCallback(async (id: string) => {
-    await inventoryApi.removeCentralStock(id);
-    await loadCentralStock();
-  }, [loadCentralStock]);
+    try {
+      await inventoryApi.removeCentralStock(id);
+      await loadCentralStock();
+    } catch (e) {
+      setTimedActionError(extractApiError(e));
+      throw e;
+    }
+  }, [loadCentralStock, setTimedActionError]);
 
   // ── Branch Stock ───────────────────────────────────────────────────────────
 
@@ -178,19 +234,34 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const createRequest = useCallback(async (data: object) => {
-    await inventoryApi.createRequest(data);
-    await loadRequests();
-  }, [loadRequests]);
+    try {
+      await inventoryApi.createRequest(data);
+      await loadRequests();
+    } catch (e) {
+      setTimedActionError(extractApiError(e));
+      throw e;
+    }
+  }, [loadRequests, setTimedActionError]);
 
   const approveRequest = useCallback(async (id: string, data: object) => {
-    await inventoryApi.approveRequest(id, data);
-    await loadRequests();
-  }, [loadRequests]);
+    try {
+      await inventoryApi.approveRequest(id, data);
+      await loadRequests();
+    } catch (e) {
+      setTimedActionError(extractApiError(e));
+      throw e;
+    }
+  }, [loadRequests, setTimedActionError]);
 
   const rejectRequest = useCallback(async (id: string, data: object) => {
-    await inventoryApi.rejectRequest(id, data);
-    await loadRequests();
-  }, [loadRequests]);
+    try {
+      await inventoryApi.rejectRequest(id, data);
+      await loadRequests();
+    } catch (e) {
+      setTimedActionError(extractApiError(e));
+      throw e;
+    }
+  }, [loadRequests, setTimedActionError]);
 
   // ── Transactions ───────────────────────────────────────────────────────────
 
@@ -236,6 +307,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         loadingRequests,
         loadingTransactions,
         error,
+        actionError,
+        clearActionError,
         loadMasters,
         createMaster,
         updateMaster,

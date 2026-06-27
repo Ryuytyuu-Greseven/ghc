@@ -30,7 +30,6 @@ export class InventoryMasterRepository {
       .find({
         $or: [
           { itemName: { $regex: query, $options: 'i' } },
-          { itemCode: { $regex: query, $options: 'i' } },
         ],
       })
       .sort({ itemName: 1 })
@@ -39,8 +38,8 @@ export class InventoryMasterRepository {
 
   async findPaginated(options: any) {
     const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(options, {
-      searchFields: ['itemName', 'itemCode'],
-      exactFilters: ['category', 'unit', 'status'],
+      searchFields: ['itemName'],
+      exactFilters: ['category', 'status'],
       defaultSort: { field: 'itemName', order: 'asc' },
     });
 

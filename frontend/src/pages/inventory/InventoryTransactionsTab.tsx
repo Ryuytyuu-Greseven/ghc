@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeftRight, Search } from 'lucide-react';
+import { ArrowLeftRight, Search, Eye } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge';
 import { useInventory } from '../../context/InventoryContext';
 import { useApp } from '../../context/AppContext';
 import type { TransactionType } from '../../types';
 import { PaginationControls } from '../../components/ui/PaginationControls';
+import { InventoryDetailModal } from './InventoryDetailModal';
 
 const typeVariant: Record<
   TransactionType,
@@ -35,6 +36,7 @@ export function InventoryTransactionsTab() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [viewTx, setViewTx] = useState<typeof transactions[number] | null>(null);
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -261,6 +263,7 @@ export function InventoryTransactionsTab() {
                         )}
                       </div>
                     </th>
+                    <th className="px-5 py-3 w-10" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -274,19 +277,13 @@ export function InventoryTransactionsTab() {
                           <span className="font-medium text-slate-800 dark:text-slate-200">
                             {tx.itemId?.itemName ?? '—'}
                           </span>
-                          <span className="text-xs text-slate-400 dark:text-slate-500">
-                            {tx.itemId?.itemCode}
-                          </span>
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
                         <Badge variant={typeVariant[tx.transactionType]}>{tx.transactionType}</Badge>
                       </td>
-                      <td className="px-5 py-3.5 font-semibold tabular-nums text-slate-800 dark:text-slate-250">
-                        {tx.quantity.toLocaleString()}{' '}
-                        <span className="text-xs font-normal text-slate-400">
-                          {tx.itemId?.unit}
-                        </span>
+                      <td className="px-5 py-3.5 font-semibold tabular-nums text-slate-800 dark:text-slate-200">
+                        {tx.quantity.toLocaleString()}
                       </td>
                       <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
                         {resolveLocation(tx.fromLocation)}
@@ -308,6 +305,15 @@ export function InventoryTransactionsTab() {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <button
+                          onClick={() => setViewTx(tx)}
+                          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-primary-500 transition"
+                          title="View Details"
+                        >
+                          <Eye size={14} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -339,6 +345,30 @@ export function InventoryTransactionsTab() {
           )}
         </div>
       </div>
+
+      {viewTx && (
+        <InventoryDetailModal
+          open={true}
+          onClose={() => setViewTx(null)}
+          title="Transaction Details"
+          fields={[
+            { label: 'Item Name', value: viewTx.itemId?.itemName },
+            { label: 'Transaction Type', value: <Badge variant={typeVariant[viewTx.transactionType]}>{viewTx.transactionType}</Badge> },
+            { label: 'Quantity', value: viewTx.quantity.toLocaleString() },
+            { label: 'From Location', value: resolveLocation(viewTx.fromLocation) },
+            { label: 'To Location', value: resolveLocation(viewTx.toLocation) },
+            { label: 'Request Ref', value: viewTx.requestId?.requestNumber || '—' },
+            { label: 'Performed By', value: viewTx.performedBy },
+            {
+              label: 'Date & Time',
+              value: new Date(viewTx.createdAt).toLocaleDateString('en-IN', {
+                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+              }),
+              full: true,
+            },
+          ]}
+        />
+      )}
     </div>
   );
 }

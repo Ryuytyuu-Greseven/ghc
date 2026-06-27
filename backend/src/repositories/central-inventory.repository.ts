@@ -63,11 +63,10 @@ export class CentralInventoryRepository {
     }
 
     const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
-      searchFields: ['item.itemName', 'item.itemCode'],
+      searchFields: ['item.itemName'],
       exactFilters: ['item.category', 'item.status', 'batchNo'],
       sortMapping: {
         itemName: 'item.itemName',
-        itemCode: 'item.itemCode',
       },
       defaultSort: { field: 'createdAt', order: 'desc' },
     });

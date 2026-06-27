@@ -79,12 +79,11 @@ export class BranchInventoryRepository {
     }
 
     const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
-      searchFields: ['branch.name', 'item.itemName', 'item.itemCode', 'batchNo'],
+      searchFields: ['branch.name', 'item.itemName', 'batchNo'],
       exactFilters: ['item.category', 'branchId'],
       objectIdFilters: ['branchId'],
       sortMapping: {
         itemName: 'item.itemName',
-        itemCode: 'item.itemCode',
         branchName: 'branch.name',
       },
       defaultSort: { field: 'createdAt', order: 'desc' },
