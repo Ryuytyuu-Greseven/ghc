@@ -80,18 +80,36 @@ export interface Staff {
 }
 
 export type Gender = 'male' | 'female' | 'other';
+export type BloodGroup = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
 
 export interface Patient {
   id: string;
   name: string;
   age: number;
   gender: Gender;
+  bloodGroup: BloodGroup;
   phone: string;
+  email: string;
   address: string;
   hospitalId: string;
   bedRequired: boolean;
   admittedAt: string;
   condition: string;
+}
+
+export type PatientDraft = Omit<Patient, 'id' | 'admittedAt'>;
+
+export interface PatientFormValues {
+  name: string;
+  age: string;
+  gender: Gender | '';
+  bloodGroup: BloodGroup | '';
+  phone: string;
+  email: string;
+  address: string;
+  hospitalId: string;
+  condition: string;
+  bedRequired: boolean;
 }
 
 export type MedicineCategory = 'medication' | 'equipment' | 'consumable' | 'diagnostic';

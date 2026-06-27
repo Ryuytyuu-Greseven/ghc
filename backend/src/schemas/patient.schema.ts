@@ -11,22 +11,22 @@ export class Patient {
   @Prop({ required: true })
   age: number;
 
-  @Prop({ required: true, enum: ['male', 'female', 'other'], default: 'male' })
+  @Prop({ required: true, enum: ['male', 'female', 'other'] })
   gender: string;
 
-  @Prop({ required: true, enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'], default: 'O+' })
+  @Prop({ required: true, enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] })
   bloodGroup: string;
 
-  @Prop({ trim: true })
+  @Prop({ required: true, trim: true, unique: true })
   phone: string;
 
-  @Prop({ trim: true, lowercase: true })
+  @Prop({ required: true, trim: true, lowercase: true, unique: true })
   email: string;
 
-  @Prop({ trim: true })
+  @Prop({ required: true, trim: true })
   address: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Hospital' })
+  @Prop({ type: Types.ObjectId, ref: 'Hospital', required: true })
   hospitalId: Types.ObjectId;
 
   @Prop({ default: false })
@@ -35,7 +35,7 @@ export class Patient {
   @Prop({ type: Date, default: () => new Date() })
   admittedAt: Date;
 
-  @Prop({ trim: true, default: '' })
+  @Prop({ required: true, trim: true })
   condition: string;
 
   @Prop({ default: true })
