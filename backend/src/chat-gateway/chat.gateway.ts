@@ -10,6 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { AgentPipelineService } from '../Agents/agent-pipeline.service';
 import { ChatSessionService } from './chat-session.service';
+import { httpLocalStorage } from '../common/services/http.service';
 
 @WebSocketGateway({ cors: { origin: '*' }, namespace: '/chat' })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -47,12 +48,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const session = this.sessionService.get(client.id);
     if (!session) return;
 
-    void this.agentPipeline.processUserMessage(
-      (event, data) => client.emit(event, data),
-      session,
-      text,
-      { synthesizeAudio: false },
-    );
+    const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
+    httpLocalStorage.run({ token }, () => {
+      void this.agentPipeline.processUserMessage(
+        (event, data) => client.emit(event, data),
+        session,
+        text,
+        { synthesizeAudio: false },
+      );
+    });
   }
 
   private sttCallbacks(client: Socket) {
@@ -103,11 +107,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const session = this.sessionService.get(client.id);
     if (!session || !transcript.trim()) return;
 
-    void this.agentPipeline.processUserMessage(
-      (event, data) => client.emit(event, data),
-      session,
-      transcript,
-      { synthesizeAudio: true, emitTranscriptFinal: true },
-    );
+    const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
+    httpLocalStorage.run({ token }, () => {
+      void this.agentPipeline.processUserMessage(
+        (event, data) => client.emit(event, data),
+        session,
+        transcript,
+        { synthesizeAudio: true, emitTranscriptFinal: true },
+      );
+    });
   }
 }

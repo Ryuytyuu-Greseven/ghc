@@ -17,6 +17,11 @@ export class InventoryMasterController {
     return this.service.search(q ?? '');
   }
 
+  @Get('category/:category')
+  findByCategory(@Param('category') category: string) {
+    return this.service.findByCategory(category);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
