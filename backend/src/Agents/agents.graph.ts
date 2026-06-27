@@ -1,18 +1,13 @@
-import {
-  StateGraph,
-  START,
-  END,
-  Annotation,
-  messagesStateReducer,
-} from '@langchain/langgraph';
+import { StateGraph, START, END } from '@langchain/langgraph';
 import {
   SystemMessage,
   HumanMessage,
   AIMessage,
 } from '@langchain/core/messages';
-import type { BaseMessage } from '@langchain/core/messages';
 import { llmInstance } from '../google/vertex.config';
 import { withGuardrails } from './prompts/guardrails.prompt';
+import { InventoryState } from './states/inventory.state';
+import { PatientState } from './states/patient.state';
 
 const BASE = process.env.API_BASE_URL ?? 'http://localhost:3000';
 
@@ -58,30 +53,6 @@ async function llmClassify(
 //   check_expiring: classify → check_stock → check_expiring → raise_requests → summarize
 //   audit     : classify → check_stock → check_expiring → raise_requests → summarize
 // ══════════════════════════════════════════════════════════════════════════════
-
-const InventoryState = Annotation.Root({
-  messages: Annotation<BaseMessage[]>({
-    reducer: messagesStateReducer,
-    default: () => [],
-  }),
-  query: Annotation<string>({ reducer: (_, b) => b, default: () => '' }),
-  intent: Annotation<string>({ reducer: (_, b) => b, default: () => '' }),
-  inventoryList: Annotation<any[]>({ reducer: (_, b) => b, default: () => [] }),
-  lowStockItems: Annotation<any[]>({ reducer: (_, b) => b, default: () => [] }),
-  outOfStockItems: Annotation<any[]>({
-    reducer: (_, b) => b,
-    default: () => [],
-  }),
-  expiringItems: Annotation<any[]>({ reducer: (_, b) => b, default: () => [] }),
-  serviceRequests: Annotation<any[]>({
-    reducer: (_, b) => b,
-    default: () => [],
-  }),
-  finalResponse: Annotation<string>({
-    reducer: (_, b) => b,
-    default: () => '',
-  }),
-});
 
 // ── Node: classify query intent ───────────────────────────────────────────────
 async function inventoryClassifyIntent(state: typeof InventoryState.State) {
@@ -348,37 +319,6 @@ export async function runInventoryAgent(query: string): Promise<string> {
 //   by_age          : classify → fetch → group_by_age → summarize
 //   general         : classify → fetch → summarize
 // ══════════════════════════════════════════════════════════════════════════════
-
-const PatientState = Annotation.Root({
-  messages: Annotation<BaseMessage[]>({
-    reducer: messagesStateReducer,
-    default: () => [],
-  }),
-  query: Annotation<string>({ reducer: (_, b) => b, default: () => '' }),
-  intent: Annotation<string>({ reducer: (_, b) => b, default: () => '' }),
-  daysAhead: Annotation<number>({ reducer: (_, b) => b, default: () => 7 }),
-  patients: Annotation<any[]>({ reducer: (_, b) => b, default: () => [] }),
-  dischargingSoon: Annotation<any[]>({
-    reducer: (_, b) => b,
-    default: () => [],
-  }),
-  byDisease: Annotation<
-    { condition: string; count: number; patients: any[] }[]
-  >({
-    reducer: (_, b) => b,
-    default: () => [],
-  }),
-  byAge: Annotation<
-    { group: string; ageRange: string; count: number; patients: any[] }[]
-  >({
-    reducer: (_, b) => b,
-    default: () => [],
-  }),
-  finalResponse: Annotation<string>({
-    reducer: (_, b) => b,
-    default: () => '',
-  }),
-});
 
 const AGE_BUCKETS = [
   { group: 'Pediatric', ageRange: '0–17', min: 0, max: 17 },
