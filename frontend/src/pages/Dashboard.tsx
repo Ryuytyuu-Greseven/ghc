@@ -38,11 +38,11 @@ export function Dashboard() {
           {/* Stat cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard
-              label="Hospitals & Clinics"
+              label="PHCs & CHCs"
               value={hospitals.length}
               icon={<Building2 size={20} className="text-primary-600 dark:text-primary-400" />}
               color="bg-primary-50 dark:bg-primary-900/30"
-              sub={`${hospitals.filter(h => h.type === 'hospital').length} hospitals · ${hospitals.filter(h => h.type === 'clinic').length} clinics`}
+              sub={`${hospitals.filter(h => h.type === 'CHC').length} CHCs · ${hospitals.filter(h => h.type === 'PHC').length} PHCs`}
             />
             <StatCard
               label="Total Staff"
@@ -186,7 +186,7 @@ export function Dashboard() {
                       <p className="text-xs text-slate-400 dark:text-slate-500">{h.city}</p>
                     </div>
                     <div className="text-right">
-                      <Badge variant={h.type === 'hospital' ? 'info' : 'purple'}>{h.type}</Badge>
+                      <Badge variant={h.type === 'CHC' ? 'warning' : 'success'}>{h.type}</Badge>
                       <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                         {h.availableBeds}/{h.totalBeds} beds free
                       </p>

@@ -6,27 +6,27 @@ export class HospitalsController {
   constructor(private readonly hospitalsService: HospitalsService) {}
 
   @Get()
-  findAll() {
-    return this.hospitalsService.findAll();
+  getHospitals() {
+    return this.hospitalsService.getAllHospitals();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.hospitalsService.findOne(id);
+  getHospital(@Param('id') id: string) {
+    return this.hospitalsService.getHospitalById(id);
   }
 
   @Post()
-  create(@Body() body: Record<string, any>) {
-    return this.hospitalsService.create(body);
+  createHospital(@Body() body: Record<string, any>) {
+    return this.hospitalsService.createHospital(body);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: Record<string, any>) {
-    return this.hospitalsService.update(id, body);
+  updateHospital(@Param('id') id: string, @Body() body: Record<string, any>) {
+    return this.hospitalsService.updateHospital(id, body);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.hospitalsService.remove(id);
+  deleteHospital(@Param('id') id: string) {
+    return this.hospitalsService.deleteHospital(id);
   }
 }

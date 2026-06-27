@@ -1,4 +1,4 @@
-export type FacilityType = 'hospital' | 'clinic';
+export type FacilityType = 'PHC' | 'CHC';
 
 export interface Hospital {
   id: string;
@@ -11,6 +11,12 @@ export interface Hospital {
   totalBeds: number;
   availableBeds: number;
   createdAt: string;
+  parentCHCId?: string | null;
+  medicalOfficer?: string | null;
+  specialists?: string[];
+  hasOT?: boolean;
+  hasXRay?: boolean;
+  hasAmbulance?: boolean;
 }
 
 export type StaffRole = 'doctor' | 'nurse' | 'technician' | 'admin' | 'pharmacist';

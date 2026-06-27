@@ -262,7 +262,7 @@ export function HospitalDetail() {
                   <div
                     className={clsx(
                       'p-2 rounded-lg shrink-0',
-                      hospital.type === 'hospital'
+                      hospital.type === 'CHC'
                         ? 'bg-cyan-50 dark:bg-cyan-900/30'
                         : 'bg-violet-50 dark:bg-violet-900/30'
                     )}
@@ -270,7 +270,7 @@ export function HospitalDetail() {
                     <Building2
                       size={18}
                       className={
-                        hospital.type === 'hospital'
+                        hospital.type === 'CHC'
                           ? 'text-cyan-600 dark:text-cyan-400'
                           : 'text-violet-600 dark:text-violet-400'
                       }
@@ -280,7 +280,7 @@ export function HospitalDetail() {
                     <p className="font-semibold text-slate-800 dark:text-slate-100">
                       {hospital.name}
                     </p>
-                    <Badge variant={hospital.type === 'hospital' ? 'info' : 'purple'}>
+                    <Badge variant={hospital.type === 'CHC' ? 'info' : 'purple'}>
                       {hospital.type}
                     </Badge>
                   </div>

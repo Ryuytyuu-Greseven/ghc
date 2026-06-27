@@ -1,17 +1,22 @@
 import { useState } from 'react';
-import { Plus, Building2, MapPin, Phone, Mail, BedDouble, Pencil, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, Building2, MapPin, Phone, Mail, BedDouble, Pencil, Trash2, ExternalLink, Stethoscope, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { useApp } from '../../context/AppContext';
-import type { Hospital } from '../../types';
+import type { Hospital, FacilityType } from '../../types';
 import { HospitalForm } from './HospitalForm';
 import { clsx } from 'clsx';
 
-const filterTypes = ['all', 'hospital', 'clinic'] as const;
+const filterTypes = ['all', 'PHC', 'CHC'] as const;
 type FilterType = (typeof filterTypes)[number];
+
+const typeStyles: Record<FacilityType, { bg: string; text: string; badge: 'info' | 'purple' | 'success' | 'warning'; label: string }> = {
+  PHC: { bg: 'bg-emerald-50 dark:bg-emerald-950/20', text: 'text-emerald-600 dark:text-emerald-400', badge: 'success', label: 'PHC' },
+  CHC: { bg: 'bg-amber-50 dark:bg-amber-950/20', text: 'text-amber-600 dark:text-amber-400', badge: 'warning', label: 'CHC' },
+};
 
 export function HospitalList() {
   const { hospitals, deleteHospital, staff, patients } = useApp();
@@ -37,7 +42,7 @@ export function HospitalList() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Hospitals & Clinics" subtitle="Manage all healthcare facilities" />
+      <Header title="Hospitals & Clinics" subtitle="Manage primary and community healthcare networks" />
 
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-5">
         <div className="max-w-screen-2xl mx-auto space-y-5">
@@ -56,7 +61,11 @@ export function HospitalList() {
                       : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                   )}
                 >
-                  {t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1) + 's'}
+                  {t === 'all'
+                    ? 'All'
+                    : t === 'PHC'
+                    ? 'PHCs (Primary)'
+                    : 'CHCs (Community)'}
                 </button>
               ))}
             </div>
@@ -73,6 +82,8 @@ export function HospitalList() {
               const occupancy = h.totalBeds
                 ? Math.round(((h.totalBeds - h.availableBeds) / h.totalBeds) * 100)
                 : 0;
+              const styles = typeStyles[h.type] || typeStyles.PHC;
+              const parentCHC = h.parentCHCId ? hospitals.find(x => x.id === h.parentCHCId) : null;
 
               return (
                 <div
@@ -83,29 +94,15 @@ export function HospitalList() {
                     {/* Card header */}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={clsx(
-                            'p-2.5 rounded-xl shrink-0',
-                            h.type === 'hospital'
-                              ? 'bg-cyan-50 dark:bg-cyan-900/30'
-                              : 'bg-violet-50 dark:bg-violet-900/30'
-                          )}
-                        >
-                          <Building2
-                            size={20}
-                            className={
-                              h.type === 'hospital'
-                                ? 'text-cyan-600 dark:text-cyan-400'
-                                : 'text-violet-600 dark:text-violet-400'
-                            }
-                          />
+                        <div className={clsx('p-2.5 rounded-xl shrink-0', styles.bg)}>
+                          <Building2 size={20} className={styles.text} />
                         </div>
                         <div className="min-w-0">
                           <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate">
                             {h.name}
                           </h3>
-                          <Badge variant={h.type === 'hospital' ? 'info' : 'purple'}>
-                            {h.type}
+                          <Badge variant={styles.badge}>
+                            {styles.label}
                           </Badge>
                         </div>
                       </div>
@@ -135,24 +132,109 @@ export function HospitalList() {
                     </div>
 
                     {/* Details */}
-                    <div className="space-y-1.5 text-sm text-slate-500 dark:text-slate-400 flex-1">
+                    <div className="space-y-1.5 text-sm text-slate-500 dark:text-slate-400 mb-4">
                       <div className="flex items-start gap-2">
                         <MapPin size={13} className="shrink-0 mt-0.5" />
                         <span className="truncate">{h.address}, {h.city}</span>
                       </div>
-                      {h.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone size={13} className="shrink-0" />
-                          <span>{h.phone}</span>
-                        </div>
-                      )}
-                      {h.email && (
-                        <div className="flex items-center gap-2">
-                          <Mail size={13} className="shrink-0" />
-                          <span className="truncate">{h.email}</span>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <Phone size={13} className="shrink-0" />
+                        <span>{h.phone || 'No phone'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Mail size={13} className="shrink-0" />
+                        <span className="truncate">{h.email || 'No email'}</span>
+                      </div>
                     </div>
+
+                    {/* PHC Specific Render */}
+                    {h.type === 'PHC' && (
+                      <div className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-700 text-xs space-y-2">
+                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                          <Stethoscope size={13} className="text-emerald-500" />
+                          <span>
+                            Medical Officer:{' '}
+                            <span className="font-medium text-slate-800 dark:text-slate-200">
+                              {h.medicalOfficer ?? 'Unassigned'}
+                            </span>
+                          </span>
+                        </div>
+                        {parentCHC ? (
+                          <Link
+                            to={`/hospitals/${parentCHC.id}`}
+                            className="flex items-center gap-1.5 text-primary-700 dark:text-primary-400 bg-primary-50/50 dark:bg-primary-900/10 px-2 py-1 rounded border border-primary-100 dark:border-primary-900/30 inline-flex w-full hover:underline"
+                          >
+                            <span className="font-semibold">Referral CHC:</span>
+                            <span className="truncate">{parentCHC.name}</span>
+                          </Link>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-850 px-2 py-1 rounded inline-flex w-full">
+                            <span>Unlinked Chain (No CHC)</span>
+                          </div>
+                        )}
+                        {h.hasAmbulance && (
+                          <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full text-[10px] font-bold w-fit uppercase tracking-wider">
+                            <Truck size={10} /> Ambulance Active
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* CHC Specific Render */}
+                    {h.type === 'CHC' && (
+                      <div className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-700 text-xs space-y-2">
+                        {h.medicalOfficer && (
+                          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 mb-1">
+                            <Stethoscope size={13} className="text-amber-500" />
+                            <span>
+                              Medical Officer:{' '}
+                              <span className="font-medium text-slate-800 dark:text-slate-200">
+                                {h.medicalOfficer}
+                              </span>
+                            </span>
+                          </div>
+                        )}
+                        <div className="text-slate-600 dark:text-slate-300">
+                          <span className="font-semibold text-slate-500 dark:text-slate-400 block mb-1">
+                            Specialist Services:
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {h.specialists && h.specialists.length > 0 ? (
+                              h.specialists.map((s, idx) => (
+                                <span
+                                  key={idx}
+                                  className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded text-[10px] font-medium"
+                                >
+                                  {s}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-slate-400 dark:text-slate-500 italic">
+                                None registered
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {h.hasOT && (
+                            <span className="inline-flex items-center gap-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide">
+                              OT
+                            </span>
+                          )}
+                          {h.hasXRay && (
+                            <span className="inline-flex items-center gap-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide">
+                              X-Ray
+                            </span>
+                          )}
+                          {h.hasAmbulance && (
+                            <span className="inline-flex items-center gap-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide">
+                              Ambulance
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Occupancy */}
                     <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
@@ -191,7 +273,7 @@ export function HospitalList() {
             <div className="text-center py-20 text-slate-400 dark:text-slate-500">
               <Building2 size={40} className="mx-auto mb-3 opacity-30" />
               <p className="font-medium text-slate-500 dark:text-slate-400">No facilities found</p>
-              <p className="text-sm mt-1">Add your first hospital or clinic to get started.</p>
+              <p className="text-sm mt-1">Add your first primary or community health centre to get started.</p>
             </div>
           )}
 
