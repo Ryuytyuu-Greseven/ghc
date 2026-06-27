@@ -7,7 +7,7 @@ export class StaffService {
   constructor(private readonly staffRepository: StaffRepository) { }
 
   async findAll() {
-    return this.staffRepository.findAll({ isActive: true });
+    return this.staffRepository.findAll();
   }
 
   async findOne(id: string) {
@@ -21,6 +21,14 @@ export class StaffService {
   }
 
   async create(data: Partial<Staff>) {
+    if (!data.employeeId || data.employeeId.trim() === '') {
+      const year = new Date().getFullYear().toString().slice(-2);
+      const randomPart = Math.random().toString(16).substring(2, 6).toUpperCase();
+      data.employeeId = `EMP-${year}${randomPart}`;
+    }
+    if (data.isActive === undefined) {
+      data.isActive = true;
+    }
     return this.staffRepository.create(data);
   }
 
