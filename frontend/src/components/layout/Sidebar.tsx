@@ -8,21 +8,42 @@ import {
   HeartPulse,
   X,
   LogOut,
+  Calendar,
+  Shuffle,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
+import { useApp } from '../../context/AppContext';
 import { environment } from '../../config/environment';
 
-const navItems = [
+const allNavItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/hospitals', label: 'Hospitals & Clinics', icon: Building2 },
   { to: '/staff', label: 'Staff', icon: Users },
   { to: '/patients', label: 'Patients', icon: UserRound },
   { to: '/medicines', label: 'Medicines & Supplies', icon: Pill },
+  { to: '/availability', label: 'My Availability', icon: Calendar },
+  { to: '/transfers', label: 'Coverage & Transfers', icon: Shuffle },
 ];
+
+const roleNavItemsMap: Record<string, string[]> = {
+  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/transfers'],
+  Doctor: ['/', '/hospitals', '/patients', '/availability'],
+  Nurse: ['/', '/hospitals', '/patients', '/availability'],
+  Receptionist: ['/', '/hospitals', '/patients', '/availability'],
+  Pharmacist: ['/', '/medicines', '/availability'],
+  Compounder: ['/', '/medicines', '/availability'],
+  'Lab Technician': ['/', '/medicines', '/availability'],
+  Cashier: ['/', '/availability'],
+};
 
 export function Sidebar() {
   const { isOpen, close } = useSidebar();
+  const { currentUser } = useApp();
+
+  const role = currentUser?.role || 'Admin';
+  const allowedPaths = roleNavItemsMap[role] || ['/', '/availability'];
+  const filteredNavItems = allNavItems.filter(item => allowedPaths.includes(item.to));
 
   return (
     <aside
@@ -59,7 +80,7 @@ export function Sidebar() {
         <p className="px-3 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
           Main Menu
         </p>
-        {navItems.map(({ to, label, icon: Icon, end }) => (
+        {filteredNavItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}
@@ -91,11 +112,11 @@ export function Sidebar() {
       <div className="px-4 py-4 border-t border-slate-700/60 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 px-1 min-w-0">
           <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold shrink-0 ring-2 ring-primary-500/30">
-            GA
+            {currentUser?.username ? currentUser.username.substring(0, 2).toUpperCase() : 'U'}
           </div>
           <div className="min-w-0">
-            <p className="text-white text-xs font-medium truncate">Global Admin</p>
-            <p className="text-slate-500 text-xs truncate">admin@ghc.health</p>
+            <p className="text-white text-xs font-medium truncate">{currentUser?.username || 'User'}</p>
+            <p className="text-slate-500 text-xs truncate">{currentUser?.role || 'Staff'}</p>
           </div>
         </div>
         <button
