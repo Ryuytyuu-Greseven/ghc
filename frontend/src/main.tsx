@@ -2,6 +2,14 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { environment } from './config/environment.local'
+
+// Listen for browser navigation from cache (back/forward history) and force reload to rerun checks
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    window.location.reload();
+  }
+});
 
 // SSO authentication check before main app mount
 (function checkAuth() {
@@ -18,8 +26,8 @@ import App from './App.tsx'
 
   const token = localStorage.getItem('ghc_auth_token');
   if (!token) {
-    // Redirect to login micro-frontend
-    window.location.href = 'http://localhost:4005';
+    // Redirect to login micro-frontend using replace to clear history stack
+    window.location.replace(environment.loginFrontendUrl);
     return;
   }
 
@@ -37,14 +45,14 @@ import App from './App.tsx'
         if (remainingMs <= 0) {
           // Token is already expired
           localStorage.removeItem('ghc_auth_token');
-          window.location.href = 'http://localhost:4005';
+          window.location.replace(environment.loginFrontendUrl);
           return;
         }
 
         // Schedule automatic redirection when the token expires
         setTimeout(() => {
           localStorage.removeItem('ghc_auth_token');
-          window.location.href = 'http://localhost:4005';
+          window.location.replace(environment.loginFrontendUrl);
         }, remainingMs);
       }
     }

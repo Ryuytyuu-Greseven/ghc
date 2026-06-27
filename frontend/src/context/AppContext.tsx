@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { environment } from '../config/environment.local';
 import type { Hospital, Staff, Patient, PatientDraft, Medicine, HospitalMedicine } from '../types';
 import {
   mockHospitals,
@@ -40,7 +41,7 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = environment.mainBackendUrl;
 
 export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = localStorage.getItem('ghc_auth_token');
@@ -53,7 +54,7 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
   const response = await window.fetch(url, { ...options, headers });
   if (response.status === 401) {
     localStorage.removeItem('ghc_auth_token');
-    window.location.href = 'http://localhost:4005';
+    window.location.replace(environment.loginFrontendUrl);
     throw new Error('Unauthorized');
   }
   return response;
