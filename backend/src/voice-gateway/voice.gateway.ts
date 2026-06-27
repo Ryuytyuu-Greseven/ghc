@@ -18,6 +18,7 @@ import { staffAgent } from '../Agents/nodes/staff.node';
 import { inventoryAgent } from '../Agents/nodes/inventory.node';
 import { synthesizeSpeech } from '../google/tts.service';
 import { toPlainSpeechText } from '../Agents/prompts/guardrails.prompt';
+import { httpLocalStorage } from '../common/services/http.service';
 
 const domainAgentMap: Record<string, any> = {
   hospital: hospitalAgent,
@@ -105,72 +106,76 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
     // ────────────────────────────────────────────────────────────────────────
 
-    try {
-      client.emit('transcript:final', { text: transcript });
+    const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
 
-      // 1. Classify domain
-      const supervisorResult = await supervisorNode({
-        transcript,
-        messages: session.conversationHistory,
-        domain: session.domain,
-        finalResponse: '',
-      });
-      if (signal.aborted) return;
+    await httpLocalStorage.run({ token }, async () => {
+      try {
+        client.emit('transcript:final', { text: transcript });
 
-      const domain = supervisorResult.domain;
-      session.domain = domain;
+        // 1. Classify domain
+        const supervisorResult = await supervisorNode({
+          transcript,
+          messages: session.conversationHistory,
+          domain: session.domain,
+          finalResponse: '',
+        });
+        if (signal.aborted) return;
 
-      // 2. Build agent input — don't mutate history yet (abort may cancel this)
-      const agentMessages = [...session.conversationHistory, new HumanMessage(transcript)];
-      const agent = domainAgentMap[domain] ?? patientAgent;
+        const domain = supervisorResult.domain;
+        session.domain = domain;
 
-      // 3. Stream response tokens
-      let fullResponse = '';
+        // 2. Build agent input — don't mutate history yet (abort may cancel this)
+        const agentMessages = [...session.conversationHistory, new HumanMessage(transcript)];
+        const agent = domainAgentMap[domain] ?? patientAgent;
 
-      for await (const event of agent.streamEvents(
-        { messages: agentMessages },
-        { version: 'v2' },
-      )) {
-        if (signal.aborted) break;
-        if (event.event === 'on_chat_model_stream') {
-          const content = event.data?.chunk?.content;
-          if (typeof content === 'string' && content) {
-            fullResponse += content;
-            client.emit('agent:chunk', { text: content.replace(/\*+/g, '') });
+        // 3. Stream response tokens
+        let fullResponse = '';
+
+        for await (const event of agent.streamEvents(
+          { messages: agentMessages },
+          { version: 'v2' },
+        )) {
+          if (signal.aborted) break;
+          if (event.event === 'on_chat_model_stream') {
+            const content = event.data?.chunk?.content;
+            if (typeof content === 'string' && content) {
+              fullResponse += content;
+              client.emit('agent:chunk', { text: content.replace(/\*+/g, '') });
+            }
           }
         }
+        if (signal.aborted) return;
+
+        const plainResponse = toPlainSpeechText(fullResponse);
+        client.emit('agent:done', { text: plainResponse });
+
+        // 4. Commit to conversation history only on clean completion
+        session.conversationHistory.push(new HumanMessage(transcript));
+        session.conversationHistory.push(new AIMessage(plainResponse));
+
+        // 5. TTS
+        const audioBuffer = await synthesizeSpeech(plainResponse);
+        if (signal.aborted) return;
+
+        // 6. Stream audio chunks
+        for (let offset = 0; offset < audioBuffer.length; offset += TTS_CHUNK_SIZE) {
+          if (signal.aborted) break;
+          client.emit('audio:response', audioBuffer.subarray(offset, offset + TTS_CHUNK_SIZE));
+        }
+        if (!signal.aborted) client.emit('audio:done', {});
+
+      } catch (err) {
+        // Errors caused by the abort itself are not forwarded to the client
+        if (!signal.aborted) {
+          const message = err instanceof Error ? err.message : 'Unknown error';
+          client.emit('error', { message });
+          console.error(`[voice] error for ${client.id}:`, err);
+        }
+      } finally {
+        session.isProcessing = false;
+        session.abortController = null;
+        finishRun();
       }
-      if (signal.aborted) return;
-
-      const plainResponse = toPlainSpeechText(fullResponse);
-      client.emit('agent:done', { text: plainResponse });
-
-      // 4. Commit to conversation history only on clean completion
-      session.conversationHistory.push(new HumanMessage(transcript));
-      session.conversationHistory.push(new AIMessage(plainResponse));
-
-      // 5. TTS
-      const audioBuffer = await synthesizeSpeech(plainResponse);
-      if (signal.aborted) return;
-
-      // 6. Stream audio chunks
-      for (let offset = 0; offset < audioBuffer.length; offset += TTS_CHUNK_SIZE) {
-        if (signal.aborted) break;
-        client.emit('audio:response', audioBuffer.subarray(offset, offset + TTS_CHUNK_SIZE));
-      }
-      if (!signal.aborted) client.emit('audio:done', {});
-
-    } catch (err) {
-      // Errors caused by the abort itself are not forwarded to the client
-      if (!signal.aborted) {
-        const message = err instanceof Error ? err.message : 'Unknown error';
-        client.emit('error', { message });
-        console.error(`[voice] error for ${client.id}:`, err);
-      }
-    } finally {
-      session.isProcessing = false;
-      session.abortController = null;
-      finishRun();
-    }
+    });
   }
 }

@@ -8,7 +8,7 @@ const ROUTING_PROMPT = `You are a domain router for a healthcare management syst
 Classify the doctor's spoken request into exactly ONE domain.
 
 Domains:
-- hospital  → hospital facilities, beds, locations
+- hospital  → hospital facilities, beds, locations, list of hospitals
 - patient   → patient records, admissions, demographics
 - medicine  → pharmacy, drug list, prescriptions
 - staff     → doctors, nurses, departments, personnel
@@ -17,6 +17,15 @@ Domains:
 Reply with ONLY one word: hospital | patient | medicine | staff | inventory`;
 
 const VALID_DOMAINS = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory']);
+
+function parseDomain(content: string): string {
+  const normalized = content.trim().toLowerCase();
+  for (const domain of VALID_DOMAINS) {
+    if (normalized.includes(domain)) return domain;
+  }
+  const first = normalized.split(/[\s,.]+/)[0];
+  return VALID_DOMAINS.has(first) ? first : 'patient';
+}
 
 export async function supervisorNode(state: typeof AgentState.State) {
   const agent = createAgent({
@@ -28,10 +37,10 @@ export async function supervisorNode(state: typeof AgentState.State) {
     messages: [new HumanMessage(state.transcript)],
   });
 
-  console.log('Initial Supervisor Response', response, state.transcript);
   const last = response.messages[response.messages.length - 1];
-  const raw = (last.content as string).trim().toLowerCase();
-  const domain = VALID_DOMAINS.has(raw) ? raw : 'patient';
+  const domain = parseDomain(String(last.content ?? ''));
+
+  console.log('[supervisor] transcript:', state.transcript, '→ domain:', domain);
 
   return {
     domain,

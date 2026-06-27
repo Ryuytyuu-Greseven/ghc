@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { hospitalApi } from '../services/hospitalApi';
 import type { ReactNode } from 'react';
+import { environment } from '../config/environment';
 import type { Hospital, Staff, Patient, PatientDraft, Medicine, HospitalMedicine } from '../types';
 import {
   mockHospitals,
@@ -17,9 +19,10 @@ interface AppContextValue {
   hospitalMedicines: HospitalMedicine[];
   currentUser: { id: string; username: string; role: string } | null;
 
-  addHospital: (h: Omit<Hospital, 'id' | 'createdAt'>) => void;
-  updateHospital: (id: string, h: Partial<Hospital>) => void;
+  addHospital: (h: Omit<Hospital, 'id' | 'createdAt'>) => Promise<void>;
+  updateHospital: (id: string, h: Partial<Hospital>) => Promise<void>;
   deleteHospital: (id: string) => void;
+  getHospitalHistory: (id: string) => Promise<Hospital[]>;
 
   addStaff: (s: Omit<Staff, 'id' | 'createdAt'>) => void;
   updateStaff: (id: string, s: Partial<Staff>) => void;
@@ -41,7 +44,7 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = environment.mainBackendUrl;
 
 export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = localStorage.getItem('ghc_auth_token');
@@ -54,7 +57,7 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
   const response = await window.fetch(url, { ...options, headers });
   if (response.status === 401) {
     localStorage.removeItem('ghc_auth_token');
-    window.location.href = 'http://localhost:4005';
+    window.location.replace(environment.loginFrontendUrl);
     throw new Error('Unauthorized');
   }
   return response;
@@ -74,7 +77,8 @@ async function getApiErrorMessage(res: Response, fallback: string): Promise<stri
 
 function mapHospitalFromBackend(item: any): Hospital {
   return {
-    id: item._id ?? item.id ?? '',
+    id: item.hospitalId ?? item._id ?? item.id ?? '',
+    _id: item._id ?? item.id ?? '',
     name: item.name,
     type: item.type,
     address: item.address,
@@ -90,6 +94,10 @@ function mapHospitalFromBackend(item: any): Hospital {
     hasOT: item.hasOT ?? false,
     hasXRay: item.hasXRay ?? false,
     hasAmbulance: item.hasAmbulance ?? false,
+    hospitalId: item.hospitalId ?? null,
+    version: item.version ?? 1,
+    isCurrent: item.isCurrent ?? true,
+    updatedAt: item.updatedAt ? new Date(item.updatedAt).toLocaleString() : undefined,
   };
 }
 
@@ -376,12 +384,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addHospital = async (h: Omit<Hospital, 'id' | 'createdAt'>) => {
     try {
-      const res = await authFetch(`${API_BASE}/hospitals`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(h),
-      });
-      const created = await res.json();
+      const created = await hospitalApi.createHospital(h);
       setHospitals(prev => [...prev, mapHospitalFromBackend(created)]);
     } catch (err) {
       console.error('Failed to create hospital in backend:', err);
@@ -390,12 +393,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateHospital = async (id: string, h: Partial<Hospital>) => {
     try {
-      const res = await authFetch(`${API_BASE}/hospitals/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(h),
-      });
-      const updated = await res.json();
+      const updated = await hospitalApi.updateHospital(id, h);
       setHospitals(prev => prev.map(x => (x.id === id ? mapHospitalFromBackend(updated) : x)));
     } catch (err) {
       console.error('Failed to update hospital in backend:', err);
@@ -404,12 +402,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteHospital = async (id: string) => {
     try {
-      await authFetch(`${API_BASE}/hospitals/${id}`, {
-        method: 'DELETE',
-      });
+      await hospitalApi.deleteHospital(id);
       setHospitals(prev => prev.filter(x => x.id !== id));
     } catch (err) {
       console.error('Failed to delete hospital in backend:', err);
+    }
+  };
+
+  const getHospitalHistory = async (id: string): Promise<Hospital[]> => {
+    try {
+      const data = await hospitalApi.getHospitalHistory(id);
+      return Array.isArray(data) ? data.map(mapHospitalFromBackend) : [];
+    } catch (err) {
+      console.error('Failed to fetch hospital history:', err);
+      return [];
     }
   };
 
@@ -580,7 +586,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         hospitals, staff, patients, medicines, hospitalMedicines,
         currentUser,
-        addHospital, updateHospital, deleteHospital,
+        addHospital, updateHospital, deleteHospital, getHospitalHistory,
         addStaff, updateStaff, deleteStaff, assignStaff,
         addPatient, updatePatient, deletePatient,
         addMedicine, updateMedicine, deleteMedicine,

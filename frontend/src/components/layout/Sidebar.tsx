@@ -14,6 +14,7 @@ import {
 import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
 import { useApp } from '../../context/AppContext';
+import { environment } from '../../config/environment';
 
 const allNavItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -121,7 +122,7 @@ export function Sidebar() {
         <button
           onClick={() => {
             localStorage.removeItem('ghc_auth_token');
-            window.location.href = 'http://localhost:4005';
+            window.location.replace(environment.loginFrontendUrl);
           }}
           className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition shrink-0"
           aria-label="Sign out"

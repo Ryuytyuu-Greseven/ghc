@@ -2,7 +2,7 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { appInstance } from '../../main';
 import { HospitalsService } from '../../hospitals/hospitals.service';
-import { Hospital } from 'src/schemas/hospital.schema';
+import { Hospital, HospitalDocument } from 'src/schemas/hospital.schema';
 
 function getHospitalsService(): HospitalsService {
   if (!appInstance) {
@@ -111,6 +111,34 @@ const deleteHospital = tool(
     }),
   },
 );
+
+export const fetchHospitalByName = tool(
+  async ({name}) => {
+    console.log('Fetch Hospital By Name', name);
+    const service = getHospitalsService();
+    const res: any = await service.getAllHospitals({});
+    console.log('Fetch Hospital By Name Response', res);
+    if (name  && res.data) {
+      res.data = res.data.filter((hospital: HospitalDocument) =>
+        hospital.name.toLowerCase().includes(name.toLowerCase()),
+      );
+    }
+    console.log('Fetch Hospital By Name Response', res);
+    return JSON.stringify(res);
+  },
+  {
+    name: 'fetchHospitals',
+    description:
+      'This tool can be used to fetch all hospitals and their details. You can use this tool to search for a hospital by name. Name of the hospital to search for is optional',
+    schema: z.object({
+      name: z
+        .string()
+        .optional()
+        .describe('Name of the hospital to search for'),
+    }),
+  },
+);
+
 
 export const hospitalTools = [
   listHospitals,

@@ -51,6 +51,10 @@ export class InventoryMasterRepository {
     return { data, total, page, pageSize };
   }
 
+  async findByCategory(category: string): Promise<InventoryMasterDocument[]> {
+    return this.model.find({ category: category as any }).sort({ itemName: 1 }).exec();
+  }
+
   async create(data: Partial<InventoryMaster>): Promise<InventoryMasterDocument> {
     return this.model.create(data);
   }

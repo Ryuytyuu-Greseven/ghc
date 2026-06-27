@@ -26,6 +26,10 @@ export class InventoryMasterService {
     return this.repo.search(q);
   }
 
+  async findByCategory(category: string) {
+    return this.repo.findByCategory(category);
+  }
+
   async create(data: Record<string, any>) {
     return this.repo.create(data);
   }

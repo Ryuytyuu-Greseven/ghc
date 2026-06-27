@@ -8,11 +8,12 @@ import { HospitalsModule } from './hospitals/hospitals.module';
 import { PatientsModule } from './patients/patients.module';
 import { MedicinesModule } from './medicines/medicines.module';
 import { StaffModule } from './staff/staff.module';
-import { VoiceGatewayModule } from './voice-gateway/voice-gateway.module';
+import { ChatGatewayModule } from './chat-gateway/chat-gateway.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { InventoryModule } from './inventory/inventory.module';
 import { UsersModule } from './users/users.module';
+import { CommonModule } from './common/common.module';
 import { config } from 'dotenv';
 config();
 
@@ -27,11 +28,12 @@ config();
         uri: config.get<string>('MONGODB_URI'),
       }),
     }),
+    CommonModule,
     HospitalsModule,
     PatientsModule,
     MedicinesModule,
     StaffModule,
-    VoiceGatewayModule,
+    ChatGatewayModule,
     AuthModule,
     InventoryModule,
     UsersModule,
