@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShieldCheck, Pencil } from 'lucide-react';
+import { ShieldCheck, Pencil, Building2, Plus } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { MultiSelect } from '../../components/ui/MultiSelect';
@@ -59,18 +59,17 @@ export function HospitalForm({ initial, onClose }: Props) {
       hasXRay: form.type === 'CHC' ? form.hasXRay : false,
       hasAmbulance: (form.type === 'CHC' || form.type === 'PHC') ? form.hasAmbulance : false,
     };
-    if (initial) {
-      // Show confirmation modal before saving edits
-      setPendingData(data);
-    } else {
-      addHospital(data);
-      onClose();
-    }
+    // Always show confirmation modal before submitting to backend
+    setPendingData(data);
   };
 
-  const confirmSave = () => {
-    if (initial && pendingData) {
-      updateHospital(initial.id, pendingData);
+  const confirmSave = async () => {
+    if (!pendingData) return;
+
+    if (initial) {
+      await updateHospital(initial.id, pendingData);
+    } else {
+      await addHospital(pendingData as Omit<Hospital, 'id' | 'createdAt'>);
     }
     setPendingData(null);
     onClose();
@@ -253,24 +252,33 @@ export function HospitalForm({ initial, onClose }: Props) {
       </div>
     </form>
 
-    {/* Save Confirmation Modal — shown only when editing */}
+    {/* Save/Add Confirmation Modal */}
     <Modal
       open={!!pendingData}
       onClose={() => setPendingData(null)}
-      title="Confirm Save Changes"
+      title={initial ? 'Confirm Save Changes' : 'Confirm Add Facility'}
       size="sm"
     >
       <div className="flex flex-col items-center text-center gap-4 py-2">
         <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-full">
-          <ShieldCheck size={32} className="text-blue-500 dark:text-blue-400" />
+          {initial ? (
+            <ShieldCheck size={32} className="text-blue-500 dark:text-blue-400" />
+          ) : (
+            <Building2 size={32} className="text-primary-500 dark:text-primary-400" />
+          )}
         </div>
         <div>
           <p className="text-slate-700 dark:text-slate-200 font-semibold text-base">
-            Save changes to{' '}
-            <span className="text-primary-600 dark:text-primary-400">{initial?.name}</span>?
+            {initial ? 'Save changes to ' : 'Add new facility '}
+            <span className="text-primary-600 dark:text-primary-400">
+              {pendingData?.name || initial?.name}
+            </span>
+            ?
           </p>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            This will update the details of this {initial?.type} facility in the database.
+            {initial
+              ? `This will update the details of this ${initial.type} facility in the database.`
+              : `This will register a new ${pendingData?.type} facility in the database.`}
           </p>
         </div>
         <div className="flex gap-3 w-full pt-2">
@@ -278,7 +286,15 @@ export function HospitalForm({ initial, onClose }: Props) {
             Go Back
           </Button>
           <Button variant="primary" className="flex-1" onClick={confirmSave}>
-            <Pencil size={14} /> Yes, Save
+            {initial ? (
+              <>
+                <Pencil size={14} /> Yes, Save
+              </>
+            ) : (
+              <>
+                <Plus size={14} /> Yes, Add
+              </>
+            )}
           </Button>
         </div>
       </div>

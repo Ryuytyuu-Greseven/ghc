@@ -16,6 +16,8 @@ import {
   CheckCircle,
   PackageX,
   Pencil,
+  History,
+  Clock,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Header } from '../../components/layout/Header';
@@ -24,7 +26,7 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Modal } from '../../components/ui/Modal';
 import { useApp } from '../../context/AppContext';
-import type { StaffRole, MedicineCategory } from '../../types';
+import type { StaffRole, MedicineCategory, Hospital } from '../../types';
 import { HospitalForm } from './HospitalForm';
 import { clsx } from 'clsx';
 
@@ -86,10 +88,30 @@ function StockStatusBadge({
 export function HospitalDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { hospitals, staff, patients, medicines, hospitalMedicines } = useApp();
+  const { hospitals, staff, patients, medicines, hospitalMedicines, getHospitalHistory } = useApp();
   const [editOpen, setEditOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyRecords, setHistoryRecords] = useState<Hospital[]>([]);
+  const [selectedRecord, setSelectedRecord] = useState<Hospital | null>(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const hospital = hospitals.find(h => h.id === id);
+
+  const handleOpenHistory = async () => {
+    if (!hospital) return;
+    setHistoryOpen(true);
+    setLoadingHistory(true);
+    try {
+      const recordId = (hospital as any).hospitalId || hospital.id;
+      const history = await getHospitalHistory(recordId);
+      setHistoryRecords(history);
+      setSelectedRecord(history.length > 0 ? history[0] : null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   if (!hospital) {
     return (
@@ -154,9 +176,14 @@ export function HospitalDetail() {
             >
               <ArrowLeft size={16} /> Back to Hospitals
             </button>
-            <Button onClick={() => setEditOpen(true)} variant="secondary">
-              <Pencil size={14} /> Edit Facility
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={handleOpenHistory} variant="secondary">
+                <History size={14} /> View History
+              </Button>
+              <Button onClick={() => setEditOpen(true)} variant="secondary">
+                <Pencil size={14} /> Edit Facility
+              </Button>
+            </div>
           </div>
 
           {/* Top stat cards */}
@@ -692,6 +719,166 @@ export function HospitalDetail() {
       {/* Edit modal */}
       <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit Facility">
         <HospitalForm initial={hospital} onClose={() => setEditOpen(false)} />
+      </Modal>
+
+      {/* History modal */}
+      <Modal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        title="Facility Update History"
+        size="lg"
+      >
+        {loadingHistory ? (
+          <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-3" />
+            <span className="text-sm">Loading history...</span>
+          </div>
+        ) : historyRecords.length === 0 ? (
+          <div className="text-center py-12 text-slate-400 dark:text-slate-500">
+            <History size={36} className="mx-auto mb-2 opacity-30" />
+            <p className="font-medium">No history found</p>
+            <p className="text-xs mt-1">This facility has not been updated yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 max-h-[70vh]">
+            {/* Left list: Timestamps & Versions */}
+            <div className="md:col-span-2 border-r border-slate-100 dark:border-slate-700 pr-4 overflow-y-auto space-y-2 h-[50vh] max-h-[50vh]">
+              <h3 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
+                Updates Log
+              </h3>
+              {historyRecords.map((rec, index) => {
+                const isSelected = selectedRecord?._id === rec._id;
+                return (
+                  <button
+                    key={rec._id || `${rec.id}-${rec.version}`}
+                    onClick={() => setSelectedRecord(rec)}
+                    className={clsx(
+                      'w-full text-left p-3 rounded-xl border transition-all flex flex-col gap-1.5',
+                      isSelected
+                        ? 'border-primary-600 bg-primary-600 dark:bg-primary-500 dark:border-primary-500 text-white shadow-md'
+                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-750'
+                    )}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className={clsx(
+                        'text-xs font-bold',
+                        isSelected ? 'text-white' : 'text-slate-800 dark:text-slate-200'
+                      )}>
+                        {rec.version === 1 ? 'Created' : 'Updated'}
+                      </span>
+                      {rec.isCurrent && index === 0 && (
+                        <span className={clsx(
+                          'px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border',
+                          isSelected
+                            ? 'bg-white/20 text-white border-white/30'
+                            : 'bg-emerald-100/80 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-350 border-emerald-200/60 dark:border-emerald-800/40'
+                        )}>
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <div className={clsx(
+                      'flex items-center gap-1.5 text-xs',
+                      isSelected ? 'text-primary-100' : 'text-slate-500 dark:text-slate-400'
+                    )}>
+                      <Clock size={11} className={clsx('shrink-0', isSelected ? 'text-primary-200' : 'text-slate-400')} />
+                      <span>{rec.updatedAt || rec.createdAt || 'N/A'}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right panel: Details of selected snapshot */}
+            <div className="md:col-span-3 overflow-y-auto h-[50vh] max-h-[50vh] space-y-4">
+              {selectedRecord ? (
+                <>
+                  <div className="border-b border-slate-100 dark:border-slate-700 pb-3">
+                    <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
+                      {selectedRecord.name}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Snapshot of {selectedRecord.version === 1 ? 'initial creation' : `update version ${selectedRecord.version}`} ({selectedRecord.type})
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <span className="text-slate-400 block mb-0.5">Address</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-200">
+                        {selectedRecord.address}, {selectedRecord.city}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block mb-0.5">Contact</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-200">
+                        {selectedRecord.phone || 'No phone'}
+                        {selectedRecord.email && ` · ${selectedRecord.email}`}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block mb-0.5">Bed Status</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-200">
+                        {selectedRecord.totalBeds - selectedRecord.availableBeds} / {selectedRecord.totalBeds} beds occupied
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block mb-0.5">Medical Officer</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-200">
+                        {selectedRecord.medicalOfficer || 'Unassigned'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      Services / Equipment
+                    </h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedRecord.hasOT && (
+                        <span className="bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                          OT
+                        </span>
+                      )}
+                      {selectedRecord.hasXRay && (
+                        <span className="bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                          X-Ray
+                        </span>
+                      )}
+                      {selectedRecord.hasAmbulance && (
+                        <span className="bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                          Ambulance
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {selectedRecord.specialists && selectedRecord.specialists.length > 0 && (
+                    <div className="space-y-2 border-t border-slate-100 dark:border-slate-700 pt-3">
+                      <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Specialists Registered
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {selectedRecord.specialists.map((s, idx) => (
+                          <span
+                            key={idx}
+                            className="bg-slate-100 dark:bg-slate-700 text-slate-650 dark:text-slate-350 px-2 py-0.5 rounded text-[10px] font-medium"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-12 text-slate-400 dark:text-slate-500">
+                  <span className="text-sm">Select an update version to view details</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
