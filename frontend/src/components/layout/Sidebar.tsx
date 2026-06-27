@@ -7,6 +7,7 @@ import {
   Pill,
   HeartPulse,
   X,
+  LogOut,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
@@ -86,8 +87,8 @@ export function Sidebar() {
       </nav>
 
       {/* User footer */}
-      <div className="px-4 py-4 border-t border-slate-700/60">
-        <div className="flex items-center gap-3 px-1">
+      <div className="px-4 py-4 border-t border-slate-700/60 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3 px-1 min-w-0">
           <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold shrink-0 ring-2 ring-primary-500/30">
             GA
           </div>
@@ -96,6 +97,17 @@ export function Sidebar() {
             <p className="text-slate-500 text-xs truncate">admin@ghc.health</p>
           </div>
         </div>
+        <button
+          onClick={() => {
+            localStorage.removeItem('ghc_auth_token');
+            window.location.href = 'http://localhost:4005';
+          }}
+          className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition shrink-0"
+          aria-label="Sign out"
+          title="Sign Out"
+        >
+          <LogOut size={18} />
+        </button>
       </div>
     </aside>
   );

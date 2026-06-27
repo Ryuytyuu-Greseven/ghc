@@ -42,6 +42,23 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 const API_BASE = 'http://localhost:3000';
 
+export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const token = localStorage.getItem('ghc_auth_token');
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  const response = await window.fetch(url, { ...options, headers });
+  if (response.status === 401) {
+    localStorage.removeItem('ghc_auth_token');
+    window.location.href = 'http://localhost:4005';
+    throw new Error('Unauthorized');
+  }
+  return response;
+}
+
 // Preserve backend validation/conflict messages so forms can show them directly.
 async function getApiErrorMessage(res: Response, fallback: string): Promise<string> {
   try {
@@ -251,10 +268,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async function loadData() {
       try {
         const [hRes, sRes, pRes, mRes] = await Promise.all([
-          fetch(`${API_BASE}/hospitals`),
-          fetch(`${API_BASE}/staff`),
-          fetch(`${API_BASE}/patients`),
-          fetch(`${API_BASE}/medicines`),
+          authFetch(`${API_BASE}/hospitals`),
+          authFetch(`${API_BASE}/staff`),
+          authFetch(`${API_BASE}/patients`),
+          authFetch(`${API_BASE}/medicines`),
         ]);
 
         let hData = await hRes.json();
@@ -264,11 +281,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         if (hData.length === 0 && sData.length === 0) {
           console.log('Database empty. Seeding initial data...');
-          
+
           const seededHospitals: Hospital[] = [];
           for (const h of mockHospitals) {
             const { id, createdAt, ...rest } = h;
-            const res = await fetch(`${API_BASE}/hospitals`, {
+            const res = await authFetch(`${API_BASE}/hospitals`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(rest),
@@ -283,8 +300,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             const originalHospital = mockHospitals.find(h => h.id === s.assignedHospitalId);
             const newHospital = originalHospital ? hData.find((h: any) => h.name === originalHospital.name) : null;
             const body = mapStaffToBackend({ ...s, assignedHospitalId: newHospital ? newHospital.id : null });
-            
-            const res = await fetch(`${API_BASE}/staff`, {
+
+            const res = await authFetch(`${API_BASE}/staff`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(body),
@@ -299,8 +316,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             const originalHospital = mockHospitals.find(h => h.id === p.hospitalId);
             const newHospital = originalHospital ? hData.find((h: any) => h.name === originalHospital.name) : null;
             const body = mapPatientToBackend({ ...p, hospitalId: newHospital ? newHospital.id : null });
-            
-            const res = await fetch(`${API_BASE}/patients`, {
+
+            const res = await authFetch(`${API_BASE}/patients`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(body),
@@ -313,7 +330,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const seededMedicines: Medicine[] = [];
           for (const m of mockMedicines) {
             const body = mapMedicineToBackend(m);
-            const res = await fetch(`${API_BASE}/medicines`, {
+            const res = await authFetch(`${API_BASE}/medicines`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(body),
@@ -337,7 +354,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addHospital = async (h: Omit<Hospital, 'id' | 'createdAt'>) => {
     try {
-      const res = await fetch(`${API_BASE}/hospitals`, {
+      const res = await authFetch(`${API_BASE}/hospitals`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(h),
@@ -351,7 +368,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateHospital = async (id: string, h: Partial<Hospital>) => {
     try {
-      const res = await fetch(`${API_BASE}/hospitals/${id}`, {
+      const res = await authFetch(`${API_BASE}/hospitals/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(h),
@@ -365,7 +382,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteHospital = async (id: string) => {
     try {
-      await fetch(`${API_BASE}/hospitals/${id}`, {
+      await authFetch(`${API_BASE}/hospitals/${id}`, {
         method: 'DELETE',
       });
       setHospitals(prev => prev.filter(x => x.id !== id));
@@ -377,7 +394,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addStaff = async (s: Omit<Staff, 'id' | 'createdAt'>) => {
     try {
       const body = mapStaffToBackend(s);
-      const res = await fetch(`${API_BASE}/staff`, {
+      const res = await authFetch(`${API_BASE}/staff`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -392,7 +409,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateStaff = async (id: string, s: Partial<Staff>) => {
     try {
       const body = mapStaffToBackend(s);
-      const res = await fetch(`${API_BASE}/staff/${id}`, {
+      const res = await authFetch(`${API_BASE}/staff/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -406,7 +423,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteStaff = async (id: string) => {
     try {
-      await fetch(`${API_BASE}/staff/${id}`, {
+      await authFetch(`${API_BASE}/staff/${id}`, {
         method: 'DELETE',
       });
       setStaff(prev => prev.filter(x => x.id !== id));
@@ -420,7 +437,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const staffMember = staff.find(s => s.id === staffId);
       if (!staffMember) return;
       const body = mapStaffToBackend({ ...staffMember, assignedHospitalId: hospitalId });
-      const res = await fetch(`${API_BASE}/staff/${staffId}`, {
+      const res = await authFetch(`${API_BASE}/staff/${staffId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -435,7 +452,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addPatient = async (p: PatientDraft) => {
     try {
       const body = mapPatientToBackend(p);
-      const res = await fetch(`${API_BASE}/patients`, {
+      const res = await authFetch(`${API_BASE}/patients`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -454,7 +471,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updatePatient = async (id: string, p: PatientDraft) => {
     try {
       const body = mapPatientToBackend(p);
-      const res = await fetch(`${API_BASE}/patients/${id}`, {
+      const res = await authFetch(`${API_BASE}/patients/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -472,7 +489,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deletePatient = async (id: string) => {
     try {
-      await fetch(`${API_BASE}/patients/${id}`, {
+      await authFetch(`${API_BASE}/patients/${id}`, {
         method: 'DELETE',
       });
       setPatients(prev => prev.filter(x => x.id !== id));
@@ -484,7 +501,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addMedicine = async (m: Omit<Medicine, 'id' | 'createdAt'>) => {
     try {
       const body = mapMedicineToBackend(m);
-      const res = await fetch(`${API_BASE}/medicines`, {
+      const res = await authFetch(`${API_BASE}/medicines`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -499,7 +516,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateMedicine = async (id: string, m: Partial<Medicine>) => {
     try {
       const body = mapMedicineToBackend(m);
-      const res = await fetch(`${API_BASE}/medicines/${id}`, {
+      const res = await authFetch(`${API_BASE}/medicines/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -513,7 +530,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteMedicine = async (id: string) => {
     try {
-      await fetch(`${API_BASE}/medicines/${id}`, {
+      await authFetch(`${API_BASE}/medicines/${id}`, {
         method: 'DELETE',
       });
       setMedicines(prev => prev.filter(x => x.id !== id));

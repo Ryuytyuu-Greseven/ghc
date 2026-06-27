@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
-import { useApp } from '../../context/AppContext';
+import { useApp, authFetch } from '../../context/AppContext';
 import type { Staff, StaffRole, Department } from '../../types';
 
 const roleOptions = [
@@ -127,7 +127,7 @@ export function StaffForm({ initial, onClose }: Props) {
   useEffect(() => {
     async function fetchFacilities() {
       try {
-        const res = await fetch('http://localhost:3000/hospitals');
+        const res = await authFetch('http://localhost:3000/hospitals');
         const data = await res.json();
         setFacilities(data);
       } catch (err) {
