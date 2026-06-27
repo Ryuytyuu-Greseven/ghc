@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Building2, MapPin, Phone, Mail, BedDouble, Pencil, Trash2, ExternalLink, Stethoscope, Truck } from 'lucide-react';
+import { Plus, Building2, MapPin, Phone, Mail, BedDouble, Pencil, Trash2, ExternalLink, Stethoscope, Truck, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { Button } from '../../components/ui/Button';
@@ -23,6 +23,7 @@ export function HospitalList() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Hospital | null>(null);
   const [filterType, setFilterType] = useState<FilterType>('all');
+  const [deleteTarget, setDeleteTarget] = useState<Hospital | null>(null);
 
   const filtered =
     filterType === 'all' ? hospitals : hospitals.filter(h => h.type === filterType);
@@ -31,13 +32,19 @@ export function HospitalList() {
     setEditing(null);
     setFormOpen(true);
   };
+
   const openEdit = (h: Hospital) => {
     setEditing(h);
     setFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Delete this facility? All associated data will remain.')) deleteHospital(id);
+  const handleDelete = (h: Hospital) => {
+    setDeleteTarget(h);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTarget) deleteHospital(deleteTarget.id);
+    setDeleteTarget(null);
   };
 
   return (
@@ -122,7 +129,7 @@ export function HospitalList() {
                           <Pencil size={14} />
                         </button>
                         <button
-                          onClick={() => handleDelete(h.id)}
+                          onClick={() => handleDelete(h)}
                           className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition"
                           title="Delete"
                         >
@@ -286,6 +293,36 @@ export function HospitalList() {
         title={editing ? 'Edit Facility' : 'Add New Facility'}
       >
         <HospitalForm initial={editing} onClose={() => setFormOpen(false)} />
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Confirm Delete"
+        size="sm"
+      >
+        <div className="flex flex-col items-center text-center gap-4 py-2">
+          <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-full">
+            <AlertTriangle size={32} className="text-red-500 dark:text-red-400" />
+          </div>
+          <div>
+            <p className="text-slate-700 dark:text-slate-200 font-semibold text-base">
+              Delete <span className="text-red-600 dark:text-red-400">{deleteTarget?.name}</span>?
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              This action will permanently remove this {deleteTarget?.type} facility. Staff and patients linked to it will remain in the system.
+            </p>
+          </div>
+          <div className="flex gap-3 w-full pt-2">
+            <Button variant="secondary" className="flex-1" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </Button>
+            <Button variant="danger" className="flex-1" onClick={confirmDelete}>
+              <Trash2 size={14} /> Yes, Delete
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

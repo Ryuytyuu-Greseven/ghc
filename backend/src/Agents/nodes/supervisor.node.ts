@@ -10,12 +10,13 @@ Classify the doctor's spoken request into exactly ONE domain.
 Domains:
 - hospital  → hospital facilities, beds, locations
 - patient   → patient records, admissions, demographics
-- medicine  → pharmacy, drug inventory, stock, prescriptions
+- medicine  → pharmacy, drug list, prescriptions
 - staff     → doctors, nurses, departments, personnel
+- inventory → inventory master items, catalog, warehouse stock, branch stock, stock transfer request approvals, transfer transactions, low stock analytics
 
-Reply with ONLY one word: hospital | patient | medicine | staff`;
+Reply with ONLY one word: hospital | patient | medicine | staff | inventory`;
 
-const VALID_DOMAINS = new Set(['hospital', 'patient', 'medicine', 'staff']);
+const VALID_DOMAINS = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory']);
 
 export async function supervisorNode(state: typeof AgentState.State) {
   const agent = createAgent({

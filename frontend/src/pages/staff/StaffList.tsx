@@ -11,18 +11,20 @@ import { StaffAssign } from './StaffAssign';
 import { clsx } from 'clsx';
 
 const roleVariant: Record<StaffRole, 'info' | 'success' | 'warning' | 'purple' | 'default'> = {
-  doctor: 'info',
-  nurse: 'success',
-  technician: 'warning',
-  admin: 'default',
-  pharmacist: 'purple',
+  Doctor: 'info',
+  Nurse: 'success',
+  'Lab Technician': 'warning',
+  Receptionist: 'default',
+  Pharmacist: 'purple',
+  Compounder: 'default',
+  Cashier: 'default',
 };
 
 const filterOptions = ['all', 'assigned', 'unassigned'] as const;
 type Filter = (typeof filterOptions)[number];
 
 export function StaffList() {
-  const { staff, deleteStaff, hospitals } = useApp();
+  const { staff, updateStaff, deleteStaff, hospitals } = useApp();
   const [formOpen, setFormOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [editing, setEditing] = useState<Staff | null>(null);
@@ -104,6 +106,9 @@ export function StaffList() {
                     <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell">
                       Contact
                     </th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Status
+                    </th>
                     <th className="px-5 py-3 w-24" />
                   </tr>
                 </thead>
@@ -152,6 +157,19 @@ export function StaffList() {
                         </td>
                         <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 hidden lg:table-cell">
                           {s.phone}
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <button
+                            onClick={() => {
+                              updateStaff(s.id, { ...s, isActive: !s.isActive });
+                            }}
+                            title="Click to toggle status"
+                            className="focus:outline-none hover:opacity-85 transition-opacity"
+                          >
+                            <Badge variant={s.isActive ? 'success' : 'danger'}>
+                              {s.isActive ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </button>
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-1 justify-end">
