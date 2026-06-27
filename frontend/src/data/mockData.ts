@@ -3,8 +3,8 @@ import type { Hospital, Staff, Patient, Medicine, HospitalMedicine } from '../ty
 export const mockHospitals: Hospital[] = [
   {
     id: 'h1',
-    name: 'GHC City Hospital',
-    type: 'hospital',
+    name: 'GHC City CHC',
+    type: 'CHC',
     address: '45 Medical Drive',
     city: 'Mumbai',
     phone: '+91 9800001111',
@@ -12,11 +12,14 @@ export const mockHospitals: Hospital[] = [
     totalBeds: 200,
     availableBeds: 52,
     createdAt: '2024-01-10',
+    specialists: ['Surgeon', 'Pediatrician'],
+    hasOT: true,
+    hasAmbulance: true,
   },
   {
     id: 'h2',
-    name: 'GHC Wellness Clinic',
-    type: 'clinic',
+    name: 'GHC Wellness PHC',
+    type: 'PHC',
     address: '12 Park Street',
     city: 'Pune',
     phone: '+91 9800002222',
@@ -24,11 +27,12 @@ export const mockHospitals: Hospital[] = [
     totalBeds: 10,
     availableBeds: 6,
     createdAt: '2024-02-15',
+    medicalOfficer: 'Dr. Priya Sharma',
   },
   {
     id: 'h3',
-    name: 'GHC North Hospital',
-    type: 'hospital',
+    name: 'GHC North CHC',
+    type: 'CHC',
     address: '88 North Ring Road',
     city: 'Bangalore',
     phone: '+91 9800003333',
@@ -36,6 +40,9 @@ export const mockHospitals: Hospital[] = [
     totalBeds: 150,
     availableBeds: 31,
     createdAt: '2024-03-20',
+    specialists: ['Gynecologist'],
+    hasOT: true,
+    hasXRay: true,
   },
 ];
 

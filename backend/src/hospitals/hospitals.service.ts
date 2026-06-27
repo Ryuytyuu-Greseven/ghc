@@ -6,27 +6,27 @@ import { Hospital } from '../schemas/hospital.schema';
 export class HospitalsService {
   constructor(private readonly hospitalRepository: HospitalRepository) {}
 
-  async findAll() {
+  async getAllHospitals() {
     return this.hospitalRepository.findAll({ isActive: true });
   }
 
-  async findOne(id: string) {
+  async getHospitalById(id: string) {
     const hospital = await this.hospitalRepository.findById(id);
     if (!hospital) throw new NotFoundException(`Hospital ${id} not found`);
     return hospital;
   }
 
-  async create(data: Partial<Hospital>) {
+  async createHospital(data: Partial<Hospital>) {
     return this.hospitalRepository.create(data);
   }
 
-  async update(id: string, data: Partial<Hospital>) {
+  async updateHospital(id: string, data: Partial<Hospital>) {
     const hospital = await this.hospitalRepository.update(id, data);
     if (!hospital) throw new NotFoundException(`Hospital ${id} not found`);
     return hospital;
   }
 
-  async remove(id: string) {
+  async deleteHospital(id: string) {
     const hospital = await this.hospitalRepository.delete(id);
     if (!hospital) throw new NotFoundException(`Hospital ${id} not found`);
     return { id, removed: true };

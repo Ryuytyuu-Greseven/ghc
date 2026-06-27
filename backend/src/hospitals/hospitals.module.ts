@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { HospitalsController } from './hospitals.controller';
 import { HospitalsService } from './hospitals.service';
-import { HospitalsHelperService } from './hospitals-helper.service';
 import { Hospital, HospitalSchema } from '../schemas/hospital.schema';
 import { HospitalRepository } from '../repositories/hospital.repository';
 
@@ -11,7 +10,7 @@ import { HospitalRepository } from '../repositories/hospital.repository';
     MongooseModule.forFeature([{ name: Hospital.name, schema: HospitalSchema }]),
   ],
   controllers: [HospitalsController],
-  providers: [HospitalsService, HospitalsHelperService, HospitalRepository],
+  providers: [HospitalsService, HospitalRepository],
   exports: [HospitalRepository],
 })
 export class HospitalsModule {}
