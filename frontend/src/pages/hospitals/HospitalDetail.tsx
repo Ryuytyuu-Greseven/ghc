@@ -29,11 +29,13 @@ import { HospitalForm } from './HospitalForm';
 import { clsx } from 'clsx';
 
 const roleVariant: Record<StaffRole, 'info' | 'success' | 'warning' | 'purple' | 'default'> = {
-  doctor: 'info',
-  nurse: 'success',
-  technician: 'warning',
-  admin: 'default',
-  pharmacist: 'purple',
+  Doctor: 'info',
+  Nurse: 'success',
+  'Lab Technician': 'warning',
+  Receptionist: 'default',
+  Pharmacist: 'purple',
+  Compounder: 'default',
+  Cashier: 'default',
 };
 
 const categoryVariant: Record<MedicineCategory, 'success' | 'info' | 'warning' | 'purple'> = {

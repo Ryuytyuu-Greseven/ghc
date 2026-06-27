@@ -112,3 +112,114 @@ export interface HospitalMedicine {
   quantity: number;
   assignedAt: string;
 }
+
+// ── Inventory Module ──────────────────────────────────────────────────────────
+
+export type InventoryCategory =
+  | 'Medicine'
+  | 'Equipment'
+  | 'Consumable'
+  | 'Surgical'
+  | 'Diagnostic'
+  | 'Other';
+
+export type InventoryStatus = 'Active' | 'Inactive';
+
+export type RequestStatus = 'Pending' | 'Approved' | 'Rejected' | 'Partial';
+
+export type TransactionType =
+  | 'Purchase'
+  | 'Transfer'
+  | 'Issue'
+  | 'Return'
+  | 'Damage'
+  | 'Expiry'
+  | 'Adjustment';
+
+export interface InventoryMaster {
+  _id: string;
+  itemCode: string;
+  itemName: string;
+  category: InventoryCategory;
+  unit: string;
+  status: InventoryStatus;
+  createdAt: string;
+}
+
+export interface PopulatedItem {
+  _id: string;
+  itemName: string;
+  itemCode: string;
+  unit: string;
+}
+
+export interface CentralInventoryEntry {
+  _id: string;
+  itemId: PopulatedItem;
+  availableQty: number;
+  damagedQty: number;
+  batchNo: string;
+  expiryDate: string | null;
+  updatedAt: string;
+}
+
+export interface BranchInventoryEntry {
+  _id: string;
+  branchId: string;
+  itemId: PopulatedItem;
+  availableQty: number;
+  damagedQty: number;
+  batchNo: string;
+  expiryDate: string | null;
+  updatedAt: string;
+}
+
+export interface RequestItem {
+  itemId: PopulatedItem;
+  requestedQty: number;
+  approvedQty: number;
+  issuedQty: number;
+}
+
+export interface PopulatedBranch {
+  _id: string;
+  name: string;
+  city: string;
+}
+
+export interface InventoryRequest {
+  _id: string;
+  requestNumber: string;
+  branchId: PopulatedBranch;
+  requestedBy: string;
+  status: RequestStatus;
+  remarks: string;
+  items: RequestItem[];
+  createdAt: string;
+}
+
+export interface InventoryTransaction {
+  _id: string;
+  itemId: PopulatedItem;
+  fromLocation: string;
+  toLocation: string;
+  quantity: number;
+  transactionType: TransactionType;
+  requestId: { _id: string; requestNumber: string } | null;
+  performedBy: string;
+  createdAt: string;
+}
+
+export interface PaginationMeta {
+  page: number;
+  pageSize: number;
+  totalRecords: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMeta;
+}

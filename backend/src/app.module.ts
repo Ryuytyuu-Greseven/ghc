@@ -8,6 +8,7 @@ import { PatientsModule } from './patients/patients.module';
 import { MedicinesModule } from './medicines/medicines.module';
 import { StaffModule } from './staff/staff.module';
 import { VoiceGatewayModule } from './voice-gateway/voice-gateway.module';
+import { InventoryModule } from './inventory/inventory.module';
 import { config } from 'dotenv';
 config();
 
@@ -27,6 +28,7 @@ config();
     MedicinesModule,
     StaffModule,
     VoiceGatewayModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
