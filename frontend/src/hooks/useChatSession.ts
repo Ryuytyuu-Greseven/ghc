@@ -245,7 +245,12 @@ export function useChatSession({
     setConnectionState('connecting');
     setError(null);
 
-    const socket = io(`${BACKEND_URL}/chat`, { transports: ['websocket'] });
+    const token = localStorage.getItem('ghc_auth_token');
+    const namespace = mode === 'voice' ? 'voice' : 'chat';
+    const socket = io(`${BACKEND_URL}/${namespace}`, {
+      transports: ['websocket'],
+      auth: { token },
+    });
     socketRef.current = socket;
 
     socket.on('session:ready', ({ sessionId: id }: { sessionId: string }) => {

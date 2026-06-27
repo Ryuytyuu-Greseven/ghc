@@ -10,13 +10,22 @@ import { InventoryState } from './states/inventory.state';
 import { PatientState } from './states/patient.state';
 
 const BASE = process.env.API_BASE_URL ?? 'http://localhost:3000';
+import { httpClient } from '../common/services/http.service';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function apiFetch(path: string, init?: RequestInit) {
-  const res = await fetch(`${BASE}${path}`, init);
-  if (!res.ok) throw new Error(`API ${path} returned ${res.status}`);
-  return res.json();
+  const method = init?.method ?? 'GET';
+  const headers = init?.headers as any;
+  const data = init?.body ? JSON.parse(init.body as string) : undefined;
+  
+  const res = await httpClient.request({
+    url: path,
+    method,
+    headers,
+    data,
+  });
+  return res.data;
 }
 
 async function llmClassify(

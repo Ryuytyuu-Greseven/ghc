@@ -1,7 +1,28 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { httpClient } from '../../common/services/http.service';
 
 const BASE = process.env.API_BASE_URL ?? 'http://localhost:3000';
+
+async function fetch(url: string, init?: any) {
+  const path = url.startsWith(BASE) ? url.substring(BASE.length) : url;
+  const method = init?.method ?? 'GET';
+  const headers = init?.headers;
+  const data = init?.body ? JSON.parse(init.body) : undefined;
+
+  const res = await httpClient.request({
+    url: path,
+    method,
+    headers,
+    data,
+  });
+
+  return {
+    ok: res.status >= 200 && res.status < 300,
+    status: res.status,
+    json: async () => res.data,
+  };
+}
 
 const bloodGroupEnum = z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
 
