@@ -1,0 +1,15 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# NestJS / Node dependencies & build in login_backend
+login_backend/node_modules/
+login_backend/dist/
+login_backend/.env
+login_backend/*.log
+
+# React / Node dependencies & build in login_frontend
+login_frontend/node_modules/
+login_frontend/dist/
+login_frontend/*.local
+login_frontend/*.log
