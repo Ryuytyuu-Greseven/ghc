@@ -27,14 +27,8 @@ export class PatientRepository {
     return this.patientModel.find({ hospitalId }).populate('hospitalId').exec();
   }
 
-  async findByEmail(email: string, excludeId?: string): Promise<PatientDocument | null> {
-    const filter: Record<string, unknown> = { email };
-    if (excludeId) filter._id = { $ne: excludeId };
-    return this.patientModel.findOne(filter).exec();
-  }
-
-  async findByPhone(phone: string, excludeId?: string): Promise<PatientDocument | null> {
-    const filter: Record<string, unknown> = { phone };
+  async findByAadhaarNumber(aadhaarNumber: string, excludeId?: string): Promise<PatientDocument | null> {
+    const filter: Record<string, unknown> = { aadhaarNumber };
     if (excludeId) filter._id = { $ne: excludeId };
     return this.patientModel.findOne(filter).exec();
   }

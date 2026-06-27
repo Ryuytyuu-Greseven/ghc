@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, UserRound, BedDouble, Pencil, Trash2 } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
 import { Button } from '../../components/ui/Button';
@@ -11,6 +12,7 @@ import { clsx } from 'clsx';
 
 export function PatientList() {
   const { patients, deletePatient, hospitals } = useApp();
+  const navigate = useNavigate();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Patient | null>(null);
   const [filterHospital, setFilterHospital] = useState('all');
@@ -39,8 +41,8 @@ export function PatientList() {
         <div className="max-w-screen-2xl mx-auto space-y-5">
 
           {/* Toolbar */}
-          <div className="flex items-start justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-start gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
               <button
                 onClick={() => setFilterHospital('all')}
                 className={clsx(
@@ -67,24 +69,27 @@ export function PatientList() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Stats bar */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+              <span className="tabular-nums">{filtered.length} patients total</span>
+              <span className="text-slate-200 dark:text-slate-700">|</span>
+              <span className="flex items-center gap-1.5 text-rose-500 dark:text-rose-400">
+                <BedDouble size={14} />
+                <span className="tabular-nums">{bedRequired} need beds</span>
+              </span>
+            </div>
             <Button
+              className="shrink-0"
               onClick={() => {
                 setEditing(null);
                 setFormOpen(true);
               }}
             >
-              <Plus size={15} /> Onboard Patient
+              <Plus size={15} /> Admit Patient
             </Button>
-          </div>
-
-          {/* Stats bar */}
-          <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-            <span className="tabular-nums">{filtered.length} patients total</span>
-            <span className="text-slate-200 dark:text-slate-700">|</span>
-            <span className="flex items-center gap-1.5 text-rose-500 dark:text-rose-400">
-              <BedDouble size={14} />
-              <span className="tabular-nums">{bedRequired} need beds</span>
-            </span>
           </div>
 
           {/* Cards grid */}
@@ -94,7 +99,8 @@ export function PatientList() {
               return (
                 <div
                   key={p.id}
-                  className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 hover:shadow-md dark:hover:shadow-slate-900/40 transition-shadow flex flex-col"
+                  onClick={() => navigate(`/patients/${p.id}`)}
+                  className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 hover:shadow-md dark:hover:shadow-slate-900/40 transition-shadow flex flex-col cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3 min-w-0">
@@ -114,14 +120,20 @@ export function PatientList() {
                     </div>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
                       <button
-                        onClick={() => openEdit(p)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openEdit(p);
+                        }}
                         className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
                         title="Edit"
                       >
                         <Pencil size={14} />
                       </button>
                       <button
-                        onClick={() => handleDelete(p.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleDelete(p.id);
+                        }}
                         className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition"
                         title="Delete"
                       >
@@ -131,12 +143,6 @@ export function PatientList() {
                   </div>
 
                   <div className="space-y-2 text-sm flex-1">
-                    <div className="flex justify-between gap-2">
-                      <span className="text-slate-500 dark:text-slate-400 shrink-0">Condition</span>
-                      <span className="text-slate-700 dark:text-slate-200 font-medium text-right truncate">
-                        {p.condition}
-                      </span>
-                    </div>
                     <div className="flex justify-between gap-2">
                       <span className="text-slate-500 dark:text-slate-400 shrink-0">Blood Group</span>
                       <span className="text-slate-700 dark:text-slate-200 font-medium text-right">
@@ -161,6 +167,10 @@ export function PatientList() {
                       <span className="text-slate-500 dark:text-slate-400 shrink-0">Email</span>
                       <span className="text-slate-700 dark:text-slate-200 text-right truncate">{p.email || '—'}</span>
                     </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-slate-500 dark:text-slate-400 shrink-0">Aadhaar</span>
+                      <span className="text-slate-700 dark:text-slate-200 tabular-nums">{p.aadhaarNumber || '—'}</span>
+                    </div>
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
@@ -178,7 +188,7 @@ export function PatientList() {
             <div className="text-center py-20 text-slate-400 dark:text-slate-500">
               <UserRound size={40} className="mx-auto mb-3 opacity-30" />
               <p className="font-medium text-slate-500 dark:text-slate-400">No patients found</p>
-              <p className="text-sm mt-1">Onboard your first patient to get started.</p>
+              <p className="text-sm mt-1">Admit your first patient to get started.</p>
             </div>
           )}
 
@@ -188,7 +198,7 @@ export function PatientList() {
       <Modal
         open={formOpen}
         onClose={() => setFormOpen(false)}
-        title={editing ? 'Edit Patient' : 'Onboard Patient'}
+        title={editing ? 'Edit Patient' : 'Admit Patient'}
       >
         <PatientForm initial={editing} onClose={() => setFormOpen(false)} />
       </Modal>

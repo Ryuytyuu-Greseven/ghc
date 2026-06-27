@@ -686,7 +686,7 @@ export function HospitalDetail() {
                           Patient
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden sm:table-cell">
-                          Condition
+                          Blood Group
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">
                           Admitted
@@ -722,7 +722,7 @@ export function HospitalDetail() {
                             </div>
                           </td>
                           <td className="px-6 py-3 text-slate-500 dark:text-slate-400 hidden sm:table-cell truncate max-w-[160px]">
-                            {p.condition}
+                            {p.bloodGroup}
                           </td>
                           <td className="px-6 py-3 text-slate-500 dark:text-slate-400 hidden md:table-cell tabular-nums">
                             {p.admittedAt}

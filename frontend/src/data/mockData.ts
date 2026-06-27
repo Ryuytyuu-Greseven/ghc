@@ -118,11 +118,11 @@ export const mockPatients: Patient[] = [
     bloodGroup: 'B+',
     phone: '+91 9900001111',
     email: 'kavitha.nair@example.com',
+    aadhaarNumber: '123456789012',
     address: '5 Rose Lane, Mumbai',
     hospitalId: 'h1',
     bedRequired: true,
     admittedAt: '2024-06-01',
-    condition: 'Cardiac monitoring',
   },
   {
     id: 'p2',
@@ -132,11 +132,11 @@ export const mockPatients: Patient[] = [
     bloodGroup: 'O+',
     phone: '+91 9900002222',
     email: 'suresh.patel@example.com',
+    aadhaarNumber: '234567890123',
     address: '22 Oak Street, Pune',
     hospitalId: 'h2',
     bedRequired: false,
     admittedAt: '2024-06-05',
-    condition: 'Diabetes follow-up',
   },
   {
     id: 'p3',
@@ -146,11 +146,11 @@ export const mockPatients: Patient[] = [
     bloodGroup: 'A-',
     phone: '+91 9900003333',
     email: 'meena.reddy@example.com',
+    aadhaarNumber: '345678901234',
     address: '10 Elm Road, Bangalore',
     hospitalId: 'h3',
     bedRequired: true,
     admittedAt: '2024-06-08',
-    condition: 'Post-surgery recovery',
   },
 ];
 

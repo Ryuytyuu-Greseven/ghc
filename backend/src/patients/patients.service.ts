@@ -12,9 +12,9 @@ const requiredCreateFields: (keyof CreatePatientDto)[] = [
   'bloodGroup',
   'phone',
   'email',
+  'aadhaarNumber',
   'address',
   'hospitalId',
-  'condition',
   'bedRequired',
 ];
 
@@ -41,7 +41,7 @@ export class PatientsService {
 
   async create(data: CreatePatientDto) {
     const patient = this.prepareCreate(data);
-    await this.ensureUniqueContact(patient);
+    await this.ensureUniqueAadhaar(patient);
     return this.patientRepository.create(this.toPatientPersistence(patient));
   }
 
@@ -50,7 +50,7 @@ export class PatientsService {
     if (!existing) throw new NotFoundException(`Patient ${id} not found`);
 
     const patient = this.prepareUpdate(data);
-    await this.ensureUniqueContact(patient, id);
+    await this.ensureUniqueAadhaar(patient, id);
     const updated = await this.patientRepository.update(id, this.toPatientPersistence(patient));
     if (!updated) throw new NotFoundException(`Patient ${id} not found`);
     return updated;
@@ -95,9 +95,9 @@ export class PatientsService {
       name: data.name?.trim(),
       phone: data.phone?.trim(),
       email: data.email?.trim().toLowerCase(),
+      aadhaarNumber: data.aadhaarNumber?.trim(),
       address: data.address?.trim(),
       hospitalId: data.hospitalId?.trim(),
-      condition: data.condition?.trim(),
       age: data.age === undefined ? undefined : Number(data.age),
     };
   }
@@ -115,19 +115,17 @@ export class PatientsService {
     if (data.hospitalId !== undefined && !Types.ObjectId.isValid(data.hospitalId)) {
       throw new BadRequestException('hospitalId is invalid');
     }
+    if (data.aadhaarNumber !== undefined && !/^\d{12}$/.test(data.aadhaarNumber)) {
+      throw new BadRequestException('aadhaarNumber must be 12 digits');
+    }
   }
 
-  private async ensureUniqueContact(data: CreatePatientDto | UpdatePatientDto, excludeId?: string) {
-    // Check phone first so the frontend can show the most specific duplicate message.
-    if (data.phone) {
-      const existingPhone = await this.patientRepository.findByPhone(data.phone, excludeId);
-      if (existingPhone) throw new ConflictException('Patient with same number already exists');
-    }
+  private async ensureUniqueAadhaar(data: CreatePatientDto | UpdatePatientDto, excludeId?: string) {
+    // Aadhaar is the patient identity comparison key; phone/email can be shared or updated.
+    if (!data.aadhaarNumber) return;
 
-    if (data.email) {
-      const existingEmail = await this.patientRepository.findByEmail(data.email, excludeId);
-      if (existingEmail) throw new ConflictException('Patient with same email already exists');
-    }
+    const existingPatient = await this.patientRepository.findByAadhaarNumber(data.aadhaarNumber, excludeId);
+    if (existingPatient) throw new ConflictException('Patient with same Aadhaar number already exists');
   }
 
   private toPatientPersistence(data: CreatePatientDto | UpdatePatientDto): Partial<Patient> {

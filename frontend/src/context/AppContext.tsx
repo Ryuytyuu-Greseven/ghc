@@ -206,12 +206,12 @@ function mapPatientFromBackend(item: any): Patient {
     bloodGroup: item.bloodGroup,
     phone: item.phone ?? '',
     email: item.email ?? '',
+    aadhaarNumber: item.aadhaarNumber ?? '',
     address: item.address ?? '',
     // Patient APIs may populate hospitalId; UI filters need the raw facility ID string.
     hospitalId: getBackendId(item.hospitalId),
     bedRequired: item.bedRequired ?? false,
     admittedAt: item.admittedAt ? new Date(item.admittedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-    condition: item.condition ?? '',
   };
 }
 
@@ -223,11 +223,11 @@ function mapPatientToBackend(p: any): any {
     bloodGroup: p.bloodGroup,
     phone: p.phone ?? '',
     email: p.email ?? '',
+    aadhaarNumber: p.aadhaarNumber ?? '',
     address: p.address ?? '',
     hospitalId: p.hospitalId || null,
     bedRequired: p.bedRequired ?? false,
     ...(p.admittedAt ? { admittedAt: new Date(p.admittedAt) } : {}),
-    condition: p.condition ?? '',
     isActive: true,
   };
 }
