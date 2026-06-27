@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { AIMessage, HumanMessage } from '@langchain/core/messages';
 import { SessionService } from './session.service';
 import { supervisorNode } from '../Agents/nodes/supervisor.node';
-import { hospitalAgent } from '../Agents/nodes/hospital.node';
+// import { hospitalAgent } from '../Agents/nodes/hospital.node';
 import { patientAgent } from '../Agents/nodes/patient.node';
 import { medicineAgent } from '../Agents/nodes/medicine.node';
 import { staffAgent } from '../Agents/nodes/staff.node';
@@ -21,7 +21,7 @@ import { toPlainSpeechText } from '../Agents/prompts/guardrails.prompt';
 import { httpLocalStorage } from '../common/services/http.service';
 
 const domainAgentMap: Record<string, any> = {
-  hospital: hospitalAgent,
+  // hospital: hospitalAgent,
   patient: patientAgent,
   medicine: medicineAgent,
   staff: staffAgent,

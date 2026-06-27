@@ -8,7 +8,6 @@ import { appInstance } from '../../main';
 // import z from 'zod';
 import { HOSPITAL_SEARCH_PROMPT } from '../prompts/hospital.prompt';
 import { fetchHospitalByName } from '../tools/hospital.tools';
-import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { createAgent } from 'langchain';
 
 export function createHospitalTools(): HospitalTools {
@@ -62,11 +61,6 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailablity, medicalI
     return { intent };
   };
 
-  //   fetchHospitals = async (state: typeof PatientState.State) => {
-  //     const hospitals = await this.hospitalsService.getAllHospitals();
-  //     return { finalResponse: JSON.stringify(hospitals) };
-  //   };
-
   fetchHospitals = async (state: typeof PatientState.State) => {
     console.log('Fetch Hospitals', state.query);
     const agent = createAgent({
@@ -75,13 +69,6 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailablity, medicalI
       systemPrompt: HOSPITAL_SEARCH_PROMPT,
     });
     const response = await agent.invoke({ messages: state.messages });
-    // const response = await llmInstance.invoke(
-    //   [
-    //     new SystemMessage(HOSPITAL_SEARCH_PROMPT),
-    //     new HumanMessage(state.query),
-    //   ],
-    //   { tools: [fetchHospitalByName] },
-    // );
     console.log('Fetch Hospitals Response', response);
     const text =
       typeof response.messages[response.messages.length - 1]?.content === 'string'

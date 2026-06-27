@@ -33,7 +33,8 @@ export const hospitalGraph = new StateGraph(PatientState)
   )
   .addEdge(START, 'classify_intent')
   .addEdge('classify_intent', 'fetchHospitals')
-  .addEdge('fetchHospitals', END).compile();
+  .addEdge('fetchHospitals', END)
+  .compile();
 
 export async function hospitalNode(state: typeof AgentState.State) {
   const lastContent = state.messages.at(-1)?.content;
