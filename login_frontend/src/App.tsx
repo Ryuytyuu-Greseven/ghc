@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Lock, User, AlertCircle, Loader2, ShieldCheck } from 'lucide-react';
 import logo from './assets/logo.png';
+import { environment } from './config/environment';
 
 export default function App() {
   const [username, setUsername] = useState('');
@@ -19,7 +20,7 @@ export default function App() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3001/auth/login', {
+      const response = await fetch(`${environment.loginBackendUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,7 +38,7 @@ export default function App() {
       }
 
       // Single Sign-On Redirect: redirect to main app passing token as a query param
-      window.location.href = `http://localhost:5173/?token=${encodeURIComponent(data.access_token)}`;
+      window.location.href = `${environment.mainFrontendUrl}/?token=${encodeURIComponent(data.access_token)}`;
     } catch (err: any) {
       setError(err.message || 'Failed to connect. Please ensure the backend is running.');
     } finally {
