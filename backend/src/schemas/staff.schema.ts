@@ -59,11 +59,7 @@ export class Staff {
   })
   employmentType: string;
 
-  @Prop({
-    enum: ['Active', 'Inactive'],
-    default: 'Active',
-  })
-  status: string;
+
 
   @Prop({ trim: true })
   username?: string;
@@ -120,6 +116,9 @@ export class Staff {
     required: true,
   })
   hospitalId: Types.ObjectId;
+
+  @Prop({ default: false })
+  isMedicalIncharge?: boolean;
 
   @Prop({ default: true })
   isActive: boolean;
