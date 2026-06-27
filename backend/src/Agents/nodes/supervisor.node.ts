@@ -28,6 +28,7 @@ export async function supervisorNode(state: typeof AgentState.State) {
     messages: [new HumanMessage(state.transcript)],
   });
 
+  console.log('Initial Supervisor Response', response, state.transcript);
   const last = response.messages[response.messages.length - 1];
   const raw = (last.content as string).trim().toLowerCase();
   const domain = VALID_DOMAINS.has(raw) ? raw : 'patient';

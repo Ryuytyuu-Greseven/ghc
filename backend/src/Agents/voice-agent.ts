@@ -12,6 +12,7 @@ import { toPlainSpeechText } from './prompts/guardrails.prompt';
 const DOMAIN_NODES = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory']);
 
 function routeDomain(state: typeof AgentState.State): string {
+  console.log('Route Domain', state.domain);
   return DOMAIN_NODES.has(state.domain) ? state.domain : 'patient';
 }
 

@@ -1,7 +1,9 @@
-import { Controller, Get, Put, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Put, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { BranchInventoryService } from './branch-inventory.service';
 
 @Controller('branch-inventory')
+@UseGuards(JwtAuthGuard)
 export class BranchInventoryController {
   constructor(private readonly service: BranchInventoryService) {}
 

@@ -30,9 +30,11 @@ import { BranchInventoryHelperService } from './branch-inventory/branch-inventor
 import { InventoryRequestsService } from './inventory-requests/inventory-requests.service';
 import { InventoryRequestsHelperService } from './inventory-requests/inventory-requests-helper.service';
 import { InventoryTransactionsService } from './inventory-transactions/inventory-transactions.service';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
+    AuthModule,
     MongooseModule.forFeature([
       { name: InventoryMaster.name, schema: InventoryMasterSchema },
       { name: CentralInventory.name, schema: CentralInventorySchema },
