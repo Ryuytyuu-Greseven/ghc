@@ -19,13 +19,14 @@ import {
   History,
   Clock,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../../components/layout/Header';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Modal } from '../../components/ui/Modal';
 import { useApp } from '../../context/AppContext';
+import { hospitalApi } from '../../services/hospitalApi';
 import type { StaffRole, MedicineCategory, Hospital } from '../../types';
 import { HospitalForm } from './HospitalForm';
 import { clsx } from 'clsx';
@@ -94,8 +95,42 @@ export function HospitalDetail() {
   const [historyRecords, setHistoryRecords] = useState<Hospital[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<Hospital | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [fetchedHospital, setFetchedHospital] = useState<Hospital | null>(null);
+  const [loadingHospital, setLoadingHospital] = useState(false);
 
-  const hospital = hospitals.find(h => h.id === id);
+  const contextHospital = hospitals.find(h => h.id === id);
+  const hospital = contextHospital ?? fetchedHospital;
+
+  // If not found in context (e.g. direct URL navigation / page refresh), fetch directly
+  useEffect(() => {
+    if (!contextHospital && id) {
+      setLoadingHospital(true);
+      hospitalApi.getHospital(id)
+        .then(data => {
+          const h = data as any;
+          setFetchedHospital({
+            ...h,
+            id: h.hospitalId ?? h._id ?? h.id ?? '',
+          });
+        })
+        .catch(() => setFetchedHospital(null))
+        .finally(() => setLoadingHospital(false));
+    }
+  }, [id, contextHospital]);
+
+  if (loadingHospital) {
+    return (
+      <div className="flex flex-col h-full">
+        <Header title="Loading..." />
+        <div className="flex-1 flex items-center justify-center text-slate-400 dark:text-slate-500">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-sm">Loading facility details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleOpenHistory = async () => {
     if (!hospital) return;
