@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { FacilityType } from '../shared/facility-type.enum';
+import { FacilityType } from '../shared/enums/facility-type.enum';
 
 export type HospitalDocument = Hospital & Document;
 
