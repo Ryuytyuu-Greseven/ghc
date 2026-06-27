@@ -15,6 +15,7 @@ import { hospitalAgent } from '../Agents/nodes/hospital.node';
 import { patientAgent } from '../Agents/nodes/patient.node';
 import { medicineAgent } from '../Agents/nodes/medicine.node';
 import { staffAgent } from '../Agents/nodes/staff.node';
+import { inventoryAgent } from '../Agents/nodes/inventory.node';
 import { synthesizeSpeech } from '../google/tts.service';
 import { toPlainSpeechText } from '../Agents/prompts/guardrails.prompt';
 
@@ -23,6 +24,7 @@ const domainAgentMap: Record<string, any> = {
   patient: patientAgent,
   medicine: medicineAgent,
   staff: staffAgent,
+  inventory: inventoryAgent,
 };
 
 const TTS_CHUNK_SIZE = 64 * 1024;

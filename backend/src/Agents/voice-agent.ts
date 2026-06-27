@@ -5,10 +5,11 @@ import { hospitalNode } from './nodes/hospital.node';
 import { patientNode } from './nodes/patient.node';
 import { medicineNode } from './nodes/medicine.node';
 import { staffNode } from './nodes/staff.node';
+import { inventoryNode } from './nodes/inventory.node';
 import { transcribeAudio, type TranscribeOptions } from '../google/speech.service';
 import { toPlainSpeechText } from './prompts/guardrails.prompt';
 
-const DOMAIN_NODES = new Set(['hospital', 'patient', 'medicine', 'staff']);
+const DOMAIN_NODES = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory']);
 
 function routeDomain(state: typeof AgentState.State): string {
   return DOMAIN_NODES.has(state.domain) ? state.domain : 'patient';
@@ -22,12 +23,14 @@ export const voiceAgentGraph = new StateGraph(AgentState)
   .addNode('patient', patientNode)
   .addNode('medicine', medicineNode)
   .addNode('staff', staffNode)
+  .addNode('inventory', inventoryNode)
   .addEdge(START, 'supervisor')
   .addConditionalEdges('supervisor', routeDomain)
   .addEdge('hospital', END)
   .addEdge('patient', END)
   .addEdge('medicine', END)
   .addEdge('staff', END)
+  .addEdge('inventory', END)
   .compile();
 
 export async function runVoiceAgent(
