@@ -42,7 +42,7 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 const API_BASE = 'http://localhost:3000';
 
-async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = localStorage.getItem('ghc_auth_token');
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),

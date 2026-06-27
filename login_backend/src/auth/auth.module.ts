@@ -14,12 +14,18 @@ import { UsersModule } from '../users/users.module';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'ghc-ai-secret-key-4005',
-        signOptions: {
-          expiresIn: (configService.get<string>('JWT_EXPIRES_IN') || '24h') as any,
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new Error('JWT_SECRET env variable is not defined');
+        }
+        return {
+          secret,
+          signOptions: {
+            expiresIn: (configService.get<string>('JWT_EXPIRES_IN') || '24h') as any,
+          },
+        };
+      },
     }),
   ],
   controllers: [AuthController],

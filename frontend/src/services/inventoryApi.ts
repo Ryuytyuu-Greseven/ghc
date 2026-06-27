@@ -6,11 +6,12 @@ import type {
   InventoryTransaction,
   PaginatedResponse,
 } from '../types';
+import { authFetch } from '../context/AppContext';
 
 const BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:3000';
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await authFetch(`${BASE}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: body != null ? JSON.stringify(body) : undefined,
