@@ -1,21 +1,31 @@
-import { ChatVertexAI } from '@langchain/google-vertexai';
+import {
+  ChatVertexAI,
+  type ChatVertexAIInput,
+} from '@langchain/google-vertexai';
 import { config } from 'dotenv';
+import { patchConnectionFormatData } from './thought-signature.util';
 
 config();
 
+class ChatVertexAIWithThoughtBypass extends ChatVertexAI {
+  constructor(fields?: ChatVertexAIInput) {
+    super(fields);
+    patchConnectionFormatData(this.connection);
+    patchConnectionFormatData(this.streamedConnection);
+  }
+}
+
 const generateInstance = () => {
-  return new ChatVertexAI({
+  return new ChatVertexAIWithThoughtBypass({
     apiKey: process.env.GEMINI_API_KEY,
-    modelName: 'gemini-3.1-flash-lite',
-    // location: 'us-central1',
-    temperature: 0.1,
-    thinkingLevel: 'LOW',
+    modelName: 'gemini-3.5-flash',
+    temperature: 0,
     cache: true,
     disableStreaming: false,
-    reasoningLevel: 'low',
     streaming: true,
     vertexai: true,
+    // thinkingBudget: 0,
   });
 };
 
-export const llmInstance: ChatVertexAI = generateInstance();
+export const llmInstance = generateInstance();

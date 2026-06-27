@@ -1,18 +1,25 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Query } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { HospitalsService } from './hospitals.service';
 
 @Controller('hospitals')
+@UseGuards(JwtAuthGuard)
 export class HospitalsController {
-  constructor(private readonly hospitalsService: HospitalsService) {}
+  constructor(private readonly hospitalsService: HospitalsService) { }
 
   @Get()
-  getHospitals() {
-    return this.hospitalsService.getAllHospitals();
+  getHospitals(@Query() query?: Record<string, any>) {
+    return this.hospitalsService.getAllHospitals(query);
   }
 
   @Get(':id')
   getHospital(@Param('id') id: string) {
     return this.hospitalsService.getHospitalById(id);
+  }
+
+  @Get(':id/history')
+  getHospitalHistory(@Param('id') id: string) {
+    return this.hospitalsService.getHospitalHistory(id);
   }
 
   @Post()
