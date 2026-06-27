@@ -18,12 +18,6 @@ function getHospitalToolsClass(): HospitalTools {
   return hospitalToolsClass;
 }
 
-// export const hospitalAgent = createAgent({
-//   model: llmInstance,
-//   tools: hospitalTools,
-//   systemPrompt: withGuardrails(HOSPITAL_PROMPT),
-// });
-
 export const hospitalGraph = new StateGraph(PatientState)
   .addNode('classify_intent', (state) =>
     getHospitalToolsClass().clasifyHospitalIntent(state),
