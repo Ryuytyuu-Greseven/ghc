@@ -1,6 +1,7 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { httpClient } from '../../common/services/http.service';
+import { AgentState } from '../state';
 
 const BASE = process.env.API_BASE_URL ?? 'http://localhost:3000';
 
@@ -24,7 +25,13 @@ async function fetch(url: string, init?: any) {
   };
 }
 
-const roleEnum = z.enum(['Doctor', 'Nurse', 'Pharmacist', 'Technician', 'Admin']);
+const roleEnum = z.enum([
+  'Doctor',
+  'Nurse',
+  'Pharmacist',
+  'Technician',
+  'Admin',
+]);
 
 const listStaff = tool(
   async ({ hospitalId, role }) => {
@@ -36,9 +43,13 @@ const listStaff = tool(
   },
   {
     name: 'list_staff',
-    description: 'List all active staff; optionally filter by hospital ID or role',
+    description:
+      'List all active staff; optionally filter by hospital ID or role',
     schema: z.object({
-      hospitalId: z.string().optional().describe('Filter by hospital MongoDB ObjectId'),
+      hospitalId: z
+        .string()
+        .optional()
+        .describe('Filter by hospital MongoDB ObjectId'),
       role: roleEnum.optional().describe('Filter by staff role'),
     }),
   },
@@ -127,3 +138,66 @@ export const staffTools = [
   updateStaff,
   deleteStaff,
 ];
+
+export const findAbsenceStaff = tool(
+  () => {
+    // call the function to find the absence staff members
+    // update to state 
+    // state.staffAbsence = [...staffAbsence];
+    return JSON.stringify({ message: 'Found Few Staff Members Absent' });
+  },
+  {
+    name: 'find_absence_staff',
+    description: 'Find staff members who are absent',
+    schema: z.object({
+      hospitalId: z.string().describe('MongoDB ObjectId of the hospital'),
+    }),
+  },
+);
+
+export const findAvailableStaff = tool(
+  () => {
+    // call the function to find the available staff members
+    // update to state 
+    // state.staffAvailable = [...staffAvailable];
+    return JSON.stringify({ message: 'Found Few Staff Members Available' });
+  },
+  {
+    name: 'find_available_staff',
+    description: 'Find staff members who are available',
+    schema: z.object({
+      hospitalId: z.string().describe('MongoDB ObjectId of the hospital'),
+    }),
+  },
+);
+
+export const mapStaff = tool(
+  (state: typeof AgentState.State) => {
+    // map the staff members to the available staff members
+    // state.mappedStaff = [...mappedStaff];
+    return JSON.stringify({ message: 'Mapped Staff Members' });
+  },
+  {
+    name: 'map_staff',
+    description: 'Map staff members to the hospital',
+    schema: z.object({
+      hospitalId: z.string().describe('MongoDB ObjectId of the hospital'),
+    }),
+  },
+);
+
+export const runTransfer = tool(
+  () => {
+    // call the function to run the transfer
+    // update in db
+    // clear the state variables
+    return JSON.stringify({ message: 'Transfer Completed' });
+  },
+  {
+    name: 'run_transfer',
+    description: 'Run the transfer of staff members',
+    schema: z.object({
+      hospitalId: z.string().describe('MongoDB ObjectId of the hospital'),
+    }),
+  },
+);
