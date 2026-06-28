@@ -246,7 +246,7 @@ export function HospitalDetail() {
                 <History size={14} /> {t('hospitals.detail.viewHistory')}
               </Button>
               <Button onClick={() => setEditOpen(true)} variant="secondary">
-                <Pencil size={14} /> {t('common.edit') + ' ' + t('common.hospitals')}
+                <Pencil size={14} /> {t('hospitals.form.editFacility')}
               </Button>
             </div>
           </div>
@@ -791,7 +791,7 @@ export function HospitalDetail() {
       </div>
 
       {/* Edit modal */}
-      <Modal open={editOpen} onClose={() => setEditOpen(false)} title={t('common.edit') + ' ' + t('common.hospital')}>
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title={t('hospitals.form.editFacility')}>
         <HospitalForm initial={hospital} onClose={() => setEditOpen(false)} />
       </Modal>
 

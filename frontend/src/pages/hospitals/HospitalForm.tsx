@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { useApp } from '../../context/AppContext';
 import { SPECIALIST_LIST } from '../../data/specialists';
+import { useTranslation } from 'react-i18next';
 import type { Hospital, FacilityType } from '../../types';
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function HospitalForm({ initial, onClose }: Props) {
+  const { t } = useTranslation();
   const { addHospital, updateHospital, hospitals, staff } = useApp();
 
   const [form, setForm] = useState({
@@ -78,57 +80,57 @@ export function HospitalForm({ initial, onClose }: Props) {
   return (<>
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
       <Input
-        label="Facility Name"
+        label={t('hospitals.form.facilityName')}
         required
         value={form.name}
         onChange={e => set('name', e.target.value)}
-        placeholder="e.g. GHC City Hospital"
+        placeholder={t('hospitals.form.facilityNamePlaceholder')}
       />
 
       <Select
-        label="Type"
+        label={t('hospitals.form.type')}
         value={form.type}
         onChange={e => set('type', e.target.value)}
         options={[
-          { value: 'PHC', label: 'Primary Health Centre (PHC)' },
-          { value: 'CHC', label: 'Community Health Centre (CHC)' },
+          { value: 'PHC', label: t('hospitals.form.phc') },
+          { value: 'CHC', label: t('hospitals.form.chc') },
         ]}
       />
 
       <Input
-        label="Address"
+        label={t('hospitals.form.address')}
         required
         value={form.address}
         onChange={e => set('address', e.target.value)}
-        placeholder="Street address"
+        placeholder={t('hospitals.form.addressPlaceholder')}
       />
       <Input
-        label="City"
+        label={t('hospitals.form.city')}
         required
         value={form.city}
         onChange={e => set('city', e.target.value)}
-        placeholder="City"
+        placeholder={t('hospitals.form.city')}
       />
 
       <div className="grid grid-cols-2 gap-4">
         <Input
-          label="Phone"
+          label={t('hospitals.form.phone')}
           value={form.phone}
           onChange={e => set('phone', e.target.value)}
-          placeholder="+91 98000 00000"
+          placeholder={t('hospitals.form.phonePlaceholder')}
         />
         <Input
-          label="Email"
+          label={t('hospitals.form.email')}
           type="email"
           value={form.email}
           onChange={e => set('email', e.target.value)}
-          placeholder="facility@ghc.health"
+          placeholder={t('hospitals.form.emailPlaceholder')}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <Input
-          label="Total Beds"
+          label={t('hospitals.form.totalBeds')}
           type="number"
           min="0"
           value={form.totalBeds}
@@ -136,7 +138,7 @@ export function HospitalForm({ initial, onClose }: Props) {
           placeholder="0"
         />
         <Input
-          label="Available Beds"
+          label={t('hospitals.form.availableBeds')}
           type="number"
           min="0"
           value={form.availableBeds}
@@ -147,22 +149,22 @@ export function HospitalForm({ initial, onClose }: Props) {
 
       {form.type === 'PHC' && (
         <div className="border-t border-slate-100 pt-3 space-y-3">
-          <h4 className="text-sm font-semibold text-slate-700">Primary Health Centre (PHC) Details</h4>
+          <h4 className="text-sm font-semibold text-slate-700">{t('hospitals.form.phcDetails')}</h4>
           <Select
-            label="Medical Officer In-Charge"
+            label={t('hospitals.form.medicalOfficer')}
             value={form.medicalOfficer}
             onChange={e => set('medicalOfficer', e.target.value)}
             options={[
-              { value: '', label: '— Select Medical Officer —' },
+              { value: '', label: t('hospitals.form.selectMedicalOfficer') },
               ...doctors.map(d => ({ value: d.name, label: `${d.name}${d.specialization ? ` (${d.specialization})` : ''}` })),
             ]}
           />
           <Select
-            label="Parent CHC (Referral Link)"
+            label={t('hospitals.form.parentChc')}
             value={form.parentCHCId}
             onChange={e => set('parentCHCId', e.target.value)}
             options={[
-              { value: '', label: 'None (Unlinked)' },
+              { value: '', label: t('hospitals.form.unlinked') },
               ...chcs.map(chc => ({ value: chc.id, label: `${chc.name} (${chc.city})` })),
             ]}
           />
@@ -175,7 +177,7 @@ export function HospitalForm({ initial, onClose }: Props) {
               className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4"
             />
             <label htmlFor="phc-ambulance" className="text-sm text-slate-600 font-medium select-none">
-              Dedicated Ambulance Available
+              {t('hospitals.form.ambulanceAvailable')}
             </label>
           </div>
         </div>
@@ -183,25 +185,25 @@ export function HospitalForm({ initial, onClose }: Props) {
 
       {form.type === 'CHC' && (
         <div className="border-t border-slate-100 pt-3 space-y-3">
-          <h4 className="text-sm font-semibold text-slate-700">Community Health Centre (CHC) Details</h4>
+          <h4 className="text-sm font-semibold text-slate-700">{t('hospitals.form.chcDetails')}</h4>
           <Select
-            label="Medical Officer In-Charge"
+            label={t('hospitals.form.medicalOfficer')}
             value={form.medicalOfficer}
             onChange={e => set('medicalOfficer', e.target.value)}
             options={[
-              { value: '', label: '— Select Medical Officer —' },
+              { value: '', label: t('hospitals.form.selectMedicalOfficer') },
               ...doctors.map(d => ({ value: d.name, label: `${d.name}${d.specialization ? ` (${d.specialization})` : ''}` })),
             ]}
           />
           <MultiSelect
-            label="Available Specialists"
+            label={t('hospitals.form.availableSpecialists')}
             options={SPECIALIST_LIST}
             selected={form.specialists}
             onChange={val => set('specialists', val)}
-            placeholder="No specialists registered"
+            placeholder={t('hospitals.form.noSpecialists')}
           />
           <div className="space-y-2 mt-2">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Facilities Available</label>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">{t('hospitals.form.facilitiesAvailable')}</label>
             <div className="grid grid-cols-3 gap-2">
               <div className="flex items-center gap-2">
                 <input
@@ -212,7 +214,7 @@ export function HospitalForm({ initial, onClose }: Props) {
                   className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4"
                 />
                 <label htmlFor="chc-ot" className="text-sm text-slate-600 font-medium select-none">
-                  OT
+                  {t('hospitals.form.ot')}
                 </label>
               </div>
               <div className="flex items-center gap-2">
@@ -224,7 +226,7 @@ export function HospitalForm({ initial, onClose }: Props) {
                   className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4"
                 />
                 <label htmlFor="chc-xray" className="text-sm text-slate-600 font-medium select-none">
-                  X-Ray
+                  {t('hospitals.form.xray')}
                 </label>
               </div>
               <div className="flex items-center gap-2">
@@ -236,7 +238,7 @@ export function HospitalForm({ initial, onClose }: Props) {
                   className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4"
                 />
                 <label htmlFor="chc-ambulance" className="text-sm text-slate-600 font-medium select-none">
-                  Ambulance
+                  {t('hospitals.form.ambulance')}
                 </label>
               </div>
             </div>
@@ -246,9 +248,9 @@ export function HospitalForm({ initial, onClose }: Props) {
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="secondary" onClick={onClose}>
-          Cancel
+          {t('common.cancel')}
         </Button>
-        <Button type="submit">{initial ? 'Save Changes' : 'Add Facility'}</Button>
+        <Button type="submit">{initial ? t('hospitals.form.saveChanges') : t('hospitals.form.addFacility')}</Button>
       </div>
     </form>
 
@@ -256,7 +258,7 @@ export function HospitalForm({ initial, onClose }: Props) {
     <Modal
       open={!!pendingData}
       onClose={() => setPendingData(null)}
-      title={initial ? 'Confirm Save Changes' : 'Confirm Add Facility'}
+      title={initial ? t('hospitals.form.confirmSave') : t('hospitals.form.confirmAdd')}
       size="sm"
     >
       <div className="flex flex-col items-center text-center gap-4 py-2">
@@ -269,7 +271,7 @@ export function HospitalForm({ initial, onClose }: Props) {
         </div>
         <div>
           <p className="text-slate-700 dark:text-slate-200 font-semibold text-base">
-            {initial ? 'Save changes to ' : 'Add new facility '}
+            {initial ? t('hospitals.form.saveTo') : t('hospitals.form.addNew')}
             <span className="text-primary-600 dark:text-primary-400">
               {pendingData?.name || initial?.name}
             </span>
@@ -277,22 +279,22 @@ export function HospitalForm({ initial, onClose }: Props) {
           </p>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             {initial
-              ? `This will update the details of this ${initial.type} facility in the database.`
-              : `This will register a new ${pendingData?.type} facility in the database.`}
+              ? t('hospitals.form.updateWarning', { type: initial.type })
+              : t('hospitals.form.registerWarning', { type: pendingData?.type })}
           </p>
         </div>
         <div className="flex gap-3 w-full pt-2">
           <Button variant="secondary" className="flex-1" onClick={() => setPendingData(null)}>
-            Go Back
+            {t('hospitals.form.goBack')}
           </Button>
           <Button variant="primary" className="flex-1" onClick={confirmSave}>
             {initial ? (
               <>
-                <Pencil size={14} /> Yes, Save
+                <Pencil size={14} /> {t('hospitals.form.yesSave')}
               </>
             ) : (
               <>
-                <Plus size={14} /> Yes, Add
+                <Plus size={14} /> {t('hospitals.form.yesAdd')}
               </>
             )}
           </Button>

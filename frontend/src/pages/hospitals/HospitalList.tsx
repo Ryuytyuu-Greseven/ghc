@@ -453,7 +453,7 @@ export function HospitalList() {
           setFormOpen(false);
           setReloadTrigger(prev => prev + 1);
         }}
-        title={editing ? t('common.edit') + ' ' + t('common.hospitals') : t('common.addFacility')}
+        title={editing ? t('hospitals.form.editFacility') : t('hospitals.form.addFacility')}
       >
         <HospitalForm
           initial={editing}
