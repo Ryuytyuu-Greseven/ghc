@@ -3,7 +3,7 @@ import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useApp, authFetch } from '../context/AppContext';
-import { Users, AlertTriangle, ArrowRight, CheckCircle2, Building, UserCheck, Loader2, Calendar, ClipboardList } from 'lucide-react';
+import { AlertTriangle, ArrowRight, CheckCircle2, Building, UserCheck, Loader2, Calendar, ClipboardList } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface CoverageRequest {
@@ -48,7 +48,7 @@ export function Transfers() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'Pending' | 'Approved' | 'History'>('Pending');
+  const [activeTab, setActiveTab] = useState<'Pending' | 'History'>('Pending');
 
   const fetchRequests = async () => {
     try {
@@ -73,12 +73,12 @@ export function Transfers() {
   // Filter alternatives: Same department, same role, not currently unavailable, and not the vacant staff
   const alternatives = selectedRequest
     ? staff.filter(
-        s =>
-          s.id !== (selectedRequest.staffId._id ?? selectedRequest.staffId) &&
-          s.role === selectedRequest.staffId.role &&
-          s.department === selectedRequest.staffId.department &&
-          (!s.unavailableOnDays || s.unavailableOnDays.length === 0)
-      )
+      s =>
+        s.id !== (selectedRequest.staffId._id ?? selectedRequest.staffId) &&
+        s.role === selectedRequest.staffId.role &&
+        s.department === selectedRequest.staffId.department &&
+        (!s.unavailableOnDays || s.unavailableOnDays.length === 0)
+    )
     : [];
 
   const handleTransfer = async (e: React.FormEvent) => {
@@ -103,7 +103,7 @@ export function Transfers() {
       );
       setAlternativeStaffId('');
       setSelectedRequestId(null);
-      
+
       // Reload requests & refresh page state
       await fetchRequests();
       setTimeout(() => {
@@ -119,8 +119,7 @@ export function Transfers() {
 
   const filteredRequests = requests.filter(r => {
     if (activeTab === 'Pending') return r.status === 'Pending';
-    if (activeTab === 'Approved') return r.status === 'Approved';
-    return r.status === 'Completed' || r.status === 'Rejected';
+    return r.status === 'Approved' || r.status === 'Completed' || r.status === 'Rejected';
   });
 
   if (isLoading) {
@@ -142,7 +141,7 @@ export function Transfers() {
       />
 
       <div className="flex bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-2 gap-4">
-        {(['Pending', 'Approved', 'History'] as const).map(tab => (
+        {(['Pending', 'History'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => {
@@ -157,10 +156,9 @@ export function Transfers() {
                 : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
             )}
           >
-            {tab} Requests ({requests.filter(r => {
+            {tab === 'Pending' ? 'Pending Requests' : 'Approved & History'} ({requests.filter(r => {
               if (tab === 'Pending') return r.status === 'Pending';
-              if (tab === 'Approved') return r.status === 'Approved';
-              return r.status === 'Completed' || r.status === 'Rejected';
+              return r.status === 'Approved' || r.status === 'Completed' || r.status === 'Rejected';
             }).length})
           </button>
         ))}
@@ -177,7 +175,7 @@ export function Transfers() {
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+
             {/* Left Panel: List of Requests */}
             <div className="lg:col-span-1 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
               <div className="p-4 border-b border-slate-100 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-800/50 rounded-t-xl">
@@ -185,7 +183,7 @@ export function Transfers() {
                   Request List
                 </h3>
               </div>
-              
+
               <div className="flex-1 p-4 overflow-y-auto space-y-3 max-h-[600px]">
                 {filteredRequests.length === 0 ? (
                   <div className="text-center py-12 text-slate-400 dark:text-slate-500">
@@ -218,7 +216,7 @@ export function Transfers() {
                             {req.staffId?.department || 'Department'}
                           </Badge>
                         </div>
-                        
+
                         <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
                           <div className="flex items-center gap-1">
                             <Building size={12} />
@@ -246,7 +244,7 @@ export function Transfers() {
             <div className="lg:col-span-2 space-y-6">
               {selectedRequest && selectedRequest.vacantHospitalId ? (
                 <form onSubmit={handleTransfer} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm space-y-6">
-                  
+
                   {/* Vacancy Summary Card */}
                   <div className="bg-slate-50 dark:bg-slate-900/40 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 space-y-4">
                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Vacant Position Details</h4>
@@ -262,7 +260,7 @@ export function Transfers() {
                           Role: <span className="font-semibold text-slate-700 dark:text-slate-300">{selectedRequest.staffId.role}</span>
                         </p>
                       </div>
-                      
+
                       <div className="flex items-center gap-2 text-slate-400">
                         <ArrowRight size={20} />
                       </div>

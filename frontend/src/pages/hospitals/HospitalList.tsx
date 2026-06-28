@@ -117,7 +117,6 @@ export function HospitalList() {
 
   const totalPages = Math.ceil(totalRecords / itemsPerPage);
   const activePage = Math.min(currentPage, Math.max(1, totalPages));
-  const startIndex = (activePage - 1) * itemsPerPage;
 
   const openAdd = () => {
     setEditing(null);

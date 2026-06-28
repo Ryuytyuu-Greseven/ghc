@@ -14,6 +14,7 @@ export function Availability() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [currentSchedule, setCurrentSchedule] = useState<string[]>([]);
+  const [dutySchedule, setDutySchedule] = useState<{ date: string; location: string; status: string; type: 'default' | 'coverage' | 'off' }[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -29,6 +30,7 @@ export function Availability() {
         setStatus(data.status as StatusType);
         const schedule = data.unavailableOnDays || [];
         setCurrentSchedule(schedule);
+        setDutySchedule(data.schedule || []);
         
         if (schedule.length > 0) {
           setStartDate(schedule[0]);
@@ -96,6 +98,7 @@ export function Availability() {
       const data = await res.json();
       
       setCurrentSchedule(data.unavailableOnDays || []);
+      setDutySchedule(data.schedule || []);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 4000);
     } catch (err: any) {
@@ -292,6 +295,73 @@ export function Availability() {
             </div>
 
           </form>
+
+          {/* Duty Schedule Dashboard */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-6 animate-fadeIn">
+            <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
+              <div className="bg-primary-50 dark:bg-primary-900/30 p-2 rounded-lg text-primary-500 shrink-0">
+                <Calendar size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">My Duty Schedule</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Your work location schedule for the next 30 days</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 max-h-[480px] overflow-y-auto pr-1">
+              {dutySchedule.map((item) => {
+                const parseDateLocal = (dateStr: string) => {
+                  const [year, month, day] = dateStr.split('-').map(Number);
+                  return new Date(year, month - 1, day);
+                };
+                const dateObj = parseDateLocal(item.date);
+                return (
+                  <div 
+                    key={item.date} 
+                    className={clsx(
+                      "flex items-center justify-between p-4 rounded-xl border transition-all duration-150",
+                      item.type === 'coverage' 
+                        ? "border-purple-200 dark:border-purple-900/40 bg-purple-500/5 hover:bg-purple-500/10"
+                        : item.type === 'off'
+                        ? "border-red-100 dark:border-red-950/20 bg-red-500/5 hover:bg-red-500/10"
+                        : "border-slate-100 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-700/30"
+                    )}
+                  >
+                    <div className="min-w-0 flex items-center gap-4">
+                      <div className="shrink-0 text-center bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          {dateObj.toLocaleDateString(undefined, { weekday: 'short' })}
+                        </p>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5 leading-none">
+                          {dateObj.toLocaleDateString(undefined, { day: 'numeric' })}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                          {dateObj.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+                        </p>
+                        <p className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate mt-0.5">{item.location}</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Badge 
+                        variant={
+                          item.type === 'coverage' 
+                            ? 'warning' 
+                            : item.type === 'off'
+                            ? 'danger'
+                            : 'success'
+                        }
+                      >
+                        {item.status}
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
         </div>
       </div>

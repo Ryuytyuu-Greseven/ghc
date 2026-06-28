@@ -80,6 +80,7 @@ export interface Staff {
   pincode?: string;
   assignedHospitalId: string | null;
   isMedicalIncharge?: boolean;
+  unavailableOnDays?: string[];
   createdAt: string;
 }
 

@@ -109,9 +109,9 @@ export class Staff {
   @Prop({
     type: Types.ObjectId,
     ref: 'Hospital',
-    required: true,
+    required: false,
   })
-  hospitalId: Types.ObjectId;
+  hospitalId?: Types.ObjectId;
 
   @Prop({ default: false })
   isMedicalIncharge?: boolean;
