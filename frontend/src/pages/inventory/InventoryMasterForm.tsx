@@ -62,7 +62,7 @@ export function InventoryMasterForm({ initial, onClose }: Props) {
           required
           value={form.itemName}
           onChange={(e) => set('itemName', e.target.value)}
-          placeholder="e.g. Paracetamol 500mg"
+          placeholder="e.g. Medicine or supply name"
         />
         <Select
           label="Category"

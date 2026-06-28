@@ -1,4 +1,4 @@
-import type { Hospital, Staff, Patient, Medicine, HospitalMedicine } from '../types';
+import type { Hospital, Staff, Patient, HospitalMedicine } from '../types';
 
 export const mockHospitals: Hospital[] = [
   {
@@ -118,11 +118,11 @@ export const mockPatients: Patient[] = [
     bloodGroup: 'B+',
     phone: '+91 9900001111',
     email: 'kavitha.nair@example.com',
+    aadhaarNumber: '123456789012',
     address: '5 Rose Lane, Mumbai',
     hospitalId: 'h1',
     bedRequired: true,
     admittedAt: '2024-06-01',
-    condition: 'Cardiac monitoring',
   },
   {
     id: 'p2',
@@ -132,11 +132,11 @@ export const mockPatients: Patient[] = [
     bloodGroup: 'O+',
     phone: '+91 9900002222',
     email: 'suresh.patel@example.com',
+    aadhaarNumber: '234567890123',
     address: '22 Oak Street, Pune',
     hospitalId: 'h2',
     bedRequired: false,
     admittedAt: '2024-06-05',
-    condition: 'Diabetes follow-up',
   },
   {
     id: 'p3',
@@ -146,62 +146,12 @@ export const mockPatients: Patient[] = [
     bloodGroup: 'A-',
     phone: '+91 9900003333',
     email: 'meena.reddy@example.com',
+    aadhaarNumber: '345678901234',
     address: '10 Elm Road, Bangalore',
     hospitalId: 'h3',
     bedRequired: true,
     admittedAt: '2024-06-08',
-    condition: 'Post-surgery recovery',
   },
 ];
 
-export const mockMedicines: Medicine[] = [
-  {
-    id: 'm1',
-    name: 'Paracetamol 500mg',
-    category: 'medication',
-    unit: 'tablets',
-    totalStock: 5000,
-    createdAt: '2024-01-05',
-  },
-  {
-    id: 'm2',
-    name: 'IV Saline 500ml',
-    category: 'consumable',
-    unit: 'bottles',
-    totalStock: 800,
-    createdAt: '2024-01-05',
-  },
-  {
-    id: 'm3',
-    name: 'ECG Machine',
-    category: 'equipment',
-    unit: 'units',
-    totalStock: 12,
-    createdAt: '2024-01-10',
-  },
-  {
-    id: 'm4',
-    name: 'Blood Glucose Strips',
-    category: 'diagnostic',
-    unit: 'strips',
-    totalStock: 3000,
-    createdAt: '2024-02-01',
-  },
-  {
-    id: 'm5',
-    name: 'Amoxicillin 250mg',
-    category: 'medication',
-    unit: 'capsules',
-    totalStock: 2000,
-    createdAt: '2024-02-10',
-  },
-];
-
-export const mockHospitalMedicines: HospitalMedicine[] = [
-  { id: 'hm1', hospitalId: 'h1', medicineId: 'm1', quantity: 1000, assignedAt: '2024-01-20' },
-  { id: 'hm2', hospitalId: 'h1', medicineId: 'm2', quantity: 200, assignedAt: '2024-01-20' },
-  { id: 'hm3', hospitalId: 'h1', medicineId: 'm3', quantity: 3, assignedAt: '2024-01-22' },
-  { id: 'hm4', hospitalId: 'h2', medicineId: 'm1', quantity: 500, assignedAt: '2024-02-20' },
-  { id: 'hm5', hospitalId: 'h2', medicineId: 'm4', quantity: 600, assignedAt: '2024-02-20' },
-  { id: 'hm6', hospitalId: 'h3', medicineId: 'm5', quantity: 800, assignedAt: '2024-03-25' },
-];
+export const mockHospitalMedicines: HospitalMedicine[] = [];

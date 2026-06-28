@@ -8,12 +8,14 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   error?: string;
   options: { value: string; label: string }[];
   placeholder?: string;
+  dropdownPlacement?: 'auto' | 'up' | 'down';
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, options, placeholder, className, onChange, onBlur, value, ...props }, ref) => {
+  ({ label, error, options, placeholder, dropdownPlacement = 'auto', className, onChange, onBlur, value, ...props }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState('');
+    const [openUpward, setOpenUpward] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Close dropdown on click outside
@@ -51,6 +53,20 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       setSearch('');
     };
 
+    const toggleDropdown = () => {
+      const nextOpen = !isOpen;
+      if (nextOpen && dropdownPlacement !== 'auto') {
+        setOpenUpward(dropdownPlacement === 'up');
+      } else if (nextOpen && containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const dropdownHeight = 240;
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        setOpenUpward(spaceBelow < dropdownHeight && spaceAbove > spaceBelow);
+      }
+      setIsOpen(nextOpen);
+    };
+
     return (
       <div className="flex flex-col gap-1 relative" ref={containerRef}>
         {label && (
@@ -62,7 +78,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {/* Custom Toggle Button */}
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={toggleDropdown}
           onBlur={(event) => {
             if (!containerRef.current?.contains(event.relatedTarget as Node | null)) {
               onBlur?.(event as unknown as React.FocusEvent<HTMLSelectElement>);
@@ -99,7 +115,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute z-50 w-full top-full mt-1 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden flex flex-col max-h-60">
+          <div
+            className={clsx(
+              'absolute z-[100] w-full bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden flex flex-col max-h-60',
+              openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
+            )}
+          >
             {/* Search Input */}
             <div className="flex items-center px-3 py-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/50 shrink-0">
               <Search size={14} className="text-slate-400 mr-2 shrink-0" />
