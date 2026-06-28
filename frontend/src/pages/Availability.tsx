@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -9,11 +10,13 @@ import { clsx } from 'clsx';
 type StatusType = 'Available' | 'Unavailable';
 
 export function Availability() {
+  const { t } = useTranslation();
   const [status, setStatus] = useState<StatusType>('Available');
   const [periodType, setPeriodType] = useState<'single' | 'range'>('single');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [currentSchedule, setCurrentSchedule] = useState<string[]>([]);
+  const [dutySchedule, setDutySchedule] = useState<{ date: string; location: string; status: string; type: 'default' | 'coverage' | 'off' }[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -29,6 +32,7 @@ export function Availability() {
         setStatus(data.status as StatusType);
         const schedule = data.unavailableOnDays || [];
         setCurrentSchedule(schedule);
+        setDutySchedule(data.schedule || []);
         
         if (schedule.length > 0) {
           setStartDate(schedule[0]);
@@ -58,18 +62,18 @@ export function Availability() {
     if (status === 'Unavailable') {
       if (periodType === 'single') {
         if (!startDate) {
-          setError('Please select a date.');
+          setError(t('availability.errorSelectDate'));
           setIsSaving(false);
           return;
         }
       } else {
         if (!startDate || !endDate) {
-          setError('Please select both start and end dates.');
+          setError(t('availability.errorSelectRange'));
           setIsSaving(false);
           return;
         }
         if (startDate > endDate) {
-          setError('Start date cannot be after end date.');
+          setError(t('availability.errorStartAfterEnd'));
           setIsSaving(false);
           return;
         }
@@ -92,14 +96,15 @@ export function Availability() {
         },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Failed to update availability status');
+      if (!res.ok) throw new Error(t('availability.errorFailedUpdate'));
       const data = await res.json();
       
       setCurrentSchedule(data.unavailableOnDays || []);
+      setDutySchedule(data.schedule || []);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 4000);
     } catch (err: any) {
-      setError(err.message || 'Error updating availability');
+      setError(err.message || t('availability.errorUpdate'));
     } finally {
       setIsSaving(false);
     }
@@ -108,7 +113,7 @@ export function Availability() {
   if (isLoading) {
     return (
       <div className="flex flex-col h-full">
-        <Header title="My Availability" subtitle="Manage your duty status" />
+        <Header title={t('availability.title')} subtitle={t('availability.loadingSubtitle')} />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
         </div>
@@ -118,7 +123,7 @@ export function Availability() {
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900">
-      <Header title="My Availability" subtitle="Mark your status as Available or select dates to mark as Unavailable" />
+      <Header title={t('availability.title')} subtitle={t('availability.subtitle')} />
 
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <div className="max-w-3xl mx-auto space-y-6">
@@ -133,7 +138,7 @@ export function Availability() {
           {success && (
             <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl flex items-start gap-3 text-emerald-800 dark:text-emerald-300 transition duration-300">
               <CheckCircle2 className="shrink-0 mt-0.5" size={18} />
-              <p className="text-sm font-medium">Availability request processed successfully! Admin notified.</p>
+              <p className="text-sm font-medium">{t('availability.successMsg')}</p>
             </div>
           )}
 
@@ -142,7 +147,7 @@ export function Availability() {
             {/* Status Select Toggles */}
             <div className="space-y-4">
               <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-                Select Your Status
+                {t('availability.selectStatus')}
               </label>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -159,8 +164,8 @@ export function Availability() {
                 >
                   <CheckCircle2 className={clsx(status === 'Available' ? 'text-emerald-500' : 'text-slate-400')} size={24} />
                   <div>
-                    <p className="font-bold text-base">Mark as Available</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">You are active, on duty, and consultable.</p>
+                    <p className="font-bold text-base">{t('availability.markAvailable')}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t('availability.availableDesc')}</p>
                   </div>
                 </button>
 
@@ -177,8 +182,8 @@ export function Availability() {
                 >
                   <XCircle className={clsx(status === 'Unavailable' ? 'text-red-500' : 'text-slate-400')} size={24} />
                   <div>
-                    <p className="font-bold text-base">Mark as Unavailable</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Specify a single date or range of unavailability.</p>
+                    <p className="font-bold text-base">{t('availability.markUnavailable')}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t('availability.unavailableDesc')}</p>
                   </div>
                 </button>
               </div>
@@ -191,7 +196,7 @@ export function Availability() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                     <Calendar size={16} className="text-primary-500" />
-                    Specify Unavailability Period
+                    {t('availability.specifyPeriod')}
                   </h3>
 
                   {/* Period Type Toggle */}
@@ -209,7 +214,7 @@ export function Availability() {
                           : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                       )}
                     >
-                      Single Date
+                      {t('availability.singleDate')}
                     </button>
                     <button
                       type="button"
@@ -221,7 +226,7 @@ export function Availability() {
                           : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                       )}
                     >
-                      Date Range
+                      {t('availability.dateRange')}
                     </button>
                   </div>
                 </div>
@@ -229,7 +234,7 @@ export function Availability() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                      {periodType === 'single' ? 'Select Date' : 'Start Date'}
+                      {periodType === 'single' ? t('availability.selectDateLabel') : t('availability.startDateLabel')}
                     </label>
                     <input
                       type="date"
@@ -243,7 +248,7 @@ export function Availability() {
                   {periodType === 'range' && (
                     <div className="space-y-1.5 animate-fadeIn">
                       <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                        End Date
+                        {t('availability.endDateLabel')}
                       </label>
                       <input
                         type="date"
@@ -261,7 +266,7 @@ export function Availability() {
             {/* Current Schedule Summary */}
             {currentSchedule.length > 0 && (
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800 space-y-2">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Active Unavailability Schedule</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">{t('availability.activeSchedule')}</span>
                 <div className="flex flex-wrap gap-2 pt-1">
                   {currentSchedule.map(date => (
                     <Badge key={date} variant="danger">
@@ -277,21 +282,88 @@ export function Availability() {
               <Button type="submit" disabled={isSaving}>
                 {isSaving ? (
                   <>
-                    <Loader2 className="animate-spin" size={16} /> Submitting Request...
+                    <Loader2 className="animate-spin" size={16} /> {t('availability.submitting')}
                   </>
                 ) : status === 'Available' ? (
                   <>
-                    <CheckCircle2 size={16} /> Mark as Available
+                    <CheckCircle2 size={16} /> {t('availability.markAvailable')}
                   </>
                 ) : (
                   <>
-                    <Send size={16} /> Send Request to Admin
+                    <Send size={16} /> {t('availability.sendRequest')}
                   </>
                 )}
               </Button>
             </div>
 
           </form>
+
+          {/* Duty Schedule Dashboard */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-6 animate-fadeIn">
+            <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
+              <div className="bg-primary-50 dark:bg-primary-900/30 p-2 rounded-lg text-primary-500 shrink-0">
+                <Calendar size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">{t('availability.myDutySchedule')}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{t('availability.dutyScheduleSubtitle')}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 max-h-[480px] overflow-y-auto pr-1">
+              {dutySchedule.map((item) => {
+                const parseDateLocal = (dateStr: string) => {
+                  const [year, month, day] = dateStr.split('-').map(Number);
+                  return new Date(year, month - 1, day);
+                };
+                const dateObj = parseDateLocal(item.date);
+                return (
+                  <div 
+                    key={item.date} 
+                    className={clsx(
+                      "flex items-center justify-between p-4 rounded-xl border transition-all duration-150",
+                      item.type === 'coverage' 
+                        ? "border-purple-200 dark:border-purple-900/40 bg-purple-500/5 hover:bg-purple-500/10"
+                        : item.type === 'off'
+                        ? "border-red-100 dark:border-red-950/20 bg-red-500/5 hover:bg-red-500/10"
+                        : "border-slate-100 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-700/30"
+                    )}
+                  >
+                    <div className="min-w-0 flex items-center gap-4">
+                      <div className="shrink-0 text-center bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          {dateObj.toLocaleDateString(undefined, { weekday: 'short' })}
+                        </p>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5 leading-none">
+                          {dateObj.toLocaleDateString(undefined, { day: 'numeric' })}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                          {dateObj.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+                        </p>
+                        <p className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate mt-0.5">{item.location}</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Badge 
+                        variant={
+                          item.type === 'coverage' 
+                            ? 'warning' 
+                            : item.type === 'off'
+                            ? 'danger'
+                            : 'success'
+                        }
+                      >
+                        {item.status}
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
         </div>
       </div>

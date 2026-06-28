@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req, Query, BadRequestException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { StaffService } from './staff.service';
-import { userInfo } from 'os';
 
 @Controller('staff')
 @UseGuards(JwtAuthGuard)
