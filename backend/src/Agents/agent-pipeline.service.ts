@@ -66,6 +66,16 @@ export class AgentPipelineService {
         }
 
         if (event.event === 'on_chat_model_stream') {
+          // Ignore classification/intent classification streaming tokens
+          const isClassification =
+            event.tags?.includes('classification') ||
+            event.metadata?.is_classification === true ||
+            event.metadata?.langgraph_node === 'classify_intent';
+
+          if (isClassification) {
+            continue;
+          }
+
           const content = event.data?.chunk?.content;
           if (typeof content === 'string' && content) {
             fullResponse += content;
