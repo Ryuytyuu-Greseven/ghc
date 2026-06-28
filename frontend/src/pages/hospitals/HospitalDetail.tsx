@@ -30,6 +30,7 @@ import { hospitalApi } from '../../services/hospitalApi';
 import type { StaffRole, MedicineCategory, Hospital } from '../../types';
 import { HospitalForm } from './HospitalForm';
 import { clsx } from 'clsx';
+import { useTranslation } from 'react-i18next';
 
 const roleVariant: Record<StaffRole, 'info' | 'success' | 'warning' | 'purple' | 'default'> = {
   Doctor: 'info',
@@ -55,33 +56,34 @@ function StockStatusBadge({
   totalStock: number;
   totalDistributed: number;
 }) {
+  const { t } = useTranslation();
   const centralRemaining = totalStock - totalDistributed;
   const pct = totalStock > 0 ? centralRemaining / totalStock : 1;
 
   if (centralRemaining <= 0) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400">
-        <PackageX size={10} /> Depleted
+        <PackageX size={10} /> {t('hospitals.detail.depleted')}
       </span>
     );
   }
   if (pct < 0.15) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400">
-        <AlertTriangle size={10} /> Critical Low
+        <AlertTriangle size={10} /> {t('hospitals.detail.criticalLow')}
       </span>
     );
   }
   if (pct < 0.3) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400">
-        <AlertTriangle size={10} /> Low Stock
+        <AlertTriangle size={10} /> {t('hospitals.detail.lowStock')}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">
-      <CheckCircle size={10} /> In Stock
+      <CheckCircle size={10} /> {t('hospitals.detail.inStock')}
     </span>
   );
 }
@@ -89,6 +91,7 @@ function StockStatusBadge({
 export function HospitalDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     hospitals,
     staff,
@@ -133,11 +136,11 @@ export function HospitalDetail() {
   if (loadingHospital) {
     return (
       <div className="flex flex-col h-full">
-        <Header title="Loading..." />
+        <Header title={t('common.loading')} />
         <div className="flex-1 flex items-center justify-center text-slate-400 dark:text-slate-500">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-sm">Loading facility details...</p>
+            <p className="text-sm">{t('common.loading')}</p>
           </div>
         </div>
       </div>
@@ -178,16 +181,16 @@ export function HospitalDetail() {
   if (!hospital) {
     return (
       <div className="flex flex-col h-full">
-        <Header title="Facility Not Found" />
+        <Header title={t('hospitals.detail.noHistory')} />
         <div className="flex-1 flex items-center justify-center text-slate-400 dark:text-slate-500">
           <div className="text-center">
             <Building2 size={48} className="mx-auto mb-3 opacity-30" />
-            <p className="font-medium text-slate-500 dark:text-slate-400">Facility not found</p>
+            <p className="font-medium text-slate-500 dark:text-slate-400">{t('hospitals.detail.noHistory')}</p>
             <button
               onClick={() => navigate('/hospitals')}
               className="mt-3 text-sm text-primary-600 dark:text-primary-400 hover:underline"
             >
-              Back to Hospitals
+              {t('hospitals.detail.backToHospitals')}
             </button>
           </div>
         </div>
@@ -236,14 +239,14 @@ export function HospitalDetail() {
               onClick={() => navigate('/hospitals')}
               className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
             >
-              <ArrowLeft size={16} /> Back to Hospitals
+              <ArrowLeft size={16} /> {t('hospitals.detail.backToHospitals')}
             </button>
             <div className="flex items-center gap-2">
               <Button onClick={handleOpenHistory} variant="secondary">
-                <History size={14} /> View History
+                <History size={14} /> {t('hospitals.detail.viewHistory')}
               </Button>
               <Button onClick={() => setEditOpen(true)} variant="secondary">
-                <Pencil size={14} /> Edit Facility
+                <Pencil size={14} /> {t('hospitals.form.editFacility')}
               </Button>
             </div>
           </div>
@@ -256,12 +259,12 @@ export function HospitalDetail() {
                   <BedDouble size={18} className="text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Total Beds</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t('dashboard.totalBeds')}</p>
                   <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tabular-nums">
                     {hospital.totalBeds}
                   </p>
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                    {hospital.availableBeds} available
+                    {hospital.availableBeds} {t('common.available')}
                   </p>
                 </div>
               </div>
@@ -273,12 +276,12 @@ export function HospitalDetail() {
                   <Users size={18} className="text-violet-600 dark:text-violet-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Staff Assigned</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t('hospitals.detail.assignedStaff')}</p>
                   <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tabular-nums">
                     {assignedStaff.length}
                   </p>
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                    {Object.keys(staffByRole).length} role types
+                    {t('hospitals.detail.roleTypes', { count: Object.keys(staffByRole).length })}
                   </p>
                 </div>
               </div>
@@ -290,12 +293,12 @@ export function HospitalDetail() {
                   <UserRound size={18} className="text-cyan-600 dark:text-cyan-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Active Patients</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t('hospitals.detail.activePatients')}</p>
                   <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tabular-nums">
                     {facilityPatients.length}
                   </p>
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                    {bedPatientsCount} need beds
+                    {t('hospitals.detail.needBeds', { count: bedPatientsCount })}
                   </p>
                 </div>
               </div>
@@ -321,17 +324,17 @@ export function HospitalDetail() {
                   />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Medicine Types</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t('common.medicines')}</p>
                   <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tabular-nums">
                     {facilityMedicines.length}
                   </p>
                   {criticalMedicines > 0 ? (
                     <p className="text-xs text-red-500 dark:text-red-400 mt-0.5 font-medium">
-                      {criticalMedicines} need restocking
+                      {t('hospitals.detail.restockingWarning', { count: criticalMedicines })}
                     </p>
                   ) : (
                     <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-                      All stocked
+                      {t('hospitals.detail.allStocked')}
                     </p>
                   )}
                 </div>
@@ -345,7 +348,7 @@ export function HospitalDetail() {
             <Card>
               <CardHeader>
                 <h3 className="font-semibold text-slate-800 dark:text-slate-100">
-                  Facility Information
+                  {t('hospitals.detail.facilityInfo')}
                 </h3>
               </CardHeader>
               <CardBody className="space-y-3">
@@ -400,7 +403,7 @@ export function HospitalDetail() {
 
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
                   <p className="text-xs text-slate-400 dark:text-slate-500">
-                    Registered: {hospital.createdAt}
+                    {t('hospitals.detail.registered')}: {hospital.createdAt}
                   </p>
                 </div>
               </CardBody>
@@ -410,12 +413,12 @@ export function HospitalDetail() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-slate-800 dark:text-slate-100">Bed Status</h3>
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('hospitals.detail.bedStatus')}</h3>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleOpenBedHistory}
                       className="p-1 text-slate-400 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
-                      title="View Bed Allocation History"
+                      title={t('hospitals.detail.bedHistory')}
                     >
                       <History size={16} />
                     </button>
@@ -427,7 +430,7 @@ export function HospitalDetail() {
                 {/* Occupancy % */}
                 <div>
                   <div className="flex items-end justify-between mb-2">
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Occupancy Rate</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{t('hospitals.detail.occupancyRate')}</p>
                     <p
                       className={clsx(
                         'text-2xl font-bold tabular-nums',
@@ -460,17 +463,17 @@ export function HospitalDetail() {
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     {
-                      label: 'Total',
+                      label: t('common.total'),
                       value: hospital.totalBeds,
                       cls: 'bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-slate-100',
                     },
                     {
-                      label: 'Occupied',
+                      label: t('dashboard.occupied'),
                       value: occupiedBeds,
                       cls: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400',
                     },
                     {
-                      label: 'Available',
+                      label: t('common.available'),
                       value: hospital.availableBeds,
                       cls: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400',
                     },
@@ -492,7 +495,7 @@ export function HospitalDetail() {
                   <div className="flex items-center gap-2 text-sm bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded-lg px-3 py-2">
                     <AlertTriangle size={14} />
                     <span>
-                      {bedPatientsCount} patient{bedPatientsCount > 1 ? 's' : ''} require{bedPatientsCount === 1 ? 's' : ''} a bed
+                      {t('hospitals.detail.needBeds', { count: bedPatientsCount })}
                     </span>
                   </div>
                 )}
@@ -505,7 +508,7 @@ export function HospitalDetail() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-slate-800 dark:text-slate-100">
-                  Assigned Staff
+                  {t('hospitals.detail.assignedStaff')}
                 </h3>
                 <div className="flex items-center gap-2 flex-wrap">
                   {Object.entries(staffByRole).map(([role, count]) => (
@@ -513,7 +516,7 @@ export function HospitalDetail() {
                       key={role}
                       className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full"
                     >
-                      {count} {role}
+                      {count} {t(`roles.${role}`)}
                       {count > 1 ? 's' : ''}
                     </span>
                   ))}
@@ -527,16 +530,16 @@ export function HospitalDetail() {
                     <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700">
                       <tr>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Name
+                          {t('hospitals.detail.patient')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Role
+                          {t('hospitals.detail.role')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden sm:table-cell">
-                          Specialization
+                          {t('hospitals.detail.specialization')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">
-                          Contact
+                          {t('hospitals.detail.contact')}
                         </th>
                       </tr>
                     </thead>
@@ -562,7 +565,7 @@ export function HospitalDetail() {
                           </td>
                           <td className="px-6 py-3">
                             <Badge variant={roleVariant[s.role]}>
-                              {s.role.charAt(0).toUpperCase() + s.role.slice(1)}
+                              {t(`roles.${s.role}`)}
                             </Badge>
                           </td>
                           <td className="px-6 py-3 text-slate-500 dark:text-slate-400 hidden sm:table-cell">
@@ -582,7 +585,7 @@ export function HospitalDetail() {
                 <div className="text-center py-8 text-slate-400 dark:text-slate-500">
                   <div className="flex items-center gap-2 justify-center">
                     <UserX size={18} />
-                    <span className="text-sm">No staff assigned to this facility yet</span>
+                    <span className="text-sm">{t('hospitals.detail.noStaff')}</span>
                   </div>
                 </div>
               </CardBody>
@@ -594,11 +597,11 @@ export function HospitalDetail() {
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <h3 className="font-semibold text-slate-800 dark:text-slate-100">
-                  Medicine & Supply Inventory
+                  {t('hospitals.detail.medicineInventory')}
                 </h3>
                 {criticalMedicines > 0 && (
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2.5 py-1 rounded-full">
-                    <AlertTriangle size={12} /> {criticalMedicines} item{criticalMedicines > 1 ? 's' : ''} need restocking
+                    <AlertTriangle size={12} /> {t('hospitals.detail.restockingWarning', { count: criticalMedicines })}
                   </span>
                 )}
               </div>
@@ -610,19 +613,19 @@ export function HospitalDetail() {
                     <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700">
                       <tr>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Item
+                          {t('hospitals.detail.item')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden sm:table-cell">
-                          Category
+                          {t('hospitals.detail.category')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          At Facility
+                          {t('hospitals.detail.atFacility')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">
-                          Central Remaining
+                          {t('hospitals.detail.centralRemaining')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Status
+                          {t('hospitals.detail.status')}
                         </th>
                       </tr>
                     </thead>
@@ -649,7 +652,7 @@ export function HospitalDetail() {
                             </td>
                             <td className="px-6 py-3 hidden sm:table-cell">
                               <Badge variant={categoryVariant[med.category]}>
-                                {med.category.charAt(0).toUpperCase() + med.category.slice(1)}
+                                {t(`medicines.categories.${med.category}`)}
                               </Badge>
                             </td>
                             <td className="px-6 py-3">
@@ -694,7 +697,7 @@ export function HospitalDetail() {
               <CardBody>
                 <div className="text-center py-8 text-slate-400 dark:text-slate-500">
                   <Pill size={18} className="mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">No medicines assigned to this facility yet</p>
+                  <p className="text-sm">{t('hospitals.detail.noMedicines')}</p>
                 </div>
               </CardBody>
             )}
@@ -705,10 +708,10 @@ export function HospitalDetail() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-slate-800 dark:text-slate-100">
-                  Active Patients
+                  {t('hospitals.detail.activePatients')}
                 </h3>
                 <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full tabular-nums">
-                  {facilityPatients.length} total
+                  {facilityPatients.length} {t('common.total')}
                 </span>
               </div>
             </CardHeader>
@@ -719,16 +722,16 @@ export function HospitalDetail() {
                     <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700">
                       <tr>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Patient
+                          {t('hospitals.detail.patient')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden sm:table-cell">
-                          Blood Group
+                          {t('hospitals.detail.condition')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">
-                          Admitted
+                          {t('hospitals.detail.admitted')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Bed
+                          {t('hospitals.detail.bed')}
                         </th>
                       </tr>
                     </thead>
@@ -765,7 +768,7 @@ export function HospitalDetail() {
                           </td>
                           <td className="px-6 py-3">
                             <Badge variant={p.bedRequired ? 'danger' : 'success'}>
-                              {p.bedRequired ? 'Required' : 'Not needed'}
+                              {p.bedRequired ? t('hospitals.detail.required') : t('hospitals.detail.notNeeded')}
                             </Badge>
                           </td>
                         </tr>
@@ -778,7 +781,7 @@ export function HospitalDetail() {
               <CardBody>
                 <div className="flex items-center justify-center gap-2 py-8 text-slate-400 dark:text-slate-500">
                   <UserCheck size={18} />
-                  <span className="text-sm">No patients currently admitted</span>
+                  <span className="text-sm">{t('hospitals.detail.noPatients')}</span>
                 </div>
               </CardBody>
             )}
@@ -788,7 +791,7 @@ export function HospitalDetail() {
       </div>
 
       {/* Edit modal */}
-      <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit Facility">
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title={t('hospitals.form.editFacility')}>
         <HospitalForm initial={hospital} onClose={() => setEditOpen(false)} />
       </Modal>
 
@@ -796,26 +799,26 @@ export function HospitalDetail() {
       <Modal
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
-        title="Facility Update History"
+        title={t('hospitals.detail.updateHistory')}
         size="lg"
       >
         {loadingHistory ? (
           <div className="flex flex-col items-center justify-center py-16 text-slate-500">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-3" />
-            <span className="text-sm">Loading history...</span>
+            <span className="text-sm">{t('common.loading')}</span>
           </div>
         ) : historyRecords.length === 0 ? (
           <div className="text-center py-12 text-slate-400 dark:text-slate-500">
             <History size={36} className="mx-auto mb-2 opacity-30" />
-            <p className="font-medium">No history found</p>
-            <p className="text-xs mt-1">This facility has not been updated yet.</p>
+            <p className="font-medium">{t('hospitals.detail.noHistory')}</p>
+            <p className="text-xs mt-1">{t('hospitals.detail.noHistoryDesc')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 max-h-[70vh]">
             {/* Left list: Timestamps & Versions */}
             <div className="md:col-span-2 border-r border-slate-100 dark:border-slate-700 pr-4 overflow-y-auto space-y-2 h-[50vh] max-h-[50vh]">
               <h3 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
-                Updates Log
+                {t('hospitals.detail.updatesLog')}
               </h3>
               {historyRecords.map((rec, index) => {
                 const isSelected = selectedRecord?._id === rec._id;
@@ -827,7 +830,7 @@ export function HospitalDetail() {
                       'w-full text-left p-3 rounded-xl border transition-all flex flex-col gap-1.5',
                       isSelected
                         ? 'border-primary-600 bg-primary-600 dark:bg-primary-500 dark:border-primary-500 text-white shadow-md'
-                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-750'
+                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                     )}
                   >
                     <div className="flex items-center justify-between w-full">
@@ -835,7 +838,7 @@ export function HospitalDetail() {
                         'text-xs font-bold',
                         isSelected ? 'text-white' : 'text-slate-800 dark:text-slate-200'
                       )}>
-                        {rec.version === 1 ? 'Created' : 'Updated'}
+                        {rec.version === 1 ? t('common.created') : t('common.updated')}
                       </span>
                       {rec.isCurrent && index === 0 && (
                         <span className={clsx(
@@ -844,7 +847,7 @@ export function HospitalDetail() {
                             ? 'bg-white/20 text-white border-white/30'
                             : 'bg-emerald-100/80 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-350 border-emerald-200/60 dark:border-emerald-800/40'
                         )}>
-                          Active
+                          {t('common.active')}
                         </span>
                       )}
                     </div>
@@ -869,41 +872,41 @@ export function HospitalDetail() {
                       {selectedRecord.name}
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Snapshot of {selectedRecord.version === 1 ? 'initial creation' : `update version ${selectedRecord.version}`} ({selectedRecord.type})
+                      {selectedRecord.version === 1 ? t('hospitals.detail.snapshotCreation') : t('hospitals.detail.snapshotVersion', { version: selectedRecord.version })} ({selectedRecord.type})
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
-                      <span className="text-slate-400 block mb-0.5">Address</span>
+                      <span className="text-slate-400 block mb-0.5">{t('hospitals.address')}</span>
                       <span className="font-medium text-slate-700 dark:text-slate-200">
                         {selectedRecord.address}, {selectedRecord.city}
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block mb-0.5">Contact</span>
+                      <span className="text-slate-400 block mb-0.5">{t('hospitals.detail.contact')}</span>
                       <span className="font-medium text-slate-700 dark:text-slate-200">
-                        {selectedRecord.phone || 'No phone'}
+                        {selectedRecord.phone || t('hospitals.detail.noPhone')}
                         {selectedRecord.email && ` · ${selectedRecord.email}`}
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block mb-0.5">Bed Status</span>
+                      <span className="text-slate-400 block mb-0.5">{t('hospitals.detail.bedStatus')}</span>
                       <span className="font-medium text-slate-700 dark:text-slate-200">
-                        {selectedRecord.totalBeds - selectedRecord.availableBeds} / {selectedRecord.totalBeds} beds occupied
+                        {t('hospitals.detail.bedsOccupied', { occupied: selectedRecord.totalBeds - selectedRecord.availableBeds, total: selectedRecord.totalBeds })}
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block mb-0.5">Medical Officer</span>
+                      <span className="text-slate-400 block mb-0.5">{t('common.medicalOfficer')}</span>
                       <span className="font-medium text-slate-700 dark:text-slate-200">
-                        {selectedRecord.medicalOfficer || 'Unassigned'}
+                        {selectedRecord.medicalOfficer || t('hospitals.detail.unassigned')}
                       </span>
                     </div>
                   </div>
 
                   <div className="space-y-2 border-t border-slate-100 dark:border-slate-700 pt-3">
                     <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      Services / Equipment
+                      {t('hospitals.detail.servicesEquipment')}
                     </h4>
                     <div className="flex flex-wrap gap-1.5">
                       {selectedRecord.hasOT && (
@@ -927,13 +930,13 @@ export function HospitalDetail() {
                   {selectedRecord.specialists && selectedRecord.specialists.length > 0 && (
                     <div className="space-y-2 border-t border-slate-100 dark:border-slate-700 pt-3">
                       <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        Specialists Registered
+                        {t('hospitals.detail.specialistsRegistered')}
                       </h4>
                       <div className="flex flex-wrap gap-1.5">
                         {selectedRecord.specialists.map((s, idx) => (
                           <span
                             key={idx}
-                            className="bg-slate-100 dark:bg-slate-700 text-slate-650 dark:text-slate-350 px-2 py-0.5 rounded text-[10px] font-medium"
+                            className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded text-[10px] font-medium"
                           >
                             {s}
                           </span>
@@ -944,7 +947,7 @@ export function HospitalDetail() {
                 </>
               ) : (
                 <div className="text-center py-12 text-slate-400 dark:text-slate-500">
-                  <span className="text-sm">Select an update version to view details</span>
+                  <span className="text-sm">{t('hospitals.detail.selectVersion')}</span>
                 </div>
               )}
             </div>
@@ -956,38 +959,38 @@ export function HospitalDetail() {
       <Modal
         open={bedHistoryOpen}
         onClose={() => setBedHistoryOpen(false)}
-        title="Bed Allocation & Deallocation History"
+        title={t('hospitals.detail.bedHistory')}
         size="lg"
       >
         {loadingBedHistory ? (
           <div className="flex flex-col items-center justify-center py-16 text-slate-505 dark:text-slate-400">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-3" />
-            <span className="text-sm">Loading bed history...</span>
+            <span className="text-sm">{t('common.loading')}</span>
           </div>
         ) : bedHistoryRecords.length === 0 ? (
           <div className="text-center py-12 text-slate-400 dark:text-slate-500">
             <History size={36} className="mx-auto mb-2 opacity-30" />
-            <p className="font-medium">No bed allocations found</p>
-            <p className="text-xs mt-1">No beds have been allocated or deallocated yet.</p>
+            <p className="font-medium">{t('hospitals.detail.noBedHistory')}</p>
+            <p className="text-xs mt-1">{t('hospitals.detail.noBedHistoryDesc')}</p>
           </div>
         ) : (
           <div className="space-y-4">
             {bedHistoryRecords.map((record) => (
               <div
                 key={record._id}
-                className="bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-150 dark:border-slate-750 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      {record.patientId?.name || 'Unknown Patient'}
+                      {record.patientId?.name || t('hospitals.detail.unknownPatient')}
                     </span>
                     <Badge variant={record.status === 'ALLOCATED' ? 'danger' : 'success'}>
-                      {record.status}
+                      {t(`hospitals.detail.${record.status.toLowerCase()}`)}
                     </Badge>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Condition: {record.patientId?.condition || 'N/A'}
+                    {t('hospitals.detail.condition')}: {record.patientId?.condition || 'N/A'}
                   </p>
                   <p className="text-xs text-slate-450 dark:text-slate-500">
                     Patient ID: {record.patientId?._id || 'N/A'}
@@ -996,12 +999,12 @@ export function HospitalDetail() {
                 <div className="text-xs text-slate-550 dark:text-slate-400 space-y-1 md:text-right shrink-0">
                   <div className="flex items-center gap-1.5 md:justify-end">
                     <Clock size={12} className="text-slate-400" />
-                    <span>Allocated: {record.allocatedAt ? new Date(record.allocatedAt).toLocaleString() : 'N/A'}</span>
+                    <span>{t('hospitals.detail.allocated')}: {record.allocatedAt ? new Date(record.allocatedAt).toLocaleString() : 'N/A'}</span>
                   </div>
                   {record.status === 'DEALLOCATED' && record.deallocatedAt && (
                     <div className="flex items-center gap-1.5 md:justify-end text-emerald-600 dark:text-emerald-400 font-medium">
                       <Clock size={12} className="text-emerald-500" />
-                      <span>Deallocated: {new Date(record.deallocatedAt).toLocaleString()}</span>
+                      <span>{t('hospitals.detail.deallocated')}: {new Date(record.deallocatedAt).toLocaleString()}</span>
                     </div>
                   )}
                 </div>

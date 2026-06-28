@@ -1,18 +1,34 @@
-import { useState } from 'react';
-import { Lock, User, AlertCircle, Loader2, ShieldCheck } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Lock, User, AlertCircle, Loader2, ShieldCheck, Languages, ChevronDown } from 'lucide-react';
 import logo from './assets/logo.png';
 import { environment } from './config/environment';
+import { useTranslation } from 'react-i18next';
 
 export default function App() {
+  const { t, i18n } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setLangOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const currentLang = (i18n.language || 'en').split('-')[0];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password) {
-      setError('Please enter both username and password.');
+      setError(t('auth.emptyFieldsError'));
       return;
     }
 
@@ -34,20 +50,96 @@ export default function App() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Invalid credentials. Please try again.');
+        throw new Error(data.message || t('auth.invalidCredentials'));
       }
 
       // Single Sign-On Redirect: redirect to main app passing token as a query param
       window.location.href = `${environment.mainFrontendUrl}/?token=${encodeURIComponent(data.access_token)}`;
     } catch (err: any) {
-      setError(err.message || 'Failed to connect. Please ensure the backend is running.');
+      setError(err.message || t('auth.connectionError'));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-gradient-to-br from-slate-50 via-teal-50/20 to-slate-100 dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-950 px-4 py-8">
+    <div className="relative min-h-screen flex flex-col justify-between bg-gradient-to-br from-slate-50 via-teal-50/20 to-slate-100 dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-950 px-4 py-8">
+      {/* Language Switcher */}
+      <div className="absolute top-4 right-4 z-50" ref={dropdownRef}>
+        <button
+          type="button"
+          onClick={() => setLangOpen(!langOpen)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+          aria-label="Change language"
+          title="Change Language"
+        >
+          <Languages size={16} />
+          <span className="text-xs font-semibold uppercase">{currentLang}</span>
+          <ChevronDown size={12} className="text-slate-400" />
+        </button>
+        
+        {langOpen && (
+          <div className="absolute right-0 mt-1.5 w-40 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg dark:shadow-slate-900/50 py-1 z-50">
+            <button
+              type="button"
+              onClick={() => {
+                i18n.changeLanguage('en');
+                setLangOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-xs font-medium transition ${
+                currentLang === 'en'
+                  ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+              }`}
+            >
+              English
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                i18n.changeLanguage('hi');
+                setLangOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-xs font-medium transition ${
+                currentLang === 'hi'
+                  ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+              }`}
+            >
+              हिन्दी (Hindi)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                i18n.changeLanguage('te');
+                setLangOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-xs font-medium transition ${
+                currentLang === 'te'
+                  ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+              }`}
+            >
+              తెలుగు (Telugu)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                i18n.changeLanguage('bn');
+                setLangOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-xs font-medium transition ${
+                currentLang === 'bn'
+                  ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+              }`}
+            >
+              বাংলা (Bengali)
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Empty top spacing for balance */}
       <div />
 
@@ -75,10 +167,10 @@ export default function App() {
             {/* Headers */}
             <div className="text-center mb-8">
               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 leading-snug tracking-tight">
-                Government Health Connect
+                {t('auth.title')}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-wider font-semibold">
-                Care Management Portal
+                {t('auth.subtitle')}
               </p>
             </div>
 
@@ -96,7 +188,7 @@ export default function App() {
               {/* Username Input */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                  Username
+                  {t('auth.username')}
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 dark:text-slate-500 pointer-events-none">
@@ -105,7 +197,7 @@ export default function App() {
                   <input
                     type="text"
                     required
-                    placeholder="Enter admin username"
+                    placeholder={t('auth.usernamePlaceholder')}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     disabled={isLoading}
@@ -117,7 +209,7 @@ export default function App() {
               {/* Password Input */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                  Password
+                  {t('auth.password')}
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 dark:text-slate-500 pointer-events-none">
@@ -126,7 +218,7 @@ export default function App() {
                   <input
                     type="password"
                     required
-                    placeholder="Enter password"
+                    placeholder={t('auth.passwordPlaceholder')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading}
@@ -144,12 +236,12 @@ export default function App() {
                 {isLoading ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    <span>Signing In...</span>
+                    <span>{t('auth.signingIn')}</span>
                   </>
                 ) : (
                   <>
                     <ShieldCheck size={18} />
-                    <span>Secure Sign In</span>
+                    <span>{t('auth.secureSignIn')}</span>
                   </>
                 )}
               </button>
@@ -160,7 +252,7 @@ export default function App() {
 
       {/* Footer Quote */}
       <div className="text-center text-xs sm:text-sm text-slate-400 dark:text-slate-500 mt-8 italic font-medium px-4">
-        <p>"Empowering digital connectivity for a healthier and stronger nation."</p>
+        <p>{t('auth.footerQuote')}</p>
       </div>
     </div>
   );

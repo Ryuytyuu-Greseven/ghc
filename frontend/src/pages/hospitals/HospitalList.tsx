@@ -11,6 +11,7 @@ import type { Hospital, FacilityType, PaginationMeta } from '../../types';
 import { HospitalForm } from './HospitalForm';
 import { hospitalApi } from '../../services/hospitalApi';
 import { clsx } from 'clsx';
+import { useTranslation } from 'react-i18next';
 
 const filterTypes = ['all', 'PHC', 'CHC'] as const;
 type FilterType = (typeof filterTypes)[number];
@@ -22,6 +23,7 @@ const typeStyles: Record<FacilityType, { bg: string; text: string; badge: 'info'
 
 export function HospitalList() {
   const { deleteHospital, staff, patients, hospitals } = useApp();
+  const { t } = useTranslation();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Hospital | null>(null);
   const [filterType, setFilterType] = useState<FilterType>('all');
@@ -117,7 +119,6 @@ export function HospitalList() {
 
   const totalPages = Math.ceil(totalRecords / itemsPerPage);
   const activePage = Math.min(currentPage, Math.max(1, totalPages));
-  const startIndex = (activePage - 1) * itemsPerPage;
 
   const openAdd = () => {
     setEditing(null);
@@ -143,7 +144,7 @@ export function HospitalList() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Hospitals & Clinics" subtitle="Manage primary and community healthcare networks" />
+      <Header title={t('hospitals.title')} subtitle={t('hospitals.subtitle')} />
 
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-5">
         <div className="max-w-screen-2xl mx-auto space-y-5">
@@ -151,22 +152,22 @@ export function HospitalList() {
           {/* Toolbar */}
           <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
             <div className="flex items-center gap-2 flex-wrap">
-              {filterTypes.map(t => (
+              {filterTypes.map(tOption => (
                 <button
-                  key={t}
-                  onClick={() => setFilterType(t)}
+                  key={tOption}
+                  onClick={() => setFilterType(tOption)}
                   className={clsx(
                     'px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
-                    filterType === t
+                    filterType === tOption
                       ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20'
                       : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                   )}
                 >
-                  {t === 'all'
-                    ? 'All'
-                    : t === 'PHC'
-                      ? 'PHCs'
-                      : 'CHCs'}
+                  {tOption === 'all'
+                    ? t('common.all')
+                    : tOption === 'PHC'
+                      ? t('common.phcs')
+                      : t('common.chcs')}
                 </button>
               ))}
             </div>
@@ -192,13 +193,13 @@ export function HospitalList() {
                       setAppliedSearchQuery(searchQuery);
                     }
                   }}
-                  placeholder="Search facilities..."
+                  placeholder={t('common.searchFacilities')}
                   className="w-full pl-9 pr-4 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                 />
               </div>
 
               <Button onClick={openAdd} className="shrink-0">
-                <Plus size={15} /> Add Facility
+                <Plus size={15} /> {t('common.addFacility')}
               </Button>
             </div>
           </div>
@@ -207,13 +208,13 @@ export function HospitalList() {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-500">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-3" />
-              <span className="text-sm">Loading facilities...</span>
+              <span className="text-sm">{t('common.loading')}</span>
             </div>
           ) : paginatedHospitals.length === 0 ? (
             <div className="text-center py-20 text-slate-400 dark:text-slate-500">
               <Building2 size={40} className="mx-auto mb-3 opacity-30" />
-              <p className="font-medium text-slate-500 dark:text-slate-400">No facilities found</p>
-              <p className="text-sm mt-1">Try relaxing your search query or add a new facility.</p>
+              <p className="font-medium text-slate-500 dark:text-slate-400">{t('common.noFacilities')}</p>
+              <p className="text-sm mt-1">{t('common.tryRelaxing')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
@@ -299,14 +300,14 @@ export function HospitalList() {
                         {h.medicalOfficer && (
                           <div className="flex items-center gap-2 border-t border-slate-100 dark:border-slate-700/50 pt-2">
                             <Stethoscope size={14} className="text-slate-400 shrink-0" />
-                            <span className="truncate">MO: {h.medicalOfficer}</span>
+                            <span className="truncate">{t('common.medicalOfficer')}: {h.medicalOfficer}</span>
                           </div>
                         )}
 
                         {h.type === 'PHC' && parentCHC && (
                           <div className="flex items-center gap-2 border-t border-slate-100 dark:border-slate-700/50 pt-2">
                             <Building2 size={14} className="text-slate-400 shrink-0" />
-                            <span className="truncate">Parent CHC: {parentCHC.name}</span>
+                            <span className="truncate">{t('common.parentChc')}: {parentCHC.name}</span>
                           </div>
                         )}
 
@@ -314,7 +315,7 @@ export function HospitalList() {
                         {h.type === 'CHC' && (
                           <div className="text-slate-600 dark:text-slate-300 border-t border-slate-100 dark:border-slate-700/50 pt-2">
                             <span className="font-semibold text-slate-500 dark:text-slate-400 block mb-1">
-                              Specialist Services:
+                              {t('common.specialists')}:
                             </span>
                             <div className="flex flex-wrap gap-1 items-center">
                               {h.specialists && h.specialists.length > 0 ? (
@@ -347,7 +348,7 @@ export function HospitalList() {
                                         >
                                           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-1.5 mb-1.5">
                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                              Specialists ({h.specialists.length})
+                                              {t('common.specialists')} ({h.specialists.length})
                                             </span>
                                             <button
                                               onClick={() => setActiveSpecialistOverlay(null)}
@@ -379,17 +380,17 @@ export function HospitalList() {
                             <div className="flex flex-wrap gap-1.5 pt-1">
                               {h.hasOT && (
                                 <span className="inline-flex items-center gap-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide">
-                                  OT
+                                  {t('common.ot')}
                                 </span>
                               )}
                               {h.hasXRay && (
                                 <span className="inline-flex items-center gap-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide">
-                                  X-Ray
+                                  {t('common.xray')}
                                 </span>
                               )}
                               {h.hasAmbulance && (
                                 <span className="inline-flex items-center gap-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide">
-                                  Ambulance
+                                  {t('common.ambulance')}
                                 </span>
                               )}
                             </div>
@@ -400,7 +401,7 @@ export function HospitalList() {
                         <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                             <span className="flex items-center gap-1">
-                              <BedDouble size={12} /> Bed Occupancy
+                              <BedDouble size={12} /> {t('dashboard.bed_occupancy')}
                             </span>
                             <span className="font-medium tabular-nums">
                               {h.totalBeds - h.availableBeds}/{h.totalBeds}
@@ -418,8 +419,8 @@ export function HospitalList() {
                             />
                           </div>
                           <div className="flex justify-between mt-3 text-xs text-slate-500 dark:text-slate-400">
-                            <span>{assignedStaff} staff assigned</span>
-                            <span>{activePatients} patients</span>
+                            <span>{assignedStaff} {t('common.staff')} {t('dashboard.assigned')}</span>
+                            <span>{activePatients} {t('common.patients')}</span>
                           </div>
                         </div>
                       </div>
@@ -452,7 +453,7 @@ export function HospitalList() {
           setFormOpen(false);
           setReloadTrigger(prev => prev + 1);
         }}
-        title={editing ? 'Edit Facility' : 'Add New Facility'}
+        title={editing ? t('hospitals.form.editFacility') : t('hospitals.form.addFacility')}
       >
         <HospitalForm
           initial={editing}
@@ -467,7 +468,7 @@ export function HospitalList() {
       <Modal
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title="Confirm Delete"
+        title={t('hospitals.confirmDelete')}
         size="sm"
       >
         <div className="flex flex-col items-center text-center gap-4 py-2">
@@ -476,18 +477,18 @@ export function HospitalList() {
           </div>
           <div>
             <p className="text-slate-700 dark:text-slate-200 font-semibold text-base">
-              Delete <span className="text-red-600 dark:text-red-400">{deleteTarget?.name}</span>?
+              {t('common.delete')} <span className="text-red-600 dark:text-red-400">{deleteTarget?.name}</span>?
             </p>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              This action will permanently remove this {deleteTarget?.type} facility. Staff and patients linked to it will remain in the system.
+              {t('hospitals.deleteWarning')}
             </p>
           </div>
           <div className="flex gap-3 w-full pt-2">
             <Button variant="secondary" className="flex-1" onClick={() => setDeleteTarget(null)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant="danger" className="flex-1" onClick={confirmDelete}>
-              <Trash2 size={14} /> Yes, Delete
+              <Trash2 size={14} /> {t('common.yes')}, {t('common.delete')}
             </Button>
           </div>
         </div>
