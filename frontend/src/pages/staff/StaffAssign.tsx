@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Building2, X } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useApp } from '../../context/AppContext';
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function StaffAssign({ staff, onClose }: Props) {
+  const { t } = useTranslation();
   const { hospitals, assignStaff } = useApp();
   const [selected, setSelected] = useState<string | null>(staff.assignedHospitalId);
 
@@ -23,12 +25,12 @@ export function StaffAssign({ staff, onClose }: Props) {
       <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 border border-slate-100 dark:border-slate-700">
         <p className="font-medium text-slate-800 dark:text-slate-100">{staff.name}</p>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          {staff.specialization} · {staff.role}
+          {staff.specialization} · {t(`roles.${staff.role}`)}
         </p>
       </div>
 
       <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">
-        Select a facility to assign to:
+        {t('staff.assign.selectFacility')}
       </p>
 
       <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -59,15 +61,15 @@ export function StaffAssign({ staff, onClose }: Props) {
           onClick={() => setSelected(null)}
           className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors"
         >
-          <X size={14} /> Remove assignment
+          <X size={14} /> {t('staff.assign.removeAssignment')}
         </button>
       )}
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="secondary" onClick={onClose}>
-          Cancel
+          {t('common.cancel')}
         </Button>
-        <Button onClick={handleSave}>Save Assignment</Button>
+        <Button onClick={handleSave}>{t('staff.assign.saveAssignment')}</Button>
       </div>
     </div>
   );

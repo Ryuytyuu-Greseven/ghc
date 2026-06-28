@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { clsx } from 'clsx';
 import { X, ChevronDown, Check } from 'lucide-react';
 
@@ -10,7 +11,8 @@ interface MultiSelectProps {
   placeholder?: string;
 }
 
-export function MultiSelect({ label, options, selected, onChange, placeholder = 'Select…' }: MultiSelectProps) {
+export function MultiSelect({ label, options, selected, onChange, placeholder }: MultiSelectProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -65,8 +67,8 @@ export function MultiSelect({ label, options, selected, onChange, placeholder = 
       >
         <span className={selected.length === 0 ? 'text-slate-400 dark:text-slate-500' : ''}>
           {selected.length === 0
-            ? placeholder
-            : `${selected.length} specialist${selected.length > 1 ? 's' : ''} selected`}
+            ? (placeholder || t('common.selectPlaceholder'))
+            : t('hospitals.form.specialistsSelected', { count: selected.length })}
         </span>
         <ChevronDown
           size={15}

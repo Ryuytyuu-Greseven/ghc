@@ -7,6 +7,7 @@ import { Modal } from '../../components/ui/Modal';
 import { useApp } from '../../context/AppContext';
 import type { Patient, Gender, BloodGroup, PatientDraft, PatientFormValues } from '../../types';
 import { Pencil, Plus, UserRound } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   initial: Patient | null;
@@ -30,25 +31,6 @@ const requiredFields: RequiredPatientField[] = [
   'hospitalId',
 ];
 
-// Keep labels centralized so inline validation messages match the visible form labels.
-const fieldLabels: Record<RequiredPatientField, string> = {
-  name: 'Patient full name',
-  age: 'Age',
-  gender: 'Gender',
-  bloodGroup: 'Blood group',
-  phone: 'Phone',
-  email: 'Email',
-  aadhaarNumber: 'Aadhaar number',
-  address: 'Address',
-  hospitalId: 'Facility',
-};
-
-const genderOptions: { value: Gender; label: string }[] = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
-  { value: 'other', label: 'Other' },
-];
-
 const bloodGroupOptions: { value: BloodGroup; label: string }[] = [
   { value: 'A+', label: 'A+' },
   { value: 'A-', label: 'A-' },
@@ -60,37 +42,43 @@ const bloodGroupOptions: { value: BloodGroup; label: string }[] = [
   { value: 'O-', label: 'O-' },
 ];
 
-function validatePatientForm(form: PatientFormValues): PatientFormErrors {
+function validatePatientForm(form: PatientFormValues, t: any): PatientFormErrors {
   const errors: PatientFormErrors = {};
 
-  // Empty select values are intentional so new onboarding does not preselect a blood group.
   requiredFields.forEach(field => {
     const value = form[field];
     if (typeof value === 'string' && value.trim() === '') {
-      errors[field] = `${fieldLabels[field]} is required`;
+      errors[field] = t('patients.form.fieldRequired', { field: t(`patients.form.labels.${field}`) });
     }
   });
 
   if (form.age.trim() !== '') {
     const age = Number(form.age);
     if (!Number.isFinite(age) || age <= 0) {
-      errors.age = 'Age must be greater than 0';
+      errors.age = t('patients.form.ageError');
     }
   }
 
   if (form.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-    errors.email = 'Enter a valid email address';
+    errors.email = t('patients.form.emailError');
   }
 
   if (form.aadhaarNumber.trim() !== '' && !/^\d{12}$/.test(form.aadhaarNumber.trim())) {
-    errors.aadhaarNumber = 'Aadhaar number must be 12 digits';
+    errors.aadhaarNumber = t('patients.form.aadhaarError');
   }
 
   return errors;
 }
 
 export function PatientForm({ initial, onClose }: Props) {
+  const { t } = useTranslation();
   const { addPatient, updatePatient, hospitals } = useApp();
+
+  const genderOptions = [
+    { value: 'male', label: t('patients.form.genders.male') },
+    { value: 'female', label: t('patients.form.genders.female') },
+    { value: 'other', label: t('patients.form.genders.other') },
+  ];
 
   const [form, setForm] = useState<PatientFormValues>({
     name: initial?.name ?? '',
@@ -109,7 +97,7 @@ export function PatientForm({ initial, onClose }: Props) {
   const [saving, setSaving] = useState(false);
   const [pendingData, setPendingData] = useState<PatientDraft | null>(null);
 
-  const errors = validatePatientForm(form);
+  const errors = validatePatientForm(form, t);
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -169,7 +157,7 @@ export function PatientForm({ initial, onClose }: Props) {
       onClose();
     } catch (err) {
       // Backend duplicate Aadhaar conflicts are surfaced here as a toast.
-      setToast(err instanceof Error ? err.message : 'Unable to save patient');
+      setToast(err instanceof Error ? err.message : t('patients.form.saveError'));
     } finally {
       setSaving(false);
     }
@@ -187,18 +175,18 @@ export function PatientForm({ initial, onClose }: Props) {
         )}
 
       <Input
-        label="Patient Full Name"
+        label={t('patients.form.labels.name')}
         required
         value={form.name}
         onChange={e => set('name', e.target.value)}
         onBlur={() => touch('name')}
         error={errorFor('name')}
-        placeholder="e.g. Kavitha Nair"
+        placeholder={t('patients.form.placeholders.name')}
       />
 
       <div className="grid grid-cols-2 gap-4">
         <Input
-          label="Age"
+          label={t('patients.form.labels.age')}
           type="number"
           min="0"
           max="150"
@@ -207,56 +195,56 @@ export function PatientForm({ initial, onClose }: Props) {
           onChange={e => set('age', e.target.value)}
           onBlur={() => touch('age')}
           error={errorFor('age')}
-          placeholder="Age in years"
+          placeholder={t('patients.form.placeholders.age')}
         />
         <Select
-          label="Gender"
+          label={t('patients.form.labels.gender')}
           required
           value={form.gender}
           onChange={e => set('gender', e.target.value as PatientFormValues['gender'])}
           onBlur={() => touch('gender')}
           error={errorFor('gender')}
           options={genderOptions}
-          placeholder="— Select gender —"
+          placeholder={t('patients.form.placeholders.gender')}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <Select
-          label="Blood Group"
+          label={t('patients.form.labels.bloodGroup')}
           required
           value={form.bloodGroup}
           onChange={e => set('bloodGroup', e.target.value as PatientFormValues['bloodGroup'])}
           onBlur={() => touch('bloodGroup')}
           error={errorFor('bloodGroup')}
           options={bloodGroupOptions}
-          placeholder="— Select blood group —"
+          placeholder={t('patients.form.placeholders.bloodGroup')}
         />
         <Input
-          label="Email"
+          label={t('patients.form.labels.email')}
           type="email"
           required
           value={form.email}
           onChange={e => set('email', e.target.value)}
           onBlur={() => touch('email')}
           error={errorFor('email')}
-          placeholder="patient@example.com"
+          placeholder={t('patients.form.placeholders.email')}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <Input
-          label="Phone"
+          label={t('patients.form.labels.phone')}
           inputMode="numeric"
           required
           value={form.phone}
           onChange={e => set('phone', e.target.value.replace(/\D/g, ''))}
           onBlur={() => touch('phone')}
           error={errorFor('phone')}
-          placeholder="9900000000"
+          placeholder={t('patients.form.placeholders.phone')}
         />
         <Input
-          label="Aadhaar Number"
+          label={t('patients.form.labels.aadhaarNumber')}
           inputMode="numeric"
           maxLength={12}
           required
@@ -264,29 +252,29 @@ export function PatientForm({ initial, onClose }: Props) {
           onChange={e => set('aadhaarNumber', e.target.value.replace(/\D/g, '').slice(0, 12))}
           onBlur={() => touch('aadhaarNumber')}
           error={errorFor('aadhaarNumber')}
-          placeholder="12 digit Aadhaar number"
+          placeholder={t('patients.form.placeholders.aadhaarNumber')}
         />
       </div>
 
       <Select
-        label="Assign to Facility"
+        label={t('patients.form.labels.hospitalId')}
         required
         value={form.hospitalId}
         onChange={e => set('hospitalId', e.target.value)}
         onBlur={() => touch('hospitalId')}
         error={errorFor('hospitalId')}
         options={hospitalOptions}
-        placeholder="— Select facility —"
+        placeholder={t('patients.form.placeholders.hospitalId')}
       />
 
       <Input
-        label="Address"
+        label={t('patients.form.labels.address')}
         required
         value={form.address}
         onChange={e => set('address', e.target.value)}
         onBlur={() => touch('address')}
         error={errorFor('address')}
-        placeholder="Home address"
+        placeholder={t('patients.form.placeholders.address')}
       />
       <div className="flex items-center gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50">
         <input
@@ -297,20 +285,22 @@ export function PatientForm({ initial, onClose }: Props) {
           className="w-4 h-4 accent-primary-600 cursor-pointer"
         />
         <label htmlFor="bedRequired" className="text-sm font-medium text-slate-700 cursor-pointer">
-          {form.bedRequired ? 'DeAllocate Bed' : 'Allocate Bed'}
+          {form.bedRequired ? t('patients.form.deallocateBed') : t('patients.form.allocateBed')}
         </label>
       </div>
 
         <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button type="submit" disabled={saving}>{saving ? 'Saving...' : initial ? 'Save Changes' : 'Admit Patient'}</Button>
+          <Button type="button" variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button type="submit" disabled={saving}>
+            {saving ? t('common.saving') : initial ? t('common.saveChanges') : t('patients.admitPatient')}
+          </Button>
         </div>
       </form>
 
       <Modal
         open={!!pendingData}
         onClose={() => setPendingData(null)}
-        title={initial ? 'Confirm Save Changes' : 'Confirm Admit Patient'}
+        title={initial ? t('hospitals.form.confirmSave') : t('patients.form.confirmAdmit')}
         size="sm"
       >
         <div className="flex flex-col items-center text-center gap-4 py-2">
@@ -323,7 +313,7 @@ export function PatientForm({ initial, onClose }: Props) {
           </div>
           <div>
             <p className="text-slate-700 dark:text-slate-200 font-semibold text-base">
-              {initial ? 'Save changes to ' : 'Admit patient '}
+              {initial ? t('hospitals.form.saveTo') : t('patients.form.admitNew')}
               <span className="text-primary-600 dark:text-primary-400">
                 {pendingData?.name || initial?.name}
               </span>
@@ -331,22 +321,22 @@ export function PatientForm({ initial, onClose }: Props) {
             </p>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               {initial
-                ? 'This will update this patient record.'
-                : 'This will create a new patient admission and allocate a bed if required.'}
+                ? t('patients.form.updateWarning')
+                : t('patients.form.registerWarning')}
             </p>
           </div>
           <div className="flex gap-3 w-full pt-2">
             <Button variant="secondary" className="flex-1" onClick={() => setPendingData(null)}>
-              Go Back
+              {t('hospitals.form.goBack')}
             </Button>
             <Button variant="primary" className="flex-1" onClick={confirmSave} disabled={saving}>
               {initial ? (
                 <>
-                  <Pencil size={14} /> {saving ? 'Saving...' : 'Yes, Save'}
+                  <Pencil size={14} /> {saving ? t('common.saving') : t('hospitals.form.yesSave')}
                 </>
               ) : (
                 <>
-                  <Plus size={14} /> {saving ? 'Admitting...' : 'Yes, Admit'}
+                  <Plus size={14} /> {saving ? t('patients.form.admitting') : t('patients.form.yesAdmit')}
                 </>
               )}
             </Button>

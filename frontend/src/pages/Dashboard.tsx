@@ -44,21 +44,21 @@ export function Dashboard() {
               value={hospitals.length}
               icon={<Building2 size={20} className="text-primary-600 dark:text-primary-400" />}
               color="bg-primary-50 dark:bg-primary-900/30"
-              sub={`${hospitals.filter(h => h.type === 'CHC').length} CHCs · ${hospitals.filter(h => h.type === 'PHC').length} PHCs`}
+              sub={`${hospitals.filter(h => h.type === 'CHC').length} ${t('common.chcs')} · ${hospitals.filter(h => h.type === 'PHC').length} ${t('common.phcs')}`}
             />
             <StatCard
               label={t('common.staff')}
               value={staff.length}
               icon={<Users size={20} className="text-violet-600 dark:text-violet-400" />}
               color="bg-violet-50 dark:bg-violet-900/30"
-              sub={`${unassignedStaff} unassigned`}
+              sub={`${unassignedStaff} ${t('dashboard.unassigned')}`}
             />
             <StatCard
               label={t('common.patients')}
               value={patients.length}
               icon={<UserRound size={20} className="text-cyan-600 dark:text-cyan-400" />}
               color="bg-cyan-50 dark:bg-cyan-900/30"
-              sub={`${bedPatients} requiring beds`}
+              sub={`${bedPatients} ${t('dashboard.requiringBeds')}`}
             />
             <StatCard
               label={t('common.medicines')}

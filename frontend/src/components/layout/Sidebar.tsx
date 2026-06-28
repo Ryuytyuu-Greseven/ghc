@@ -59,8 +59,8 @@ export function Sidebar() {
         <div className="flex items-center gap-3 min-w-0">
           <img src="/logo.png" alt="GHC Logo" className="h-10 w-10 rounded-xl shrink-0 object-contain" />
           <div className="min-w-0">
-            <p className="text-slate-800 dark:text-white font-bold text-sm leading-tight truncate">GHC Health</p>
-            <p className="text-slate-500 dark:text-slate-400 text-xs truncate">Care Management</p>
+            <p className="text-slate-800 dark:text-white font-bold text-sm leading-tight truncate">{t('common.appName')}</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs truncate">{t('common.appSubtitle')}</p>
           </div>
         </div>
         {/* Close button — mobile/tablet only */}
@@ -112,7 +112,7 @@ export function Sidebar() {
           {currentUser?.username ? currentUser.username.substring(0, 2).toUpperCase() : 'U'}
         </div>
         <div className="min-w-0">
-          <p className="text-slate-800 dark:text-white text-xs font-medium truncate">{currentUser?.username || 'User'}</p>
+          <p className="text-slate-800 dark:text-white text-xs font-medium truncate">{currentUser?.username || t('common.user')}</p>
           <p className="text-slate-500 dark:text-slate-400 text-xs truncate">
             {currentUser?.role ? t(`roles.${currentUser.role}`) : t('roles.Staff')}
           </p>
