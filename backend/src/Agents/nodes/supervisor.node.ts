@@ -13,10 +13,11 @@ Domains:
 - medicine  → pharmacy, drug list, prescriptions
 - staff     → general doctors, nurses, departments, personnel (not specific to a hospital's overall staff list)
 - inventory → inventory master items, catalog, warehouse stock, branch stock, stock transfer request approvals, transfer transactions, low stock analytics
+- out_of_scope → any other query that is unrelated to healthcare management, hospital records, patients, medicines, staff, or inventory
 
-Reply with ONLY one word: hospital | patient | medicine | staff | inventory`;
+Reply with ONLY one word: hospital | patient | medicine | staff | inventory | out_of_scope`;
 
-const VALID_DOMAINS = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory']);
+const VALID_DOMAINS = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory', 'out_of_scope']);
 
 function parseDomain(content: string): string {
   const normalized = content.trim().toLowerCase();

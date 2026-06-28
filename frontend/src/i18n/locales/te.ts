@@ -77,7 +77,10 @@ export const te = {
       assigned: "కేటాయించబడినవి",
       available_beds: "అందుబాటులో ఉన్న పడకలు",
       across_all_facilities: "అన్ని కేంద్రాలలో",
-      recent_patients: "ఇటీవలి రోగులు"
+      recent_patients: "ఇటీవలి రోగులు",
+      yrs: "సంవత్సరాలు",
+      facilities: "సదుపాయాలు",
+      beds_free: "పడకలు ఖాళీగా ఉన్నాయి"
     },
     hospitals: {
       title: "ఆసుపత్రులు & క్లినిక్‌లు",

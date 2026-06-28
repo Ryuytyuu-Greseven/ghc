@@ -5,6 +5,7 @@ import { AsyncLocalStorage } from 'async_hooks';
 
 export interface HttpContext {
   token?: string;
+  lang?: string;
 }
 
 export const httpLocalStorage = new AsyncLocalStorage<HttpContext>();
