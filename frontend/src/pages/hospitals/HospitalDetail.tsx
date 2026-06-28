@@ -89,7 +89,15 @@ function StockStatusBadge({
 export function HospitalDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { hospitals, staff, patients, medicines, hospitalMedicines, getHospitalHistory } = useApp();
+  const {
+    hospitals,
+    staff,
+    patients,
+    medicines,
+    hospitalMedicines,
+    getHospitalHistory,
+    getBedAllocationHistory,
+  } = useApp();
   const [editOpen, setEditOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRecords, setHistoryRecords] = useState<Hospital[]>([]);
@@ -97,6 +105,10 @@ export function HospitalDetail() {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [fetchedHospital, setFetchedHospital] = useState<Hospital | null>(null);
   const [loadingHospital, setLoadingHospital] = useState(false);
+
+  const [bedHistoryOpen, setBedHistoryOpen] = useState(false);
+  const [bedHistoryRecords, setBedHistoryRecords] = useState<any[]>([]);
+  const [loadingBedHistory, setLoadingBedHistory] = useState(false);
 
   const contextHospital = hospitals.find(h => h.id === id);
   const hospital = contextHospital ?? fetchedHospital;
@@ -145,6 +157,21 @@ export function HospitalDetail() {
       console.error(err);
     } finally {
       setLoadingHistory(false);
+    }
+  };
+
+  const handleOpenBedHistory = async () => {
+    if (!hospital) return;
+    setBedHistoryOpen(true);
+    setLoadingBedHistory(true);
+    try {
+      const recordId = (hospital as any).hospitalId || hospital.id;
+      const history = await getBedAllocationHistory(recordId);
+      setBedHistoryRecords(history);
+    } catch (err) {
+      console.error('Failed to load bed history:', err);
+    } finally {
+      setLoadingBedHistory(false);
     }
   };
 
@@ -384,7 +411,16 @@ export function HospitalDetail() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-slate-800 dark:text-slate-100">Bed Status</h3>
-                  <TrendingUp size={16} className="text-slate-400 dark:text-slate-500" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleOpenBedHistory}
+                      className="p-1 text-slate-400 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
+                      title="View Bed Allocation History"
+                    >
+                      <History size={16} />
+                    </button>
+                    <TrendingUp size={16} className="text-slate-400 dark:text-slate-500" />
+                  </div>
                 </div>
               </CardHeader>
               <CardBody className="space-y-4">
@@ -912,6 +948,65 @@ export function HospitalDetail() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Bed allocation history modal */}
+      <Modal
+        open={bedHistoryOpen}
+        onClose={() => setBedHistoryOpen(false)}
+        title="Bed Allocation & Deallocation History"
+        size="lg"
+      >
+        {loadingBedHistory ? (
+          <div className="flex flex-col items-center justify-center py-16 text-slate-505 dark:text-slate-400">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-3" />
+            <span className="text-sm">Loading bed history...</span>
+          </div>
+        ) : bedHistoryRecords.length === 0 ? (
+          <div className="text-center py-12 text-slate-400 dark:text-slate-500">
+            <History size={36} className="mx-auto mb-2 opacity-30" />
+            <p className="font-medium">No bed allocations found</p>
+            <p className="text-xs mt-1">No beds have been allocated or deallocated yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {bedHistoryRecords.map((record) => (
+              <div
+                key={record._id}
+                className="bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-150 dark:border-slate-750 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                      {record.patientId?.name || 'Unknown Patient'}
+                    </span>
+                    <Badge variant={record.status === 'ALLOCATED' ? 'danger' : 'success'}>
+                      {record.status}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Condition: {record.patientId?.condition || 'N/A'}
+                  </p>
+                  <p className="text-xs text-slate-450 dark:text-slate-500">
+                    Patient ID: {record.patientId?._id || 'N/A'}
+                  </p>
+                </div>
+                <div className="text-xs text-slate-550 dark:text-slate-400 space-y-1 md:text-right shrink-0">
+                  <div className="flex items-center gap-1.5 md:justify-end">
+                    <Clock size={12} className="text-slate-400" />
+                    <span>Allocated: {record.allocatedAt ? new Date(record.allocatedAt).toLocaleString() : 'N/A'}</span>
+                  </div>
+                  {record.status === 'DEALLOCATED' && record.deallocatedAt && (
+                    <div className="flex items-center gap-1.5 md:justify-end text-emerald-600 dark:text-emerald-400 font-medium">
+                      <Clock size={12} className="text-emerald-500" />
+                      <span>Deallocated: {new Date(record.deallocatedAt).toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </Modal>
