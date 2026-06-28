@@ -1,11 +1,20 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { HospitalsService } from './hospitals.service';
+import { FacilityAlertsService } from './facility-alerts/facility-alerts.service';
 
 @Controller('hospitals')
 @UseGuards(JwtAuthGuard)
 export class HospitalsController {
-  constructor(private readonly hospitalsService: HospitalsService) { }
+  constructor(
+    private readonly hospitalsService: HospitalsService,
+    private readonly facilityAlertsService: FacilityAlertsService,
+  ) { }
+
+  @Get('district/intervention-alerts')
+  getInterventionAlerts() {
+    return this.facilityAlertsService.getInterventionAlerts();
+  }
 
   @Get()
   getHospitals(@Query() query?: Record<string, any>) {

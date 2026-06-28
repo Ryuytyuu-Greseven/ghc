@@ -44,6 +44,7 @@ export const en = {
       staff: "Staff",
       patients: "Patients",
       medicines: "Medicines & Supplies",
+      "ai-analytics": "AI Inventory Analytics",
       availability: "My Availability",
       transfers: "Coverage & Transfers"
     },
@@ -80,7 +81,25 @@ export const en = {
       recent_patients: "Recent Patients",
       yrs: "yrs",
       facilities: "Facilities",
-      beds_free: "beds free"
+      beds_free: "beds free",
+      intervention: {
+        title: "District Intervention Alerts",
+        subtitle: "Health centres flagging critical resource bottlenecks",
+        severity_high: "High",
+        severity_medium: "Medium",
+        bed_shortage: "Bed Shortage",
+        severe_stockout: "Severe Stockout",
+        staff_crunch: "Staff Crunch",
+        action_transfer: "Initiate AI Transfer",
+        action_staff: "Rebalance Staff",
+        action_view_hospital: "Manage Facilities",
+        justification_bed: "Critical capacity reached. Occupancy is at {{occupancy}}% with only {{beds}} beds remaining.",
+        justification_stockout: "{{outOfStock}} out of {{total}} monitored items are completely out of stock. Immediate replenishment or redistribution is recommended.",
+        justification_staff: "High patient workload with {{patients}} active patients and only {{staff}} assigned staff members. Urgent staffing coverage intervention required.",
+        metric_bed: "{{occupancy}}% Occupancy ({{beds}} beds left)",
+        metric_stockout: "{{ratio}}% Drugs Out of Stock",
+        metric_staff: "{{ratio}}:1 Patient-to-Staff Ratio"
+      }
     },
     hospitals: {
       title: "Hospitals & Clinics",
@@ -401,7 +420,8 @@ export const en = {
         central: "Central Stock",
         branch: "Branch Stock",
         requests: "Requests",
-        transactions: "Transactions"
+        transactions: "Transactions",
+        analytics: "AI Analytics"
       },
       master: {
         title: "Inventory Master",
@@ -511,6 +531,42 @@ export const en = {
           Expiry: "Expiry",
           Adjustment: "Adjustment"
         }
+      },
+      analytics: {
+        title: "AI Inventory Analytics",
+        subtitle: "Early stock-out warnings, demand forecasting, and smart redistribution",
+        criticalAlerts: "Critical Alerts",
+        criticalAlertsDesc: "Items with fewer than 7 days of stock remaining",
+        noWarnings: "No critical stock-out warnings",
+        noWarningsDesc: "All monitored branch items have sufficient days of stock.",
+        daysOfStock: "Days of Stock",
+        dailyConsumption: "Daily Consumption",
+        demandForecast: "Demand Forecasting",
+        demandForecastDesc: "Compare historic consumption with AI-projected demand",
+        selectBranch: "Select Branch",
+        selectItem: "Select Item",
+        chooseBranch: "Choose a branch...",
+        chooseItem: "Choose an item...",
+        loadForecast: "Load Forecast",
+        loadingForecast: "Loading forecast...",
+        historicDemand: "Historic (30d)",
+        projectedDemand: "AI Projected (7d)",
+        aiSummary: "AI Summary",
+        redistribution: "Smart Redistribution",
+        redistributionDesc: "Recommended branch-to-branch transfers based on real-time levels and forecast",
+        refreshRecommendations: "Refresh",
+        applyTransfer: "Apply Transfer",
+        applyingTransfer: "Applying...",
+        applySuccess: "Transfer request created successfully",
+        noRecommendations: "No redistribution recommendations",
+        noRecommendationsDesc: "Stock levels are balanced across branches for current forecasts.",
+        fromFacility: "From",
+        toFacility: "To",
+        quantity: "Quantity",
+        justification: "Justification",
+        item: "Item",
+        branch: "Branch",
+        availableQty: "Available Qty"
       },
       fields: {
         itemName: "Item Name",

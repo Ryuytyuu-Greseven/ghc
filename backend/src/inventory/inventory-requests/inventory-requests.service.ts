@@ -99,15 +99,30 @@ export class InventoryRequestsService {
       ? (request.branchId as any)._id.toString()
       : request.branchId.toString();
 
+    const fromBranchIdStr = request.fromBranchId
+      ? ((request.fromBranchId as any)._id ?? request.fromBranchId).toString()
+      : null;
+
     for (const item of updatedItems) {
       if (item.issuedQty <= 0) continue;
-      await this.deductAndTransferCentralStock(
-        item.itemId.toString(),
-        item.issuedQty,
-        branchIdStr,
-        request._id as Types.ObjectId,
-        performedBy,
-      );
+      if (fromBranchIdStr) {
+        await this.deductAndTransferBranchStock(
+          fromBranchIdStr,
+          branchIdStr,
+          item.itemId.toString(),
+          item.issuedQty,
+          request._id as Types.ObjectId,
+          performedBy,
+        );
+      } else {
+        await this.deductAndTransferCentralStock(
+          item.itemId.toString(),
+          item.issuedQty,
+          branchIdStr,
+          request._id as Types.ObjectId,
+          performedBy,
+        );
+      }
     }
 
     const newStatus = this.helper.determineStatus(
@@ -181,6 +196,63 @@ export class InventoryRequestsService {
         itemId: new Types.ObjectId(itemId),
         fromLocation: 'Central',
         toLocation: branchId,
+        quantity: deduct,
+        transactionType: TransactionType.TRANSFER,
+        requestId,
+        performedBy,
+      });
+
+      remaining -= deduct;
+    }
+  }
+
+  private async deductAndTransferBranchStock(
+    fromBranchId: string,
+    toBranchId: string,
+    itemId: string,
+    qty: number,
+    requestId: Types.ObjectId,
+    performedBy: string,
+  ): Promise<void> {
+    const batches = await this.branchRepo.findByBranchAndItem(fromBranchId, itemId);
+    // FIFO: oldest expiry date first, nulls last
+    batches.sort((a, b) => {
+      const aTime = a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity;
+      const bTime = b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity;
+      return aTime - bTime;
+    });
+
+    const totalAvailable = batches.reduce((s, b) => s + b.availableQty, 0);
+    if (totalAvailable < qty) {
+      throw new BadRequestException(
+        `Insufficient stock at source branch. Available: ${totalAvailable}, Required: ${qty}`,
+      );
+    }
+
+    let remaining = qty;
+    for (const batch of batches) {
+      if (remaining <= 0) break;
+      const deduct = Math.min(batch.availableQty, remaining);
+      
+      // Deduct from source branch
+      await this.branchRepo.update(batch._id.toString(), {
+        $inc: { availableQty: -deduct },
+      });
+
+      // Add to destination branch
+      await this.branchRepo.upsertBranchStock(
+        toBranchId,
+        itemId,
+        deduct,
+        batch.batchNo,
+        batch.expiryDate,
+      );
+
+      // Create transaction record
+      await this.transactionRepo.create({
+        itemId: new Types.ObjectId(itemId),
+        fromLocation: fromBranchId,
+        toLocation: toBranchId,
         quantity: deduct,
         transactionType: TransactionType.TRANSFER,
         requestId,

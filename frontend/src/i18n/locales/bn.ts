@@ -44,6 +44,7 @@ export const bn = {
       staff: "কর্মী",
       patients: "রোগী",
       medicines: "ওষুধ ও চিকিৎসা সরবরাহ",
+      "ai-analytics": "এআই ইনভেন্টরি অ্যানালিটিক্স",
       availability: "আমার প্রাপ্যতা",
       transfers: "কভারেজ ও স্থানান্তর"
     },
@@ -80,7 +81,25 @@ export const bn = {
       recent_patients: "সাম্প্রতিক রোগী",
       yrs: "বছর",
       facilities: "সুবিধাসমূহ",
-      beds_free: "শয্যা খালি"
+      beds_free: "শয্যা খালি",
+      intervention: {
+        title: "জেলা হস্তক্ষেপ সতর্কতা",
+        subtitle: "গুরুতর সম্পদ সংকটের মুখোমুখি হওয়া স্বাস্থ্য কেন্দ্রসমূহ",
+        severity_high: "উচ্চ",
+        severity_medium: "মাঝারি",
+        bed_shortage: "শয্যা সংকট",
+        severe_stockout: "গুরুতর ওষুধ সংকট",
+        staff_crunch: "কর্মী সংকট",
+        action_transfer: "এআই স্থানান্তর শুরু করুন",
+        action_staff: "কর্মী সুষম করুন",
+        action_view_hospital: "সুপারিশ ব্যবস্থাপনা করুন",
+        justification_bed: "গুরুতর শয্যা ধারণক্ষমতার সীমাবদ্ধতায় পৌঁছেছে। শয্যা পূরণ রয়েছে {{occupancy}}% এবং মাত্র {{beds}} টি শয্যা খালি রয়েছে।",
+        justification_stockout: "তত্ত্বাবধানাধীন মোট {{total}} টি ওষুধের মধ্যে {{outOfStock}} টি ওষুধ সম্পূর্ণ ফুরিয়ে গেছে। দ্রুত ওষুধ সরবরাহ বা স্থানান্তরের সুপারিশ করা হচ্ছে।",
+        justification_staff: "অতিরিক্ত রোগীর চাপ। {{patients}} জন সক্রিয় রোগীর বিপরীতে মাত্র {{staff}} জন কর্মী নিযুক্ত রয়েছেন। দ্রুত বিকল্প কর্মী বরাদ্দের প্রয়োজনীয়তা রয়েছে।",
+        metric_bed: "{{occupancy}}% শয্যা পূরণ ({{beds}} টি শয্যা খালি)",
+        metric_stockout: "{{ratio}}% ওষুধ স্টক আউট",
+        metric_staff: "{{ratio}}:1 রোগী-কর্মী অনুপাত"
+      }
     },
     hospitals: {
       title: "হাসপাতাল ও ক্লিনিক",
@@ -401,7 +420,8 @@ export const bn = {
         central: "কেন্দ্রীয় স্টক",
         branch: "শাখা স্টক",
         requests: "অনুরোধ",
-        transactions: "লেনদেন"
+        transactions: "লেনদেন",
+        analytics: "এআই অ্যানালিটিক্স"
       },
       master: {
         title: "ইনভেন্টরি মাস্টার",
@@ -511,6 +531,42 @@ export const bn = {
           Expiry: "মেয়াদ ফুরানো",
           Adjustment: "সমন্বয়"
         }
+      },
+      analytics: {
+        title: "এআই ইনভেন্টরি অ্যানালিটিক্স",
+        subtitle: "আগাম স্টক-আউট সতর্কতা, চাহিদার পূর্বাভাস এবং স্মার্ট সম্পদ পুনঃবন্টন",
+        criticalAlerts: "গুরুত্বপূর্ণ সতর্কতা",
+        criticalAlertsDesc: "৭ দিনেরও কম স্টক অবশিষ্ট থাকা আইটেমসমূহ",
+        noWarnings: "কোনো সংকটজনক স্টক-আউট সতর্কতা নেই",
+        noWarningsDesc: "পরিমাপিত সমস্ত শাখার আইটেমগুলোর পর্যাপ্ত দিনের স্টক রয়েছে।",
+        daysOfStock: "স্টক থাকার দিন",
+        dailyConsumption: "দৈনিক ব্যবহার",
+        demandForecast: "চাহিদার পূর্বাভাস",
+        demandForecastDesc: "এআই-অনুমানিত চাহিদার সাথে পূর্ববর্তী ব্যবহারের তুলনা করুন",
+        selectBranch: "শাখা নির্বাচন করুন",
+        selectItem: "আইটেম নির্বাচন করুন",
+        chooseBranch: "একটি শাখা বেছে নিন...",
+        chooseItem: "একটি আইটেম বেছে নিন...",
+        loadForecast: "পূর্বাভাস লোড করুন",
+        loadingForecast: "পূর্বাভাস লোড হচ্ছে...",
+        historicDemand: "পূর্ববর্তী (৩০ দিন)",
+        projectedDemand: "এআই অনুমিত (৭ দিন)",
+        aiSummary: "এআই সারাংশ",
+        redistribution: "স্মার্ট পুনঃবন্টন",
+        redistributionDesc: "রিয়েল-টাইম স্টক এবং পূর্বাভাসের ভিত্তিতে প্রস্তাবিত শাখা-থেকে-শাখা স্থানান্তর",
+        refreshRecommendations: "রিফ্রেশ করুন",
+        applyTransfer: "স্থানান্তর কার্যকর করুন",
+        applyingTransfer: "কার্যকর করা হচ্ছে...",
+        applySuccess: "স্থানান্তর অনুরোধ সফলভাবে তৈরি করা হয়েছে",
+        noRecommendations: "কোনো পুনঃবন্টন সুপারিশ নেই",
+        noRecommendationsDesc: "বর্তমান পূর্বাভাসের জন্য সমস্ত শাখায় স্টক স্তর সুষম রয়েছে।",
+        fromFacility: "প্রেরণকারী কেন্দ্র",
+        toFacility: "গ্রহণকারী কেন্দ্র",
+        quantity: "পরিমাণ",
+        justification: "কারণ/যৌক্তিকতা",
+        item: "আইটেম",
+        branch: "শাখা",
+        availableQty: "উপলব্ধ পরিমাণ"
       },
       fields: {
         itemName: "আইটেমের নাম",

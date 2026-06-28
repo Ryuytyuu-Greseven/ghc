@@ -44,6 +44,7 @@ export const hi = {
       staff: "कर्मचारी",
       patients: "मरीज",
       medicines: "दवाएं और आपूर्ति",
+      "ai-analytics": "एआई इन्वेंटरी एनालिटिक्स",
       availability: "मेरी उपलब्धता",
       transfers: "कवरेज और स्थानांतरण"
     },
@@ -80,7 +81,25 @@ export const hi = {
       recent_patients: "हाल के मरीज",
       yrs: "वर्ष",
       facilities: "सुविधाएं",
-      beds_free: "बिस्तर खाली"
+      beds_free: "बिस्तर खाली",
+      intervention: {
+        title: "जिला हस्तक्षेप अलर्ट",
+        subtitle: "गंभीर संसाधन संकट का सामना कर रहे स्वास्थ्य केंद्र",
+        severity_high: "उच्च",
+        severity_medium: "मध्यम",
+        bed_shortage: "बिस्तरों की कमी",
+        severe_stockout: "दवाओं की गंभीर कमी",
+        staff_crunch: "कर्मचारियों की कमी",
+        action_transfer: "एआई स्थानांतरण शुरू करें",
+        action_staff: "कर्मचारियों को संतुलित करें",
+        action_view_hospital: "सुविधाओं का प्रबंधन करें",
+        justification_bed: "गंभीर बेड क्षमता सीमा पहुंच गई है। अधिभोग {{occupancy}}% पर है और केवल {{beds}} बिस्तर बचे हैं।",
+        justification_stockout: "निगरानी वाली कुल {{total}} दवाओं में से {{outOfStock}} दवाएं पूरी तरह से अनुपलब्ध हैं। तत्काल आपूर्ति या स्थानांतरण की सिफारिश की जाती है।",
+        justification_staff: "अधिक मरीज भार। {{patients}} सक्रिय मरीज होने के बावजूद केवल {{staff}} कर्मचारी आवंटित हैं। तत्काल स्टाफ आवंटन हस्तक्षेप की आवश्यकता है।",
+        metric_bed: "{{occupancy}}% अधिभोग ({{beds}} बिस्तर खाली)",
+        metric_stockout: "{{ratio}}% दवाएं उपलब्ध नहीं हैं",
+        metric_staff: "{{ratio}}:1 मरीज-कर्मचारी अनुपात"
+      }
     },
     hospitals: {
       title: "अस्पताल और क्लीनिक",
@@ -401,7 +420,8 @@ export const hi = {
         central: "केंद्रीय स्टॉक",
         branch: "शाखा स्टॉक",
         requests: "अनुरोध",
-        transactions: "लेन-देन"
+        transactions: "लेन-देन",
+        analytics: "एआई एनालिटिक्स"
       },
       master: {
         title: "इन्वेंट्री मास्टर",
@@ -511,6 +531,42 @@ export const hi = {
           Expiry: "समाप्ति",
           Adjustment: "समायोजन"
         }
+      },
+      analytics: {
+        title: "एआई इन्वेंटरी एनालिटिक्स",
+        subtitle: "जल्दी स्टॉक-आउट चेतावनियां, मांग का पूर्वानुमान, और स्मार्ट पुनर्वितरण",
+        criticalAlerts: "महत्वपूर्ण अलर्ट",
+        criticalAlertsDesc: "7 दिनों से कम के बचे हुए स्टॉक वाले आइटम",
+        noWarnings: "कोई महत्वपूर्ण स्टॉक-आउट चेतावनी नहीं",
+        noWarningsDesc: "सभी निगरानी वाले शाखा आइटमों में पर्याप्त स्टॉक के दिन हैं।",
+        daysOfStock: "स्टॉक के दिन",
+        dailyConsumption: "दैनिक खपत",
+        demandForecast: "मांग का पूर्वानुमान",
+        demandForecastDesc: "एआई-अनुमानित मांग के साथ ऐतिहासिक खपत की तुलना करें",
+        selectBranch: "शाखा चुनें",
+        selectItem: "आइटम चुनें",
+        chooseBranch: "एक शाखा चुनें...",
+        chooseItem: "एक आइटम चुनें...",
+        loadForecast: "पूर्वानुमान लोड करें",
+        loadingForecast: "पूर्वानुमान लोड हो रहा है...",
+        historicDemand: "ऐतिहासिक (30 दिन)",
+        projectedDemand: "एआई अनुमानित (7 दिन)",
+        aiSummary: "एआई सारांश",
+        redistribution: "स्मार्ट पुनर्वितरण",
+        redistributionDesc: "वास्तविक समय के स्तरों और पूर्वानुमान के आधार पर अनुशंसित शाखा-से-शाखा स्थानान्तरण",
+        refreshRecommendations: "रीफ़्रेश करें",
+        applyTransfer: "स्थानांतरण लागू करें",
+        applyingTransfer: "लागू किया जा रहा है...",
+        applySuccess: "स्थानांतरण अनुरोध सफलतापूर्वक बनाया गया",
+        noRecommendations: "कोई पुनर्वितरण अनुशंसा नहीं",
+        noRecommendationsDesc: "वर्तमान पूर्वानुमानों के लिए शाखाओं में स्टॉक स्तर संतुलित हैं।",
+        fromFacility: "स्रोत सुविधा",
+        toFacility: "गंतव्य सुविधा",
+        quantity: "मात्रा",
+        justification: "औचित्य",
+        item: "आइटम",
+        branch: "शाखा",
+        availableQty: "उपलब्ध मात्रा"
       },
       fields: {
         itemName: "आइटम का नाम",

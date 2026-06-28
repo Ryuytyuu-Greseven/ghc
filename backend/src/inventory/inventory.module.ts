@@ -30,11 +30,15 @@ import { BranchInventoryHelperService } from './branch-inventory/branch-inventor
 import { InventoryRequestsService } from './inventory-requests/inventory-requests.service';
 import { InventoryRequestsHelperService } from './inventory-requests/inventory-requests-helper.service';
 import { InventoryTransactionsService } from './inventory-transactions/inventory-transactions.service';
+import { InventoryAnalyticsController } from './inventory-analytics/inventory-analytics.controller';
+import { InventoryAnalyticsService } from './inventory-analytics/inventory-analytics.service';
 import { AuthModule } from '../auth/auth.module';
+import { HospitalsModule } from '../hospitals/hospitals.module';
 
 @Module({
   imports: [
     AuthModule,
+    HospitalsModule,
     MongooseModule.forFeature([
       { name: InventoryMaster.name, schema: InventoryMasterSchema },
       { name: CentralInventory.name, schema: CentralInventorySchema },
@@ -49,6 +53,7 @@ import { AuthModule } from '../auth/auth.module';
     BranchInventoryController,
     InventoryRequestsController,
     InventoryTransactionsController,
+    InventoryAnalyticsController,
   ],
   providers: [
     QueryService,
@@ -66,6 +71,7 @@ import { AuthModule } from '../auth/auth.module';
     InventoryRequestsHelperService,
     InventoryTransactionRepository,
     InventoryTransactionsService,
+    InventoryAnalyticsService,
   ],
   exports: [
     InventoryMasterRepository,
