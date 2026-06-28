@@ -2,7 +2,8 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { appInstance } from '../../main';
 import { HospitalsService } from '../../hospitals/hospitals.service';
-import { Hospital, HospitalDocument } from 'src/schemas/hospital.schema';
+import { HospitalDocument } from 'src/schemas/hospital.schema';
+import { HospitalHelperService } from '../services/hospital-helper.service';
 
 function getHospitalsService(): HospitalsService {
   if (!appInstance) {
@@ -11,7 +12,7 @@ function getHospitalsService(): HospitalsService {
   return appInstance.get(HospitalsService);
 }
 
-const listHospitals = tool(
+export const listHospitals = tool(
   async () => {
     const service = getHospitalsService();
     const result = await service.getAllHospitals();
@@ -24,7 +25,7 @@ const listHospitals = tool(
   },
 );
 
-const getHospital = tool(
+export const getHospital = tool(
   async ({ id }) => {
     const service = getHospitalsService();
     const result = await service.getHospitalById(id);
@@ -39,92 +40,20 @@ const getHospital = tool(
   },
 );
 
-const createHospital = tool(
-  async (data: Partial<Hospital>) => {
-    const service = getHospitalsService();
-    const result = await service.createHospital(data);
-    return JSON.stringify(result);
-  },
-  {
-    name: 'create_hospital',
-    description: 'Create a new healthcare facility (PHC or CHC)',
-    schema: z.object({
-      name: z.string().describe('Name of the facility'),
-      type: z.enum(['PHC', 'CHC']).describe('Type of the facility (PHC or CHC)'),
-      address: z.string().describe('Street address of the facility'),
-      city: z.string().describe('City where facility is located'),
-      phone: z.string().optional().describe('Contact phone number'),
-      email: z.string().optional().describe('Contact email address'),
-      totalBeds: z.number().describe('Total number of beds'),
-      availableBeds: z.number().describe('Available number of beds'),
-      medicalOfficer: z.string().optional().describe('Name of the Medical Officer in charge'),
-      parentCHCId: z.string().optional().describe('MongoDB ObjectId of the parent CHC for a PHC'),
-      specialists: z.array(z.string()).optional().describe('Specialist doctors available (for CHC)'),
-      hasOT: z.boolean().optional().describe('Whether facility has an Operation Theatre (for CHC)'),
-      hasXRay: z.boolean().optional().describe('Whether facility has X-Ray equipment (for CHC)'),
-      hasAmbulance: z.boolean().optional().describe('Whether facility has an active ambulance service'),
-    }),
-  },
-);
-
-const updateHospital = tool(
-  async ({ id, ...data }: any) => {
-    const service = getHospitalsService();
-    const result = await service.updateHospital(id, data);
-    return JSON.stringify(result);
-  },
-  {
-    name: 'update_hospital',
-    description: 'Update fields on an existing healthcare facility record',
-    schema: z.object({
-      id: z.string().describe('MongoDB ObjectId of the facility to update'),
-      name: z.string().optional().describe('Name of the facility'),
-      type: z.enum(['PHC', 'CHC']).optional().describe('Type of the facility (PHC or CHC)'),
-      address: z.string().optional().describe('Street address of the facility'),
-      city: z.string().optional().describe('City where facility is located'),
-      phone: z.string().optional().describe('Contact phone number'),
-      email: z.string().optional().describe('Contact email address'),
-      totalBeds: z.number().optional().describe('Total number of beds'),
-      availableBeds: z.number().optional().describe('Available number of beds'),
-      medicalOfficer: z.string().optional().describe('Name of the Medical Officer in charge'),
-      parentCHCId: z.string().optional().describe('MongoDB ObjectId of the parent CHC for a PHC'),
-      specialists: z.array(z.string()).optional().describe('Specialist doctors available (for CHC)'),
-      hasOT: z.boolean().optional().describe('Whether facility has an Operation Theatre (for CHC)'),
-      hasXRay: z.boolean().optional().describe('Whether facility has X-Ray equipment (for CHC)'),
-      hasAmbulance: z.boolean().optional().describe('Whether facility has an active ambulance service'),
-      isActive: z.boolean().optional().describe('Whether the facility is currently active'),
-    }),
-  },
-);
-
-const deleteHospital = tool(
-  async ({ id }) => {
-    const service = getHospitalsService();
-    const result = await service.deleteHospital(id);
-    return JSON.stringify(result);
-  },
-  {
-    name: 'delete_hospital',
-    description: 'Permanently delete a healthcare facility record',
-    schema: z.object({
-      id: z.string().describe('MongoDB ObjectId of the facility to delete'),
-    }),
-  },
-);
-
 export const fetchHospitalByName = tool(
-  async ({name}) => {
+  async ({ name }) => {
     console.log('Fetch Hospital By Name', name);
     const service = getHospitalsService();
     const res: any = await service.getAllHospitals({});
     console.log('Fetch Hospital By Name Response', res);
-    if (name  && res.data) {
-      res.data = res.data.filter((hospital: HospitalDocument) =>
+    let data = res.data || res;
+    if (name && Array.isArray(data)) {
+      data = data.filter((hospital: HospitalDocument) =>
         hospital.name.toLowerCase().includes(name.toLowerCase()),
       );
     }
-    console.log('Fetch Hospital By Name Response', res);
-    return JSON.stringify(res);
+    console.log('Filtered Hospital Response', data);
+    return JSON.stringify(data);
   },
   {
     name: 'fetchHospitals',
@@ -139,11 +68,192 @@ export const fetchHospitalByName = tool(
   },
 );
 
+export const fetchBedsAvailability = tool(
+  async ({ name }) => {
+    console.log('Fetch Beds Availability', name);
+    const service = getHospitalsService();
+    const res: any = await service.getAllHospitals({});
+    let data = res.data || res;
+    if (name && Array.isArray(data)) {
+      data = data.filter((hospital: HospitalDocument) =>
+        hospital.name.toLowerCase().includes(name.toLowerCase()),
+      );
+    }
+    if (Array.isArray(data)) {
+      return JSON.stringify(
+        data.map((h: any) => ({
+          id: h._id,
+          name: h.name,
+          totalBeds: h.totalBeds,
+          availableBeds: h.availableBeds,
+        })),
+      );
+    }
+    return JSON.stringify({ error: 'No hospitals found' });
+  },
+  {
+    name: 'fetchBedsAvailability',
+    description: 'Fetch total and available beds for hospitals, optionally filtering by hospital name',
+    schema: z.object({
+      name: z.string().optional().describe('Name of the hospital to search for'),
+    }),
+  },
+);
+
+export const fetchMedicalInchargeDetails = tool(
+  async ({ name }) => {
+    console.log('Fetch Medical Incharge Details', name);
+    const service = getHospitalsService();
+    const res: any = await service.getAllHospitals({});
+    let data = res.data || res;
+    if (name && Array.isArray(data)) {
+      data = data.filter((hospital: HospitalDocument) =>
+        hospital.name.toLowerCase().includes(name.toLowerCase()),
+      );
+    }
+    if (Array.isArray(data)) {
+      return JSON.stringify(
+        data.map((h: any) => ({
+          id: h._id,
+          name: h.name,
+          medicalOfficer: h.medicalOfficer || 'No Medical Officer assigned',
+          phone: h.phone,
+          email: h.email,
+        })),
+      );
+    }
+    return JSON.stringify({ error: 'No hospitals found' });
+  },
+  {
+    name: 'fetchMedicalInchargeDetails',
+    description: 'Fetch medical officer incharge details for hospitals, optionally filtering by hospital name',
+    schema: z.object({
+      name: z.string().optional().describe('Name of the hospital to search for'),
+    }),
+  },
+);
+
+export const fetchPatientsDetails = tool(
+  async ({ name }) => {
+    console.log('Fetch Patients Details', name);
+    const service = getHospitalsService();
+    const res: any = await service.getAllHospitals({});
+    let data = res.data || res;
+    if (name && Array.isArray(data)) {
+      data = data.filter((hospital: HospitalDocument) =>
+        hospital.name.toLowerCase().includes(name.toLowerCase()),
+      );
+    }
+    if (Array.isArray(data)) {
+      const result: any[] = [];
+      for (const h of data) {
+        const hospitalLogicalId = h.hospitalId || h._id.toString();
+        const patients = await HospitalHelperService.findPatientsByHospital(hospitalLogicalId);
+        result.push({
+          hospitalId: h._id,
+          hospitalName: h.name,
+          patients: patients.map((p: any) => ({
+            id: p._id,
+            name: p.name,
+            age: p.age,
+            gender: p.gender,
+            condition: p.condition || p.diagnosis,
+            status: p.status,
+          })),
+        });
+      }
+      return JSON.stringify(result);
+    }
+    return JSON.stringify({ error: 'No hospitals found' });
+  },
+  {
+    name: 'fetchPatientsDetails',
+    description: 'Fetch patient list/details for a specific hospital by name',
+    schema: z.object({
+      name: z.string().describe('Name of the hospital to fetch patients from'),
+    }),
+  },
+);
+
+export const fetchStaffDetails = tool(
+  async ({ name }) => {
+    console.log('Fetch Staff Details', name);
+    const service = getHospitalsService();
+    const res: any = await service.getAllHospitals({});
+    let data = res.data || res;
+    if (name && Array.isArray(data)) {
+      data = data.filter((hospital: HospitalDocument) =>
+        hospital.name.toLowerCase().includes(name.toLowerCase()),
+      );
+    }
+    if (Array.isArray(data)) {
+      const result: any[] = [];
+      for (const h of data) {
+        const hospitalLogicalId = h.hospitalId || h._id.toString();
+        const staff = await HospitalHelperService.findStaffByHospital(hospitalLogicalId);
+        result.push({
+          hospitalId: h._id,
+          hospitalName: h.name,
+          staff: staff.map((s: any) => ({
+            id: s._id,
+            name: s.displayName || `${s.firstName} ${s.lastName || ''}`.trim(),
+            role: s.role,
+            specialization: s.specialization,
+            phone: s.mobileNumber,
+          })),
+        });
+      }
+      return JSON.stringify(result);
+    }
+    return JSON.stringify({ error: 'No hospitals found' });
+  },
+  {
+    name: 'fetchStaffDetails',
+    description: 'Fetch staff list/details for a specific hospital by name',
+    schema: z.object({
+      name: z.string().describe('Name of the hospital to fetch staff from'),
+    }),
+  },
+);
+
+export const fetchAvailableSpecialists = tool(
+  async ({ name }) => {
+    console.log('Fetch Available Specialists', name);
+    const service = getHospitalsService();
+    const res: any = await service.getAllHospitals({});
+    let data = res.data || res;
+    if (name && Array.isArray(data)) {
+      data = data.filter((hospital: HospitalDocument) =>
+        hospital.name.toLowerCase().includes(name.toLowerCase()),
+      );
+    }
+    if (Array.isArray(data)) {
+      return JSON.stringify(
+        data.map((h: any) => ({
+          id: h._id,
+          name: h.name,
+          specialists: h.specialists || [],
+        })),
+      );
+    }
+    return JSON.stringify({ error: 'No hospitals found' });
+  },
+  {
+    name: 'fetchAvailableSpecialists',
+    description: 'Fetch lists of available specialists (e.g. surgeon, pediatrician) in hospitals, optionally filtering by hospital name',
+    schema: z.object({
+      name: z.string().optional().describe('Name of the hospital to filter by'),
+    }),
+  },
+);
 
 export const hospitalTools = [
   listHospitals,
   getHospital,
-  createHospital,
-  updateHospital,
-  deleteHospital,
+  fetchHospitalByName,
+  fetchBedsAvailability,
+  fetchMedicalInchargeDetails,
+  fetchPatientsDetails,
+  fetchStaffDetails,
+  fetchAvailableSpecialists,
 ];

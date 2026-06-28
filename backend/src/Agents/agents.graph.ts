@@ -33,10 +33,16 @@ async function llmClassify(
   options: string[],
   systemInstruction: string,
 ): Promise<string> {
-  const response = await llmInstance.invoke([
-    new SystemMessage(systemInstruction),
-    new HumanMessage(query),
-  ]);
+  const response = await llmInstance.invoke(
+    [
+      new SystemMessage(systemInstruction),
+      new HumanMessage(query),
+    ],
+    {
+      tags: ['classification'],
+      metadata: { is_classification: true },
+    },
+  );
   console.log('response', response);
   const raw = (response.content as string)
     .trim()

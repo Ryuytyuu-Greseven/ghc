@@ -24,9 +24,15 @@ export const staffMapping = async (state: typeof AgentState.State) => {
     systemPrompt: withGuardrails(STAFF_MAPPING_PROMPT),
   });
 
-  const response = await agent.invoke({
-    messages: state.messages,
-  });
+  const response = await agent.invoke(
+    {
+      messages: state.messages,
+    },
+    {
+      tags: ['classification'],
+      metadata: { is_classification: true },
+    },
+  );
 
   // intent analysis, if user asked for only find absence satff, we shall end graph,if asked only for avaiable staff we shall end here.
   // if asked to do transfer completely, then we shall continue to next node `runTransfer`.

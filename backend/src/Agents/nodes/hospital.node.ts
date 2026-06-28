@@ -1,12 +1,7 @@
-// import { createAgent } from 'langchain';
-// import { llmInstance } from '../../google/vertex.config';
-// import { hospitalTools } from '../tools/hospital.tools';
-// import { HOSPITAL_PROMPT } from '../prompts/hospital.prompt';
-// import { withGuardrails } from '../prompts/guardrails.prompt';
 import { AIMessage } from '@langchain/core/messages';
 import { AgentState } from '../state';
 import { END, START, StateGraph } from '@langchain/langgraph';
-import { PatientState } from '../states/patient.state';
+import { HospitalState } from '../states/hospital.state';
 import { createHospitalTools, type HospitalTools } from './hospital.agent.node';
 
 let hospitalToolsClass: HospitalTools | undefined;
@@ -18,16 +13,62 @@ function getHospitalToolsClass(): HospitalTools {
   return hospitalToolsClass;
 }
 
-export const hospitalGraph = new StateGraph(PatientState)
+function routeHospitalAfterClassify(state: typeof HospitalState.State): string {
+  switch (state.intent) {
+    case 'fetchHospitals':
+      return 'fetchHospitalsNode';
+    case 'bedsAvailability':
+      return 'bedsAvailabilityNode';
+    case 'medicalInchargeDetails':
+      return 'medicalInchargeDetailsNode';
+    case 'patientsDetails':
+      return 'patientsDetailsNode';
+    case 'staffDetails':
+      return 'staffDetailsNode';
+    case 'availableSpecialists':
+      return 'availableSpecialistsNode';
+    default:
+      return 'fetchHospitalsNode';
+  }
+}
+
+export const hospitalGraph = new StateGraph(HospitalState)
   .addNode('classify_intent', (state) =>
     getHospitalToolsClass().clasifyHospitalIntent(state),
   )
-  .addNode('fetchHospitals', (state) =>
+  .addNode('fetchHospitalsNode', (state) =>
     getHospitalToolsClass().fetchHospitals(state),
   )
+  .addNode('bedsAvailabilityNode', (state) =>
+    getHospitalToolsClass().bedsAvailability(state),
+  )
+  .addNode('medicalInchargeDetailsNode', (state) =>
+    getHospitalToolsClass().medicalInchargeDetails(state),
+  )
+  .addNode('patientsDetailsNode', (state) =>
+    getHospitalToolsClass().patientsDetails(state),
+  )
+  .addNode('staffDetailsNode', (state) =>
+    getHospitalToolsClass().staffDetails(state),
+  )
+  .addNode('availableSpecialistsNode', (state) =>
+    getHospitalToolsClass().availableSpecialists(state),
+  )
   .addEdge(START, 'classify_intent')
-  .addEdge('classify_intent', 'fetchHospitals')
-  .addEdge('fetchHospitals', END)
+  .addConditionalEdges('classify_intent', routeHospitalAfterClassify, {
+    fetchHospitalsNode: 'fetchHospitalsNode',
+    bedsAvailabilityNode: 'bedsAvailabilityNode',
+    medicalInchargeDetailsNode: 'medicalInchargeDetailsNode',
+    patientsDetailsNode: 'patientsDetailsNode',
+    staffDetailsNode: 'staffDetailsNode',
+    availableSpecialistsNode: 'availableSpecialistsNode',
+  })
+  .addEdge('fetchHospitalsNode', END)
+  .addEdge('bedsAvailabilityNode', END)
+  .addEdge('medicalInchargeDetailsNode', END)
+  .addEdge('patientsDetailsNode', END)
+  .addEdge('staffDetailsNode', END)
+  .addEdge('availableSpecialistsNode', END)
   .compile();
 
 export async function hospitalNode(state: typeof AgentState.State) {
