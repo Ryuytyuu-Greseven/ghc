@@ -8,10 +8,10 @@ const ROUTING_PROMPT = `You are a domain router for a healthcare management syst
 Classify the doctor's spoken request into exactly ONE domain.
 
 Domains:
-- hospital  → hospital facilities, beds, locations, list of hospitals
-- patient   → patient records, admissions, demographics
+- hospital  → hospital facilities, beds, locations, list of hospitals, bed availability/stats for a hospital, medical officer/incharge details of a hospital, active patients list/details of a hospital, active staff list/details of a hospital, available specialists list/details of a hospital
+- patient   → general patient records, clinical admissions, demographics, disease groupings (not specific to a hospital's overall patient list)
 - medicine  → pharmacy, drug list, prescriptions
-- staff     → doctors, nurses, departments, personnel
+- staff     → general doctors, nurses, departments, personnel (not specific to a hospital's overall staff list)
 - inventory → inventory master items, catalog, warehouse stock, branch stock, stock transfer request approvals, transfer transactions, low stock analytics
 
 Reply with ONLY one word: hospital | patient | medicine | staff | inventory`;
@@ -33,9 +33,15 @@ export async function supervisorNode(state: typeof AgentState.State) {
     systemPrompt: withGuardrails(ROUTING_PROMPT),
   });
 
-  const response = await agent.invoke({
-    messages: [new HumanMessage(state.transcript)],
-  });
+  const response = await agent.invoke(
+    {
+      messages: [new HumanMessage(state.transcript)],
+    },
+    {
+      tags: ['classification'],
+      metadata: { is_classification: true },
+    },
+  );
 
   const last = response.messages[response.messages.length - 1];
   const domain = parseDomain(String(last.content ?? ''));

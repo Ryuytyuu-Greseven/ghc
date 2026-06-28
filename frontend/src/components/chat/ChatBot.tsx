@@ -48,7 +48,7 @@ function Bubble({ msg }: { msg: Message }) {
       <div className={clsx('flex flex-col gap-0.5 max-w-[78%]', isBot ? 'items-start' : 'items-end')}>
         <div
           className={clsx(
-            'px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl',
+            'px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl whitespace-pre-line',
             isBot
               ? 'bg-white text-slate-800 rounded-tl-none border border-slate-200 border-l-[3px] border-l-emerald-500 shadow-sm'
               : 'bg-orange-500 text-white font-medium rounded-tr-none shadow-sm',
@@ -328,7 +328,7 @@ export function ChatBot() {
                 <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                   <Sparkles size={11} className="text-white" />
                 </div>
-                <div className="px-3.5 py-2.5 text-sm text-slate-800 bg-white rounded-2xl rounded-tl-none border border-slate-200 border-l-[3px] border-l-emerald-500 shadow-sm">
+                <div className="px-3.5 py-2.5 text-sm text-slate-800 bg-white rounded-2xl rounded-tl-none border border-slate-200 border-l-[3px] border-l-emerald-500 shadow-sm whitespace-pre-line">
                   {chat.agentText}
                 </div>
               </div>

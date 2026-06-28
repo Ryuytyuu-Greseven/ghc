@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Plus, Building2, MapPin, Phone, Mail, BedDouble, Pencil, Trash2, ExternalLink, Stethoscope, AlertTriangle, Search, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Plus, Building2, MapPin, Phone, Mail, BedDouble, Pencil, Trash2, ExternalLink, Stethoscope, AlertTriangle, Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components/layout/Header';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
+import { PaginationControls } from '../../components/ui/PaginationControls';
 import { useApp } from '../../context/AppContext';
-import type { Hospital, FacilityType } from '../../types';
+import type { Hospital, FacilityType, PaginationMeta } from '../../types';
 import { HospitalForm } from './HospitalForm';
 import { hospitalApi } from '../../services/hospitalApi';
 import { clsx } from 'clsx';
@@ -430,54 +431,17 @@ export function HospitalList() {
           )}
 
           {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-800 px-6 py-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mt-4">
-              <div className="text-sm text-slate-500 dark:text-slate-400">
-                Showing{' '}
-                <span className="font-medium text-slate-850 dark:text-slate-200">
-                  {startIndex + 1}
-                </span>{' '}
-                to{' '}
-                <span className="font-medium text-slate-850 dark:text-slate-200">
-                  {Math.min(startIndex + itemsPerPage, totalRecords)}
-                </span>{' '}
-                of <span className="font-medium text-slate-850 dark:text-slate-200">{totalRecords}</span>{' '}
-                facilities
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={activePage === 1}
-                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-750 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={clsx(
-                      'w-8 h-8 rounded-lg text-sm font-medium transition',
-                      activePage === page
-                        ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20'
-                        : 'border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
-                    )}
-                  >
-                    {page}
-                  </button>
-                ))}
-
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={activePage === totalPages}
-                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-750 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-          )}
+          <PaginationControls
+            meta={{
+              page: activePage,
+              pageSize: itemsPerPage,
+              totalRecords,
+              totalPages,
+              hasNext: activePage < totalPages,
+              hasPrevious: activePage > 1,
+            } as PaginationMeta}
+            onPageChange={setCurrentPage}
+          />
 
         </div>
       </div>
