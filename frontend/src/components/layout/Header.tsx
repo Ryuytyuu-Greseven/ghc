@@ -3,7 +3,7 @@ import { LogOut, Menu, Languages, ChevronDown } from 'lucide-react';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { NotificationsPanel } from '../ui/NotificationsPanel';
 import { useSidebar } from '../../context/SidebarContext';
-import { environment } from '../../config/environment';
+import { environment } from '@env/environment';
 import { useTranslation } from 'react-i18next';
 
 interface HeaderProps {

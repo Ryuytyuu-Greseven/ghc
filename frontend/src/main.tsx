@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import './i18n/config'
 import App from './App.tsx'
-import { environment } from './config/environment'
+import { environment } from '@env/environment';
 
 // Listen for browser navigation from cache (back/forward history) and force reload to rerun checks
 window.addEventListener('pageshow', (event) => {
