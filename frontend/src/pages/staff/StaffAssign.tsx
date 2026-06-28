@@ -4,7 +4,6 @@ import { Building2, X } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useApp } from '../../context/AppContext';
 import type { Staff } from '../../types';
-import { useTranslation } from 'react-i18next';
 
 interface Props {
   staff: Staff;
