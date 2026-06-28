@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException, ConflictException, OnModuleInit, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { StaffRepository } from '../repositories/staff.repository';
@@ -22,7 +23,7 @@ function flattenStaff(staff: any) {
 }
 
 @Injectable()
-export class StaffService implements OnModuleInit {
+export class StaffService {
   constructor(
     private readonly staffRepository: StaffRepository,
     private readonly usersService: UsersService,
@@ -170,33 +171,15 @@ export class StaffService implements OnModuleInit {
     return { id, removed: true };
   }
 
-  async onModuleInit() {
-    this.startDailyCoverageCron();
-  }
-
-  startDailyCoverageCron() {
-    const runCron = () => {
-      this.runDailyCoverageCron().catch(e => console.error('Daily coverage cron failed', e));
-      scheduleNext();
-    };
-
-    const scheduleNext = () => {
-      const now = new Date();
-      const nextMidnight = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate() + 1,
-        0, 0, 0, 0
-      );
-      const msUntilMidnight = nextMidnight.getTime() - now.getTime();
-      setTimeout(runCron, msUntilMidnight);
-    };
-
-    scheduleNext();
-  }
-
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async runDailyCoverageCron() {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    // 1. Deactivate/complete ended requests
     const endedRequests = await this.coverageRequestModel.find({
       status: 'Approved',
       endDate: { $lt: todayStr },
@@ -204,10 +187,10 @@ export class StaffService implements OnModuleInit {
 
     for (const req of endedRequests) {
       try {
-        if (req.replacementStaffId && req.originalReplacementHospitalId) {
+        if (req.replacementStaffId) {
           await this.staffRepository.update(
             req.replacementStaffId.toString(),
-            { hospitalId: req.originalReplacementHospitalId }
+            { hospitalId: req.originalReplacementHospitalId || null }
           );
         }
 
@@ -223,8 +206,41 @@ export class StaffService implements OnModuleInit {
 
         req.status = 'Completed';
         await req.save();
+        console.log(`Cron: Deactivated ended coverage request ${req._id}. Restored replacement doctor.`);
       } catch (err) {
         console.error(`Failed to restore coverage for request ${req._id}`, err);
+      }
+    }
+
+    // 2. Activate starting requests
+    const startingRequests = await this.coverageRequestModel.find({
+      status: 'Approved',
+      startDate: { $lte: todayStr },
+      endDate: { $gte: todayStr },
+    });
+
+    for (const req of startingRequests) {
+      try {
+        if (req.replacementStaffId && req.vacantHospitalId) {
+          const replacement = await this.staffRepository.findById(req.replacementStaffId.toString());
+          if (replacement) {
+            const currentHospitalId = replacement.hospitalId && (replacement.hospitalId as any)._id
+              ? (replacement.hospitalId as any)._id.toString()
+              : replacement.hospitalId?.toString() || null;
+            const targetHospitalId = (req.vacantHospitalId as any)._id 
+              ? (req.vacantHospitalId as any)._id.toString() 
+              : req.vacantHospitalId.toString();
+
+            if (currentHospitalId !== targetHospitalId) {
+              await this.staffRepository.update(req.replacementStaffId.toString(), {
+                hospitalId: req.vacantHospitalId,
+              });
+              console.log(`Cron: Activated coverage request ${req._id}. Assigned replacement doctor to vacant branch.`);
+            }
+          }
+        }
+      } catch (err) {
+        console.error(`Failed to activate coverage for request ${req._id}`, err);
       }
     }
   }
@@ -233,9 +249,63 @@ export class StaffService implements OnModuleInit {
     const staff = await this.staffRepository.findOne({ userId: new Types.ObjectId(userId) });
 
     if (!staff) throw new NotFoundException('Staff record not found');
+
+    const defaultHospitalName = (staff.hospitalId as any)?.name || 'Unassigned (Reserved)';
+
+    // Find all Approved coverage requests where this staff is the replacement
+    const replacementRequests = await this.coverageRequestModel
+      .find({
+        replacementStaffId: staff._id,
+        status: 'Approved',
+      })
+      .populate('vacantHospitalId')
+      .exec();
+
+    // Generate schedule for the next 30 days starting from today (local timezone dates)
+    const schedule: any[] = [];
+    const today = new Date();
+    for (let i = 0; i < 30; i++) {
+      const current = new Date(today);
+      current.setDate(today.getDate() + i);
+
+      const yyyy = current.getFullYear();
+      const mm = String(current.getMonth() + 1).padStart(2, '0');
+      const dd = String(current.getDate()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+
+      // Check if unavailable/off
+      const isUnavailable = staff.unavailableOnDays && staff.unavailableOnDays.includes(dateStr);
+
+      // Check if covering
+      const activeReplacement = replacementRequests.find(req => req.dates.includes(dateStr));
+
+      let location = defaultHospitalName;
+      let status = 'Working at Default Branch';
+      let type = 'default';
+
+      if (isUnavailable) {
+        location = 'Off / Unavailable';
+        status = 'Off';
+        type = 'off';
+      } else if (activeReplacement) {
+        location = (activeReplacement.vacantHospitalId as any)?.name || 'Unknown Branch';
+        status = 'Covering Duty';
+        type = 'coverage';
+      }
+
+      schedule.push({
+        date: dateStr,
+        location,
+        status,
+        type,
+      });
+    }
+
     return {
       status: staff.unavailableOnDays && staff.unavailableOnDays.length > 0 ? 'Unavailable' : 'Available',
       unavailableOnDays: staff.unavailableOnDays || [],
+      schedule,
+      defaultHospitalName,
     };
   }
 
@@ -263,14 +333,85 @@ export class StaffService implements OnModuleInit {
     });
 
     if (status === 'Unavailable' && dates.length > 0) {
-      await this.coverageRequestModel.create({
-        staffId: staff._id,
-        startDate,
-        endDate,
-        dates,
-        vacantHospitalId: staff.hospitalId,
-        status: 'Pending',
-      });
+      // Find candidate replacement doctors
+      const allStaff = await this.staffRepository.findAll();
+      const candidates: any[] = [];
+
+      for (const s of allStaff) {
+        if (s._id.toString() === staff._id.toString()) continue;
+
+        const user = s.userId as any;
+        if (!user || user.role !== 'Doctor') continue;
+        if (s.department !== staff.department) continue;
+
+        // Check if candidate is unassigned (reserved state) or from a different branch
+        const sHospitalId = s.hospitalId && (s.hospitalId as any)._id
+          ? (s.hospitalId as any)._id.toString()
+          : s.hospitalId?.toString() || null;
+        const staffHospitalId = staff.hospitalId && (staff.hospitalId as any)._id
+          ? (staff.hospitalId as any)._id.toString()
+          : staff.hospitalId?.toString() || null;
+
+        if (sHospitalId !== null && sHospitalId === staffHospitalId) continue;
+
+        // Check availability on target dates
+        const isUnavailableOnAny = dates.some(d => s.unavailableOnDays && s.unavailableOnDays.includes(d));
+        if (isUnavailableOnAny) continue;
+
+        // Check overlap with other active coverage requests
+        const overlappingRequests = await this.coverageRequestModel.find({
+          replacementStaffId: s._id,
+          status: 'Approved',
+          dates: { $in: dates }
+        });
+        if (overlappingRequests.length > 0) continue;
+
+        candidates.push(s);
+      }
+
+      const vacantHospitalId = staff.hospitalId && (staff.hospitalId as any)._id
+        ? (staff.hospitalId as any)._id
+        : staff.hospitalId || null;
+
+      if (candidates.length > 0) {
+        const replacement = candidates[0];
+        const replacementOriginalHospitalId = replacement.hospitalId && (replacement.hospitalId as any)._id
+          ? (replacement.hospitalId as any)._id
+          : replacement.hospitalId || null;
+
+        await this.coverageRequestModel.create({
+          staffId: staff._id,
+          startDate,
+          endDate,
+          dates,
+          vacantHospitalId,
+          originalReplacementHospitalId: replacementOriginalHospitalId,
+          replacementStaffId: replacement._id,
+          status: 'Approved',
+        });
+
+        // Reassign replacement to vacant hospital branch immediately if starting today or in the past
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+
+        if (startDate && startDate <= todayStr) {
+          await this.staffRepository.update(replacement._id.toString(), {
+            hospitalId: vacantHospitalId,
+          });
+        }
+      } else {
+        await this.coverageRequestModel.create({
+          staffId: staff._id,
+          startDate,
+          endDate,
+          dates,
+          vacantHospitalId,
+          status: 'Pending',
+        });
+      }
     } else if (status === 'Available') {
       // Revert/complete active and pending requests
       await this.coverageRequestModel.updateMany(
@@ -284,10 +425,10 @@ export class StaffService implements OnModuleInit {
       });
 
       for (const req of activeRequests) {
-        if (req.replacementStaffId && req.originalReplacementHospitalId) {
+        if (req.replacementStaffId) {
           await this.staffRepository.update(
             req.replacementStaffId.toString(),
-            { hospitalId: req.originalReplacementHospitalId }
+            { hospitalId: req.originalReplacementHospitalId || null }
           );
         }
         req.status = 'Completed';
@@ -302,7 +443,7 @@ export class StaffService implements OnModuleInit {
   }
 
   async getCoverageRequests() {
-    return this.coverageRequestModel
+    const list = await this.coverageRequestModel
       .find()
       .populate({
         path: 'staffId',
@@ -315,6 +456,19 @@ export class StaffService implements OnModuleInit {
       .populate('vacantHospitalId')
       .sort({ createdAt: -1 })
       .exec();
+
+    return list.map(req => {
+      const obj = req.toObject();
+      if (obj.staffId && typeof obj.staffId === 'object') {
+        const staffObj = obj.staffId as any;
+        staffObj.name = staffObj.displayName || `${staffObj.firstName || ''} ${staffObj.lastName || ''}`.trim() || 'Unnamed';
+      }
+      if (obj.replacementStaffId && typeof obj.replacementStaffId === 'object') {
+        const repObj = obj.replacementStaffId as any;
+        repObj.name = repObj.displayName || `${repObj.firstName || ''} ${repObj.lastName || ''}`.trim() || 'Unnamed';
+      }
+      return obj;
+    });
   }
 
   async assignReplacement(requestId: string, replacementStaffId: string) {
@@ -324,16 +478,27 @@ export class StaffService implements OnModuleInit {
     const replacement = await this.staffRepository.findById(replacementStaffId);
     if (!replacement) throw new NotFoundException('Replacement staff not found');
 
-    // Save replacement's current branch and update request info
-    req.originalReplacementHospitalId = replacement.hospitalId;
+    const replacementOriginalHospitalId = replacement.hospitalId && (replacement.hospitalId as any)._id
+      ? (replacement.hospitalId as any)._id
+      : replacement.hospitalId || null;
+
+    req.originalReplacementHospitalId = replacementOriginalHospitalId;
     req.replacementStaffId = replacement._id;
     req.status = 'Approved';
     await req.save();
 
-    // Reassign replacement to vacant hospital branch
-    await this.staffRepository.update(replacementStaffId, {
-      hospitalId: req.vacantHospitalId,
-    });
+    // Reassign replacement to vacant hospital branch immediately if starting today or in the past
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    if (req.startDate && req.startDate <= todayStr) {
+      await this.staffRepository.update(replacementStaffId, {
+        hospitalId: req.vacantHospitalId,
+      });
+    }
 
     return req;
   }

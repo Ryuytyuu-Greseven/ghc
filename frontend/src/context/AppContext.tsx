@@ -151,6 +151,7 @@ function mapStaffFromBackend(item: any): Staff {
     pincode: item.pincode,
     isMedicalIncharge: item.isMedicalIncharge ?? false,
     isActive: item.isActive ?? true,
+    unavailableOnDays: item.unavailableOnDays || [],
   };
 }
 
@@ -187,6 +188,7 @@ function mapStaffToBackend(s: any): any {
     hospitalId: s.assignedHospitalId || s.hospitalId || null,
     isActive: s.isActive ?? true,
     isMedicalIncharge: s.isMedicalIncharge ?? false,
+    unavailableOnDays: s.unavailableOnDays || [],
 
     name: s.name || `${s.firstName || ''} ${s.lastName || ''}`.trim(),
     phone: s.phone || s.mobileNumber,

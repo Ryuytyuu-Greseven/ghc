@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Building2, X } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useApp } from '../../context/AppContext';
