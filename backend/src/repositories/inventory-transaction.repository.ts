@@ -83,10 +83,11 @@ export class InventoryTransactionRepository {
     }
 
     let branchIds: string[] = [];
-    if (options.search) {
+    const searchVal = options.search || options.q;
+    if (searchVal) {
       try {
         const matchedHospitals = await this.model.db.model('Hospital').find({
-          name: { $regex: options.search, $options: 'i' },
+          name: { $regex: searchVal, $options: 'i' },
         }).select('_id').exec();
         branchIds = matchedHospitals.map((h) => h._id.toString());
       } catch (err) {
@@ -118,7 +119,7 @@ export class InventoryTransactionRepository {
       Object.assign(filter, branchFilter);
     }
 
-    if (options.search && branchIds.length > 0) {
+    if (searchVal && branchIds.length > 0) {
       filter.$or.push(
         { fromLocation: { $in: branchIds } },
         { toLocation: { $in: branchIds } }

@@ -35,12 +35,13 @@ export class QueryService {
     const sort: any = {};
 
     // 1. Search (OR group over multiple fields)
-    if (options.search && config.searchFields && config.searchFields.length > 0) {
+    const searchVal = options.search || options.q;
+    if (searchVal && config.searchFields && config.searchFields.length > 0) {
       if (config.fuzzySearch) {
         // Build fuzzy patterns: original term + all single-char deletions.
         // This tolerates a 1-character difference between the query and the
         // stored value (typo, abbreviation, or DB spelling variation).
-        const term = options.search as string;
+        const term = searchVal as string;
         const variants = new Set<string>();
         variants.add(term); // exact
         for (let i = 0; i < term.length; i++) {
@@ -52,7 +53,7 @@ export class QueryService {
         );
       } else {
         filter.$or = config.searchFields.map((field) => ({
-          [field]: { $regex: options.search, $options: 'i' },
+          [field]: { $regex: searchVal, $options: 'i' },
         }));
       }
     }

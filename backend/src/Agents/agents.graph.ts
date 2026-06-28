@@ -146,10 +146,24 @@ export async function extractSearchQuery(query: string): Promise<string | undefi
       clean = clean.replace(nameRegex, '');
     }
   } catch {}
-  clean = clean.replace(/\b(show|list|how|many|do|we|have|is|are|left|stock|available|of|in|at|what|which|items|item|any|tablet|tablets|capsule|capsules|emergency|medicine|medicines|supplies|medical|consumables|equipment|surgical|syringes|quantity|quantities|availability)\b/gi, '');
+  clean = clean.replace(/\b(show|list|how|many|do|we|have|is|are|left|stock|available|of|in|at|what|which|items|item|any|quantity|quantities|availability|inventory|store|central)\b/gi, '');
   clean = clean.trim().replace(/[?.]/g, '').replace(/\s+/g, ' ');
   
   if (clean.length >= 2) {
+    // Check if the query is just a category name (plural or singular)
+    const lowerClean = clean.toLowerCase();
+    const isCategory = STATIC_CATEGORIES.some((cat) => {
+      const catLower = cat.toLowerCase();
+      return (
+        lowerClean === catLower ||
+        lowerClean === catLower + 's' ||
+        (catLower.endsWith('s') && lowerClean === catLower.slice(0, -1)) ||
+        (!catLower.endsWith('s') && catLower + 's' === lowerClean)
+      );
+    });
+    if (isCategory) {
+      return undefined;
+    }
     return clean;
   }
   return undefined;
@@ -171,7 +185,7 @@ async function inventoryListAll(state: typeof InventoryState.State) {
     const parsed = JSON.parse(raw);
     data = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
   }
-  return { inventoryList: data };
+  return { inventoryList: data, searchQuery: searchQ };
 }
 
 // Helper to extract status from query (Pending, Approved, Rejected, Partial)
@@ -219,7 +233,7 @@ async function inventoryCheckStock(state: typeof InventoryState.State) {
   }
   const outOfStockItems = allLow.filter((i) => i.availableQty === 0);
   const lowStockItems = allLow.filter((i) => i.availableQty > 0);
-  return { lowStockItems, outOfStockItems };
+  return { lowStockItems, outOfStockItems, searchQuery: searchQ };
 }
 
 // ── Node: check expiring items (within 90 days) ───────────────────────────────
@@ -253,7 +267,7 @@ async function inventoryCheckExpiring(state: typeof InventoryState.State) {
       ? Math.ceil((new Date(item.expiryDate).getTime() - now) / 86_400_000)
       : null,
   }));
-  return { expiringItems };
+  return { expiringItems, searchQuery: searchQ };
 }
 
 // ── Node: auto-raise service requests for branches needing stock ──────────────
@@ -452,7 +466,9 @@ function inventorySummarize(state: typeof InventoryState.State) {
 
   // ── Fallback if nothing to show ───────────────────────────────────────────
   if (cards.length === 0) {
-    const finalResponse = 'No inventory data found for the given query.';
+    const finalResponse = state.searchQuery
+      ? `Item "${state.searchQuery}" is not available in the inventory.`
+      : 'No inventory data found for the given query.';
     return { finalResponse, messages: [new AIMessage(finalResponse)] };
   }
 
@@ -492,6 +508,7 @@ export async function runInventoryAgent(query: string): Promise<string> {
   const result = await inventoryAgentGraph.invoke({
     query,
     messages: [new HumanMessage(query)],
+    searchQuery: undefined,
     intent: '',
     inventoryList: [],
     lowStockItems: [],

@@ -11,7 +11,7 @@ import { HospitalsService } from '../../hospitals/hospitals.service';
 export const listInventoryMasters = tool(
   async ({ query, category, status }) => {
     const service = appInstance.get(InventoryMasterService);
-    const result = await service.findAll({ q: query, category, status });
+    const result = await service.findAll({ search: query, q: query, category, status });
     return JSON.stringify(result);
   },
   {
@@ -110,6 +110,7 @@ export const listCentralInventory = tool(
     const result = await service.findAll({
       expiringSoon,
       pageSize,
+      search: query,
       q: query,
       category: normalizeCategory(category),
     });
@@ -185,6 +186,7 @@ export const listBranchStock = tool(
     }
 
     const result = await service.findByBranch(resolvedBranchId, {
+      search: query,
       q: query,
       category: normalizeCategory(category),
     });
