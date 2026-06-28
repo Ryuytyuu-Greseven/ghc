@@ -152,7 +152,9 @@ export function Dashboard() {
                         >
                           <td className="px-6 py-3">
                             <p className="font-medium text-slate-800 dark:text-slate-200">{p.name}</p>
-                            <p className="text-xs text-slate-400 dark:text-slate-500">{p.condition}</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500">
+                              {p.age} yrs · {p.gender}
+                            </p>
                           </td>
                           <td className="px-6 py-3 text-slate-500 dark:text-slate-400 tabular-nums">
                             {p.admittedAt}

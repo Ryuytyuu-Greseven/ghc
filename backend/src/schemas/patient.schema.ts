@@ -17,11 +17,14 @@ export class Patient {
   @Prop({ required: true, enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] })
   bloodGroup: string;
 
-  @Prop({ required: true, trim: true, unique: true })
+  @Prop({ required: true, trim: true })
   phone: string;
 
-  @Prop({ required: true, trim: true, lowercase: true, unique: true })
+  @Prop({ required: true, trim: true, lowercase: true })
   email: string;
+
+  @Prop({ required: true, trim: true, unique: true })
+  aadhaarNumber: string;
 
   @Prop({ required: true, trim: true })
   address: string;
@@ -34,9 +37,6 @@ export class Patient {
 
   @Prop({ type: Date, default: () => new Date() })
   admittedAt: Date;
-
-  @Prop({ required: true, trim: true })
-  condition: string;
 
   @Prop({ default: true })
   isActive: boolean;
