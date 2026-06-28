@@ -20,7 +20,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
       {/* Main content — offset by sidebar width on desktop */}
       <div className="lg:pl-64 flex flex-col min-h-screen">
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col">
           {children}
         </main>
       </div>
