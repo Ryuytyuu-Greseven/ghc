@@ -95,11 +95,11 @@ export interface Patient {
   bloodGroup: BloodGroup;
   phone: string;
   email: string;
+  aadhaarNumber: string;
   address: string;
   hospitalId: string;
   bedRequired: boolean;
   admittedAt: string;
-  condition: string;
 }
 
 export type PatientDraft = Omit<Patient, 'id' | 'admittedAt'>;
@@ -111,10 +111,21 @@ export interface PatientFormValues {
   bloodGroup: BloodGroup | '';
   phone: string;
   email: string;
+  aadhaarNumber: string;
   address: string;
   hospitalId: string;
-  condition: string;
   bedRequired: boolean;
+}
+
+export interface PatientData {
+  id: string;
+  patientId: string;
+  problem: string;
+  visitDate: string;
+  category: string;
+  medicines: string[];
+  doctor?: string;
+  notes?: string;
 }
 
 export type MedicineCategory = 'medication' | 'equipment' | 'consumable' | 'diagnostic';

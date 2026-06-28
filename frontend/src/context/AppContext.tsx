@@ -7,7 +7,6 @@ import {
   mockHospitals,
   mockStaff,
   mockPatients,
-  mockMedicines,
   mockHospitalMedicines,
 } from '../data/mockData';
 
@@ -18,6 +17,7 @@ interface AppContextValue {
   medicines: Medicine[];
   hospitalMedicines: HospitalMedicine[];
   currentUser: { id: string; username: string; role: string } | null;
+  loading: boolean;
 
   addHospital: (h: Omit<Hospital, 'id' | 'createdAt'>) => Promise<void>;
   updateHospital: (id: string, h: Partial<Hospital>) => Promise<void>;
@@ -32,7 +32,6 @@ interface AppContextValue {
 
   addPatient: (p: PatientDraft) => Promise<void>;
   updatePatient: (id: string, p: PatientDraft) => Promise<void>;
-  deletePatient: (id: string) => void;
 
   addMedicine: (m: Omit<Medicine, 'id' | 'createdAt'>) => void;
   updateMedicine: (id: string, m: Partial<Medicine>) => void;
@@ -209,12 +208,12 @@ function mapPatientFromBackend(item: any): Patient {
     bloodGroup: item.bloodGroup,
     phone: item.phone ?? '',
     email: item.email ?? '',
+    aadhaarNumber: item.aadhaarNumber ?? '',
     address: item.address ?? '',
     // Patient APIs may populate hospitalId; UI filters need the raw facility ID string.
     hospitalId: getBackendId(item.hospitalId),
     bedRequired: item.bedRequired ?? false,
     admittedAt: item.admittedAt ? new Date(item.admittedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-    condition: item.condition ?? '',
   };
 }
 
@@ -226,11 +225,11 @@ function mapPatientToBackend(p: any): any {
     bloodGroup: p.bloodGroup,
     phone: p.phone ?? '',
     email: p.email ?? '',
+    aadhaarNumber: p.aadhaarNumber ?? '',
     address: p.address ?? '',
     hospitalId: p.hospitalId || null,
     bedRequired: p.bedRequired ?? false,
     ...(p.admittedAt ? { admittedAt: new Date(p.admittedAt) } : {}),
-    condition: p.condition ?? '',
     isActive: true,
   };
 }
@@ -264,6 +263,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; role: string } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('ghc_auth_token');
@@ -300,6 +300,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function loadData() {
       try {
+        setLoading(true);
         const [hRes, sRes, pRes, mRes] = await Promise.all([
           authFetch(`${API_BASE}/hospitals`),
           authFetch(`${API_BASE}/staff`),
@@ -360,18 +361,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
           pData = seededPatients;
 
-          const seededMedicines: Medicine[] = [];
-          for (const m of mockMedicines) {
-            const body = mapMedicineToBackend(m);
-            const res = await authFetch(`${API_BASE}/medicines`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(body),
-            });
-            const created = await res.json();
-            seededMedicines.push(mapMedicineFromBackend(created));
-          }
-          mData = seededMedicines;
         }
 
         setHospitals(hData.map(mapHospitalFromBackend));
@@ -380,6 +369,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setMedicines(mData.map(mapMedicineFromBackend));
       } catch (err) {
         console.error('Failed to load data from NestJS backend:', err);
+      } finally {
+        setLoading(false);
       }
     }
     loadData();
@@ -527,17 +518,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const deletePatient = async (id: string) => {
-    try {
-      await authFetch(`${API_BASE}/patients/${id}`, {
-        method: 'DELETE',
-      });
-      setPatients(prev => prev.filter(x => x.id !== id));
-    } catch (err) {
-      console.error('Failed to delete patient in backend:', err);
-    }
-  };
-
   const addMedicine = async (m: Omit<Medicine, 'id' | 'createdAt'>) => {
     try {
       const body = mapMedicineToBackend(m);
@@ -602,6 +582,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         medicines,
         hospitalMedicines,
         currentUser,
+        loading,
         addHospital,
         updateHospital,
         deleteHospital,
@@ -613,7 +594,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         assignStaff,
         addPatient,
         updatePatient,
-        deletePatient,
         addMedicine,
         updateMedicine,
         deleteMedicine,

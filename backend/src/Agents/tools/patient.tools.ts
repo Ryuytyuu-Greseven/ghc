@@ -121,24 +121,9 @@ const updatePatient = tool(
   },
 );
 
-const deletePatient = tool(
-  async ({ id }) => {
-    const res = await fetch(`${BASE}/patients/${id}`, { method: 'DELETE' });
-    return JSON.stringify(await res.json());
-  },
-  {
-    name: 'delete_patient',
-    description: 'Remove a patient record permanently',
-    schema: z.object({
-      id: z.string().describe('MongoDB ObjectId of the patient'),
-    }),
-  },
-);
-
 export const patientTools = [
   listPatients,
   getPatient,
   createPatient,
   updatePatient,
-  deletePatient,
 ];

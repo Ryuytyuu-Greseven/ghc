@@ -15,6 +15,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { InventoryModule } from './inventory/inventory.module';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
+import { PatientDataModule } from './patient-data/patient-data.module';
 import { config } from 'dotenv';
 config();
 
@@ -39,6 +40,7 @@ config();
     AuthModule,
     InventoryModule,
     UsersModule,
+    PatientDataModule,
   ],
   controllers: [AppController],
   providers: [

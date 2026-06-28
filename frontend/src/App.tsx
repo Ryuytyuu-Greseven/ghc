@@ -9,6 +9,7 @@ import { HospitalList } from './pages/hospitals/HospitalList';
 import { HospitalDetail } from './pages/hospitals/HospitalDetail';
 import { StaffList } from './pages/staff/StaffList';
 import { PatientList } from './pages/patients/PatientList';
+import { PatientDetail } from './pages/patients/PatientDetail';
 import { MedicineList } from './pages/medicines/MedicineList';
 import { Availability } from './pages/Availability';
 import { Transfers } from './pages/Transfers';
@@ -77,6 +78,14 @@ export default function App() {
                     element={
                       <RoleGuard allowedRoles={['Admin']}>
                         <PatientList />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/patients/:id"
+                    element={
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist']}>
+                        <PatientDetail />
                       </RoleGuard>
                     }
                   />
