@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req, Query, BadRequestException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { StaffService } from './staff.service';
 import { userInfo } from 'os';
@@ -16,6 +16,14 @@ export class StaffController {
   @Get('by-hospital/:hospitalId')
   findByHospital(@Param('hospitalId') hospitalId: string) {
     return this.staffService.findByHospital(hospitalId);
+  }
+
+  @Get('available-doctors')
+  getAvailableDoctors(@Query('date') date: string) {
+    if (!date) {
+      throw new BadRequestException('date query parameter is required');
+    }
+    return this.staffService.getAvailableDoctors(date);
   }
 
   @Get('me/availability')
