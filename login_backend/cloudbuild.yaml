@@ -26,6 +26,6 @@ images:
   - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
 
 substitutions:
-  _SERVICE_NAME: 'ghc-backend'
+  _SERVICE_NAME: 'ghc-login-backend'
   _REGION: 'asia-south1'
   _REPO_NAME: 'cloud-run-source-deploy'
