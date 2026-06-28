@@ -1,0 +1,83 @@
+services:
+  backend:
+    image: node:22
+    container_name: ghc-backend
+    working_dir: /app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: development
+      API_BASE_URL: http://localhost:3000
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      TSC_WATCHFILE: DynamicPriorityPolling
+    volumes:
+      - ./backend:/app
+      - backend-node-modules:/app/node_modules
+    command: sh -c "npm install && npm run start:dev"
+
+  login_backend:
+    image: node:22
+    container_name: ghc-login-backend
+    working_dir: /app
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./login_backend/.env
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+      TSC_WATCHFILE: DynamicPriorityPolling
+    volumes:
+      - ./login_backend:/app
+      - login-backend-node-modules:/app/node_modules
+    command: sh -c "npm install && npm run start:dev"
+
+  frontend:
+    image: node:22
+    container_name: ghc-frontend
+    working_dir: /app
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - login_backend
+    ports:
+      - "5173:5173"
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://localhost:3000
+      VITE_BACKEND_URL: http://localhost:3000
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
+  login_frontend:
+    image: node:22
+    container_name: ghc-login-frontend
+    working_dir: /app
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - login_backend
+    ports:
+      - "4005:4005"
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./login_frontend:/app
+      - login-frontend-node-modules:/app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
+volumes:
+  backend-node-modules:
+  login-backend-node-modules:
+  frontend-node-modules:
+  login-frontend-node-modules:
