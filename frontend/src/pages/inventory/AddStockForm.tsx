@@ -4,12 +4,14 @@ import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { useInventory } from '../../context/InventoryContext';
 import { useApp } from '../../context/AppContext';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   onClose: () => void;
 }
 
 export function AddStockForm({ onClose }: Props) {
+  const { t } = useTranslation();
   const { staff } = useApp();
   const { masters, addCentralStock } = useInventory();
   const [submitting, setSubmitting] = useState(false);
@@ -30,7 +32,10 @@ export function AddStockForm({ onClose }: Props) {
     .filter((m) => m.status === 'Active')
     .map((m) => ({ value: m._id, label: m.itemName }));
 
-  const staffOptions = staff.map((s) => ({ value: s.name, label: `${s.name} (${s.role})` }));
+  const staffOptions = staff.map((s) => ({
+    value: s.name,
+    label: `${s.name} (${t(`roles.${s.role}`) ?? s.role})`,
+  }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,25 +60,25 @@ export function AddStockForm({ onClose }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <Select
-        label="Item"
+        label={t('inventory.fields.itemName')}
         required
         value={form.itemId}
         onChange={(e) => set('itemId', e.target.value)}
         options={activeItemOptions}
-        placeholder="Select an item…"
+        placeholder={t('inventory.fields.selectItemPlaceholder')}
       />
 
       <Input
-        label="Batch Number"
+        label={t('inventory.fields.batchNo')}
         required
         value={form.batchNo}
         onChange={(e) => set('batchNo', e.target.value)}
-        placeholder="e.g. BATCH-2024-001"
+        placeholder={t('inventory.fields.batchNoPlaceholder')}
       />
 
       <div className="grid grid-cols-2 gap-4">
         <Input
-          label="Available Quantity"
+          label={t('inventory.fields.available')}
           type="number"
           required
           min="1"
@@ -82,7 +87,7 @@ export function AddStockForm({ onClose }: Props) {
           placeholder="0"
         />
         <Input
-          label="Damaged Quantity"
+          label={t('inventory.fields.damaged')}
           type="number"
           min="0"
           value={form.damagedQty}
@@ -92,27 +97,27 @@ export function AddStockForm({ onClose }: Props) {
       </div>
 
       <Input
-        label="Expiry Date"
+        label={t('inventory.fields.expiryDate')}
         type="date"
         value={form.expiryDate}
         onChange={(e) => set('expiryDate', e.target.value)}
       />
 
       <Select
-        label="Performed By"
+        label={t('inventory.transactions.performedBy')}
         required
         value={form.performedBy}
         onChange={(e) => set('performedBy', e.target.value)}
         options={staffOptions}
-        placeholder="Select staff member…"
+        placeholder={t('inventory.fields.selectStaffPlaceholder')}
       />
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button type="submit" disabled={submitting}>
-          {submitting ? 'Adding…' : 'Add Stock'}
+          {submitting ? t('inventory.common.saving') : t('inventory.central.addStock')}
         </Button>
       </div>
     </form>

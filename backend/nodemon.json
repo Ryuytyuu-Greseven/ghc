@@ -1,6 +1,0 @@
-{
-  "watch": ["src"],
-  "ext": "ts,json",
-  "ignore": ["dist", "node_modules", "coverage"],
-  "exec": "ts-node -r tsconfig-paths/register src/main.ts"
-}

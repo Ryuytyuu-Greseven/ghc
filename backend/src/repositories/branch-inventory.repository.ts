@@ -82,6 +82,7 @@ export class BranchInventoryRepository {
       searchFields: ['branch.name', 'item.itemName', 'batchNo'],
       exactFilters: ['item.category', 'branchId'],
       objectIdFilters: ['branchId'],
+      fuzzySearch: true,
       sortMapping: {
         itemName: 'item.itemName',
         branchName: 'branch.name',

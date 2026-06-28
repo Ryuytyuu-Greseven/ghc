@@ -10,13 +10,16 @@ Classify the doctor's spoken request into exactly ONE domain.
 Domains:
 - hospital  → hospital facilities, beds, locations, list of hospitals, bed availability/stats for a hospital, medical officer/incharge details of a hospital, active patients list/details of a hospital, active staff list/details of a hospital, available specialists list/details of a hospital
 - patient   → general patient records, clinical admissions, demographics, disease groupings (not specific to a hospital's overall patient list)
-- medicine  → pharmacy, drug list, prescriptions
+- medicine  → pharmacy drug definitions, clinical drug descriptions, writing prescriptions (NOT for listing available medicines or inventory stock)
 - staff     → general doctors, nurses, departments, personnel (not specific to a hospital's overall staff list)
-- inventory → inventory master items, catalog, warehouse stock, branch stock, stock transfer request approvals, transfer transactions, low stock analytics
+- inventory → stock levels, quantities, available items, listing medicines in stock (e.g. "medicine list", "show medicines", "list medicines"), warehouse stock, branch stock, low stock analytics, expiring medicines, stock transfer requests, or checking if any medicine/supplies (like Paracetamol, syringes, saline) are available in stock.
 
-Reply with ONLY one word: hospital | patient | medicine | staff | inventory`;
+CRITICAL INSTRUCTION:
+If the user asks to "list medicines", "show medicines", "medicine list", "medicines list", or asks about availability, quantities, stock levels, or store inventory of ANY medicine/drug (e.g. "Do we have Paracetamol?", "How many syringes are left?"), you MUST classify it as "inventory" (NOT "medicine").
 
-const VALID_DOMAINS = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory']);
+Reply with ONLY one word: hospital | patient | medicine | staff | inventory | out_of_scope`;
+
+const VALID_DOMAINS = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory', 'out_of_scope']);
 
 function parseDomain(content: string): string {
   const normalized = content.trim().toLowerCase();

@@ -5,6 +5,7 @@ import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { useApp } from '../../context/AppContext';
 import { useInventory } from '../../context/InventoryContext';
+import { useTranslation } from 'react-i18next';
 
 interface RequestItemRow {
   itemId: string;
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function RequestForm({ onClose }: Props) {
+  const { t } = useTranslation();
   const { hospitals, staff } = useApp();
   const { masters, centralStock, createRequest } = useInventory();
   const [submitting, setSubmitting] = useState(false);
@@ -29,7 +31,10 @@ export function RequestForm({ onClose }: Props) {
     .filter((m) => m.status === 'Active')
     .map((m) => ({ value: m._id, label: m.itemName }));
 
-  const staffOptions = staff.map((s) => ({ value: s.name, label: `${s.name} (${s.role})` }));
+  const staffOptions = staff.map((s) => ({
+    value: s.name,
+    label: `${s.name} (${t(`roles.${s.role}`) ?? s.role})`,
+  }));
 
   const getCentralStockQty = (itemId: string) => {
     return centralStock
@@ -84,20 +89,20 @@ export function RequestForm({ onClose }: Props) {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-2 gap-4">
         <Select
-          label="Branch"
+          label={t('inventory.requests.branch')}
           required
           value={branchId}
           onChange={(e) => setBranchId(e.target.value)}
           options={branchOptions}
-          placeholder="Select branch…"
+          placeholder={t('inventory.branch.chooseBranchPlaceholder')}
         />
         <Select
-          label="Requested By"
+          label={t('inventory.requests.requestedBy')}
           required
           value={requestedBy}
           onChange={(e) => setRequestedBy(e.target.value)}
           options={staffOptions}
-          placeholder="Select staff member…"
+          placeholder={t('inventory.fields.selectStaffPlaceholder')}
         />
       </div>
 
@@ -105,14 +110,14 @@ export function RequestForm({ onClose }: Props) {
       <div>
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            Requested Items
+            {t('inventory.requests.itemsRequested')}
           </p>
           <button
             type="button"
             onClick={addItemRow}
             className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
           >
-            <Plus size={13} /> Add Item
+            <Plus size={13} /> {t('inventory.master.addItem')}
           </button>
         </div>
 
@@ -129,24 +134,24 @@ export function RequestForm({ onClose }: Props) {
                 <div className="flex items-end gap-3">
                   <div className="flex-1">
                     <Select
-                      label={index === 0 ? 'Item' : undefined}
+                      label={index === 0 ? t('inventory.fields.itemName') : undefined}
                       required
                       value={item.itemId}
                       onChange={(e) => updateItem(index, 'itemId', e.target.value)}
                       options={activeItemOptions}
-                      placeholder="Select item…"
+                      placeholder={t('inventory.fields.selectItemPlaceholder')}
                     />
                   </div>
                   <div className="w-32 shrink-0">
                     <Input
-                      label={index === 0 ? 'Qty' : undefined}
+                      label={index === 0 ? t('inventory.requests.requestedQty') : undefined}
                       type="number"
                       required
                       min="1"
                       value={item.requestedQty}
                       onChange={(e) => updateItem(index, 'requestedQty', e.target.value)}
                       placeholder="0"
-                      error={exceedsStock ? `Exceeds stock (${availQty} available)` : undefined}
+                      error={exceedsStock ? t('inventory.requests.exceedsStockError', { count: availQty }) : undefined}
                     />
                   </div>
                   <button
@@ -154,7 +159,7 @@ export function RequestForm({ onClose }: Props) {
                     onClick={() => removeItemRow(index)}
                     disabled={items.length === 1}
                     className="mb-0.5 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
-                    title="Remove item"
+                    title={t('inventory.requests.removeItem')}
                   >
                     <X size={14} />
                   </button>
@@ -163,7 +168,7 @@ export function RequestForm({ onClose }: Props) {
                 {item.itemId && (
                   <div className="text-xs text-slate-500 dark:text-slate-400 px-1 flex justify-between">
                     <span>
-                      Available Central Stock: <strong className="font-semibold">{availQty}</strong>
+                      {t('inventory.requests.availableQty')}: <strong className="font-semibold">{availQty}</strong>
                     </span>
                   </div>
                 )}
@@ -175,10 +180,10 @@ export function RequestForm({ onClose }: Props) {
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button type="submit" disabled={submitting || items.length === 0 || hasValidationError}>
-          {submitting ? 'Submitting…' : 'Submit Request'}
+          {submitting ? t('inventory.common.saving') : t('inventory.requests.raiseRequest')}
         </Button>
       </div>
     </form>

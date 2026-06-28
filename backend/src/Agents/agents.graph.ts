@@ -8,6 +8,15 @@ import { llmInstance } from '../google/vertex.config';
 import { withGuardrails } from './prompts/guardrails.prompt';
 import { InventoryState } from './states/inventory.state';
 import { PatientState } from './states/patient.state';
+import { appInstance } from '../main';
+import { HospitalsService } from '../hospitals/hospitals.service';
+import {
+  listCentralInventory,
+  getLowStockCentral,
+  listBranchStock,
+  createInventoryRequest,
+  listInventoryRequests,
+} from './tools/inventory.tools';
 
 const BASE = process.env.API_BASE_URL ?? 'http://localhost:3000';
 import { httpClient } from '../common/services/http.service';
@@ -73,41 +82,184 @@ async function llmClassify(
 async function inventoryClassifyIntent(state: typeof InventoryState.State) {
   const intent = await llmClassify(
     state.query,
-    ['list', 'check_stock', 'check_expiring', 'audit'],
+    ['list', 'check_stock', 'check_expiring', 'audit', 'requests'],
     `You are an inventory query classifier for a hospital management system.
 Classify the doctor's request into exactly one of these options:
 - list          → doctor wants to see/browse inventory items or current stock levels
 - check_stock   → doctor wants to know what items are out of stock or critically low
 - check_expiring → doctor wants to know which items are expiring soon or about to expire
 - audit         → doctor wants a complete check covering stock levels, expiry, and auto-raised replenishment requests
+- requests      → doctor wants to see transfer requests, pending requests, approved requests, request counts, or request details
 
-Reply with ONE word only — one of: list, check_stock, check_expiring, audit`,
+Reply with ONE word only — one of: list, check_stock, check_expiring, audit, requests`,
   );
   console.log('intent', intent);
   return { intent };
 }
 
+export async function extractBranchId(query: string): Promise<string | undefined> {
+  try {
+    const service = appInstance.get(HospitalsService);
+    const res = (await service.getAllHospitals()) as any;
+    const branches = Array.isArray(res) ? res : (res?.data ?? []);
+    const lowerQuery = query.toLowerCase();
+    for (const branch of branches) {
+      const name = branch.name.toLowerCase();
+      const normalizedName = name.replace(/[\s-_]+/g, '');
+      const normalizedQuery = lowerQuery.replace(/[\s-_]+/g, '');
+      if (normalizedQuery.includes(normalizedName)) {
+        return branch._id.toString();
+      }
+    }
+  } catch {}
+  return undefined;
+}
+
+const STATIC_CATEGORIES = ['Medicine', 'Equipment', 'Consumable', 'Surgical', 'Diagnostic', 'Other'];
+
+export function extractCategory(query: string): string | undefined {
+  const lower = query.toLowerCase();
+
+  // Direct matches with static categories (singular/plural variations)
+  for (const cat of STATIC_CATEGORIES) {
+    const catLower = cat.toLowerCase();
+    if (
+      lower.includes(catLower) || 
+      (catLower.endsWith('s') && lower.includes(catLower.slice(0, -1))) || 
+      (!catLower.endsWith('s') && lower.includes(catLower + 's'))
+    ) {
+      return cat;
+    }
+  }
+
+  return undefined;
+}
+
+export async function extractSearchQuery(query: string): Promise<string | undefined> {
+  let clean = query.replace(/\b(in|at)\s+.*$/gi, ''); // remove branch specifiers first!
+  try {
+    const service = appInstance.get(HospitalsService);
+    const res = (await service.getAllHospitals()) as any;
+    const branches = Array.isArray(res) ? res : (res?.data ?? []);
+    for (const branch of branches) {
+      const nameRegex = new RegExp(`\\b${branch.name}\\b`, 'gi');
+      clean = clean.replace(nameRegex, '');
+    }
+  } catch {}
+  clean = clean.replace(/\b(show|list|how|many|do|we|have|is|are|left|stock|available|of|in|at|what|which|items|item|any|quantity|quantities|availability|inventory|store|central)\b/gi, '');
+  clean = clean.trim().replace(/[?.]/g, '').replace(/\s+/g, ' ');
+  
+  if (clean.length >= 2) {
+    // Check if the query is just a category name (plural or singular)
+    const lowerClean = clean.toLowerCase();
+    const isCategory = STATIC_CATEGORIES.some((cat) => {
+      const catLower = cat.toLowerCase();
+      return (
+        lowerClean === catLower ||
+        lowerClean === catLower + 's' ||
+        (catLower.endsWith('s') && lowerClean === catLower.slice(0, -1)) ||
+        (!catLower.endsWith('s') && catLower + 's' === lowerClean)
+      );
+    });
+    if (isCategory) {
+      return undefined;
+    }
+    return clean;
+  }
+  return undefined;
+}
+
 // ── Node: list full inventory catalog ────────────────────────────────────────
 async function inventoryListAll(state: typeof InventoryState.State) {
-  const data = await apiFetch('/central-inventory?pageSize=100');
-  return { inventoryList: data.data ?? [] };
+  const branchId = await extractBranchId(state.query);
+  const category = extractCategory(state.query);
+  const searchQ = await extractSearchQuery(state.query);
+
+  let data: any[];
+  if (branchId) {
+    const raw = await listBranchStock.invoke({ branchId, query: searchQ, category });
+    const parsed = JSON.parse(raw);
+    data = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
+  } else {
+    const raw = await listCentralInventory.invoke({ pageSize: 100, query: searchQ, category });
+    const parsed = JSON.parse(raw);
+    data = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
+  }
+  return { inventoryList: data, searchQuery: searchQ };
+}
+
+// Helper to extract status from query (Pending, Approved, Rejected, Partial)
+function extractRequestStatus(query: string): string | undefined {
+  const lower = query.toLowerCase();
+  if (lower.includes('pending')) return 'Pending';
+  if (lower.includes('approved')) return 'Approved';
+  if (lower.includes('rejected')) return 'Rejected';
+  if (lower.includes('partial')) return 'Partial';
+  return undefined;
+}
+
+// ── Node: list inventory requests ──────────────────────────────────────────
+async function inventoryListRequests(state: typeof InventoryState.State) {
+  const branchId = await extractBranchId(state.query);
+  const status = extractRequestStatus(state.query);
+  const raw = await listInventoryRequests.invoke({ status, branchId });
+  const parsed = JSON.parse(raw);
+  const requests = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
+  return { serviceRequests: requests };
 }
 
 // ── Node: check stock levels (low + out-of-stock) ────────────────────────────
 async function inventoryCheckStock(state: typeof InventoryState.State) {
-  const allLowRaw = await apiFetch('/central-inventory/low-stock?threshold=50');
-  const allLow: any[] = Array.isArray(allLowRaw) ? allLowRaw : [];
+  const branchId = await extractBranchId(state.query);
+  const category = extractCategory(state.query);
+  const searchQ = await extractSearchQuery(state.query);
+
+  let allLow: any[] = [];
+  if (branchId) {
+    const raw = await listBranchStock.invoke({ branchId, query: searchQ, category });
+    const parsed = JSON.parse(raw);
+    const items = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
+    allLow = items.filter((i: any) => i.availableQty <= 50);
+  } else {
+    const raw = await getLowStockCentral.invoke({ threshold: 50 });
+    allLow = JSON.parse(raw);
+    if (category || searchQ) {
+      allLow = allLow.filter((i: any) => {
+        const nameMatch = !searchQ || i.itemId?.itemName?.toLowerCase().includes(searchQ.toLowerCase());
+        const catMatch = !category || i.itemId?.category === category;
+        return nameMatch && catMatch;
+      });
+    }
+  }
   const outOfStockItems = allLow.filter((i) => i.availableQty === 0);
   const lowStockItems = allLow.filter((i) => i.availableQty > 0);
-  return { lowStockItems, outOfStockItems };
+  return { lowStockItems, outOfStockItems, searchQuery: searchQ };
 }
 
 // ── Node: check expiring items (within 90 days) ───────────────────────────────
 async function inventoryCheckExpiring(state: typeof InventoryState.State) {
-  const data = await apiFetch(
-    '/central-inventory?expiringSoon=true&pageSize=100',
-  );
-  const items: any[] = data.data ?? [];
+  const branchId = await extractBranchId(state.query);
+  const category = extractCategory(state.query);
+  const searchQ = await extractSearchQuery(state.query);
+
+  let items: any[] = [];
+  if (branchId) {
+    const raw = await listBranchStock.invoke({ branchId, query: searchQ, category });
+    const parsed = JSON.parse(raw);
+    const allItems = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
+    const now = Date.now();
+    const cutoff = now + 90 * 86_400_000;
+    items = allItems.filter((i: any) => i.expiryDate && new Date(i.expiryDate).getTime() <= cutoff);
+  } else {
+    const raw = await listCentralInventory.invoke({
+      expiringSoon: true,
+      pageSize: 100,
+      query: searchQ,
+      category,
+    });
+    const parsed = JSON.parse(raw);
+    items = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
+  }
   const now = Date.now();
   const expiringItems = items.map((item) => ({
     ...item,
@@ -115,7 +267,7 @@ async function inventoryCheckExpiring(state: typeof InventoryState.State) {
       ? Math.ceil((new Date(item.expiryDate).getTime() - now) / 86_400_000)
       : null,
   }));
-  return { expiringItems };
+  return { expiringItems, searchQuery: searchQ };
 }
 
 // ── Node: auto-raise service requests for branches needing stock ──────────────
@@ -133,7 +285,8 @@ async function inventoryRaiseRequests(state: typeof InventoryState.State) {
 
   let branches: any[] = [];
   try {
-    const res = await apiFetch('/hospitals?pageSize=20');
+    const service = appInstance.get(HospitalsService);
+    const res = (await service.getAllHospitals({ pageSize: 20 })) as any;
     branches = res.data ?? res ?? [];
   } catch {
     return { serviceRequests: [] };
@@ -147,7 +300,8 @@ async function inventoryRaiseRequests(state: typeof InventoryState.State) {
 
     let branchStock: any[] = [];
     try {
-      const raw = await apiFetch(`/branch-inventory/branch/${branchId}`);
+      const rawStr = await listBranchStock.invoke({ branchId });
+      const raw = JSON.parse(rawStr);
       branchStock = Array.isArray(raw) ? raw : (raw?.data ?? []);
     } catch {
       continue;
@@ -196,17 +350,14 @@ async function inventoryRaiseRequests(state: typeof InventoryState.State) {
     if (requestItems.length === 0) continue;
 
     try {
-      const result = await apiFetch('/inventory-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          branchId,
-          requestedBy: 'Inventory Agent',
-          items: requestItems,
-          remarks:
-            'Auto-raised by inventory monitoring agent based on stock level and expiry analysis.',
-        }),
+      const resultStr = await createInventoryRequest.invoke({
+        branchId,
+        requestedBy: 'Inventory Agent',
+        items: requestItems,
+        remarks:
+          'Auto-raised by inventory monitoring agent based on stock level and expiry analysis.',
       });
+      const result = JSON.parse(resultStr);
       serviceRequests.push({ branch: branch.name ?? branchId, ...result });
     } catch {
       // Skip branches where request creation fails
@@ -216,76 +367,125 @@ async function inventoryRaiseRequests(state: typeof InventoryState.State) {
   return { serviceRequests };
 }
 
-// ── Node: LLM generates final spoken summary ─────────────────────────────────
-async function inventorySummarize(state: typeof InventoryState.State) {
-  const parts: string[] = [`Query: "${state.query}"`];
+// ── Node: Format inventory data into structured markdown cards (no LLM call) ──
+function inventorySummarize(state: typeof InventoryState.State) {
+  const cards: string[] = [];
 
+  // ── Transfer Requests ─────────────────────────────────────────────────────
+  if (state.intent === 'requests') {
+    if (state.serviceRequests.length === 0) {
+      const finalResponse = 'No transfer requests found.';
+      return { finalResponse, messages: [new AIMessage(finalResponse)] };
+    }
+    state.serviceRequests.slice(0, 10).forEach((r: any, idx: number) => {
+      const branchName = r.branchId?.name || r.branchId || 'Unknown Branch';
+      const itemLines = (r.items ?? [])
+        .map((i: any, n: number) => `**Item ${n + 1}:** ${i.itemId?.itemName ?? 'Item'} — Qty: ${i.requestedQty}`)
+        .join('\n');
+      cards.push(
+        `### Request - ${idx + 1}\n` +
+        `**Branch:** ${branchName}\n` +
+        `**Status:** ${r.status || 'N/A'}\n` +
+        `**Requested By:** ${r.requestedBy || 'N/A'}\n` +
+        (itemLines ? `${itemLines}\n` : '') +
+        `**Remarks:** ${r.remarks || 'N/A'}`,
+      );
+    });
+    const finalResponse = cards.join('\n\n');
+    return { finalResponse, messages: [new AIMessage(finalResponse)] };
+  }
+
+  // ── Inventory List ────────────────────────────────────────────────────────
   if (state.inventoryList.length > 0) {
-    const sample = state.inventoryList
-      .slice(0, 8)
-      .map(
-        (i: any) => `${i.itemId?.itemName ?? 'Unknown'} qty:${i.availableQty}`,
-      )
-      .join(', ');
-    parts.push(
-      `Catalog total: ${state.inventoryList.length} items. Sample: ${sample}`,
-    );
+    state.inventoryList.slice(0, 15).forEach((i: any, index: number) => {
+      const name = i.itemId?.itemName || i.itemName || 'Unknown Item';
+      const category = i.itemId?.category || i.category || 'N/A';
+      const qty = i.availableQty ?? 0;
+      const batch = i.batchNo || 'N/A';
+      const expiry = i.expiryDate ? new Date(i.expiryDate).toLocaleDateString() : 'N/A';
+      cards.push(
+        `### Inventory Item - ${index + 1}\n` +
+        `**Name:** ${name}\n` +
+        `**Category:** ${category}\n` +
+        `**Available Qty:** ${qty}\n` +
+        `**Batch No:** ${batch}\n` +
+        `**Expiry Date:** ${expiry}`,
+      );
+    });
   }
 
+  // ── Out-of-Stock Items ────────────────────────────────────────────────────
   if (state.outOfStockItems.length > 0) {
-    parts.push(
-      `Out of stock (qty=0): ${state.outOfStockItems.map((i: any) => i.itemId?.itemName ?? 'Unknown').join(', ')}`,
-    );
+    cards.push('### Out of Stock Summary');
+    state.outOfStockItems.forEach((i: any, index: number) => {
+      cards.push(
+        `### Out of Stock Item - ${index + 1}\n` +
+        `**Name:** ${i.itemId?.itemName || 'Unknown'}\n` +
+        `**Category:** ${i.itemId?.category || 'N/A'}\n` +
+        `**Available Qty:** 0`,
+      );
+    });
   }
 
+  // ── Low-Stock Items ───────────────────────────────────────────────────────
   if (state.lowStockItems.length > 0) {
-    parts.push(
-      `Low stock (≤50): ${state.lowStockItems.map((i: any) => `${i.itemId?.itemName ?? 'Unknown'} (${i.availableQty})`).join(', ')}`,
-    );
+    state.lowStockItems.forEach((i: any, index: number) => {
+      cards.push(
+        `### Low Stock Item - ${index + 1}\n` +
+        `**Name:** ${i.itemId?.itemName || 'Unknown'}\n` +
+        `**Available Qty:** ${i.availableQty}`,
+      );
+    });
   }
 
+  // ── Expiring Items ────────────────────────────────────────────────────────
   if (state.expiringItems.length > 0) {
-    parts.push(
-      `Expiring within 90 days: ${state.expiringItems.map((i: any) => `${i.itemId?.itemName ?? 'Unknown'} in ${i.daysUntilExpiry}d (batch ${i.batchNo ?? 'N/A'})`).join(', ')}`,
-    );
+    state.expiringItems.forEach((i: any, index: number) => {
+      cards.push(
+        `### Expiring Item - ${index + 1}\n` +
+        `**Name:** ${i.itemId?.itemName || 'Unknown'}\n` +
+        `**Expiry Date:** ${i.expiryDate ? new Date(i.expiryDate).toLocaleDateString() : 'N/A'}\n` +
+        `**Days Until Expiry:** ${i.daysUntilExpiry}`,
+      );
+    });
   }
 
+  // ── Service Requests Footer ───────────────────────────────────────────────
   if (state.serviceRequests.length > 0) {
-    parts.push(
-      `Service requests raised for ${state.serviceRequests.length} branch(es): ${state.serviceRequests.map((r: any) => `${r.branch ?? 'branch'} #${r.requestNumber ?? r._id ?? 'N/A'}`).join(', ')}`,
-    );
+    const reqSummary = state.serviceRequests
+      .map((r: any) => `${r.branch ?? 'branch'} #${r.requestNumber ?? r._id ?? 'N/A'}`)
+      .join(', ');
+    cards.push(`### Transfer Requests Raised\n**Count:** ${state.serviceRequests.length}\n**Branches:** ${reqSummary}`);
   } else if (
     state.lowStockItems.length > 0 ||
     state.outOfStockItems.length > 0 ||
     state.expiringItems.length > 0
   ) {
-    parts.push(
-      'No branch transfer requests raised — branches had sufficient stock.',
-    );
+    cards.push('No branch transfer requests raised — branches had sufficient stock.');
   }
 
-  const systemPrompt = withGuardrails(
-    `You are a healthcare inventory assistant. Using the data provided, give the doctor a brief spoken summary. Lead with the most urgent finding. Data: ${parts.join('. ')}`,
-  );
+  // ── Fallback if nothing to show ───────────────────────────────────────────
+  if (cards.length === 0) {
+    const finalResponse = state.searchQuery
+      ? `Item "${state.searchQuery}" is not available in the inventory.`
+      : 'No inventory data found for the given query.';
+    return { finalResponse, messages: [new AIMessage(finalResponse)] };
+  }
 
-  const response = await llmInstance.invoke([
-    new SystemMessage(systemPrompt),
-    new HumanMessage(state.query),
-  ]);
-
-  const finalResponse = response.content as string;
+  const finalResponse = cards.join('\n\n');
   return { finalResponse, messages: [new AIMessage(finalResponse)] };
 }
 
 // ── Routing function ──────────────────────────────────────────────────────────
 function routeInventory(state: typeof InventoryState.State): string {
-  // "list" goes straight to list node; everything else runs the full audit pipeline
+  if (state.intent === 'requests') return 'list_requests';
   return state.intent === 'list' ? 'list_inventory' : 'check_stock';
 }
 
 export const inventoryAgentGraph = new StateGraph(InventoryState)
   .addNode('classify_intent', inventoryClassifyIntent)
   .addNode('list_inventory', inventoryListAll)
+  .addNode('list_requests', inventoryListRequests)
   .addNode('check_stock', inventoryCheckStock)
   .addNode('check_expiring', inventoryCheckExpiring)
   .addNode('raise_requests', inventoryRaiseRequests)
@@ -293,9 +493,11 @@ export const inventoryAgentGraph = new StateGraph(InventoryState)
   .addEdge(START, 'classify_intent')
   .addConditionalEdges('classify_intent', routeInventory, {
     list_inventory: 'list_inventory',
+    list_requests: 'list_requests',
     check_stock: 'check_stock',
   })
   .addEdge('list_inventory', 'summarize')
+  .addEdge('list_requests', 'summarize')
   .addEdge('check_stock', 'check_expiring')
   .addEdge('check_expiring', 'raise_requests')
   .addEdge('raise_requests', 'summarize')
@@ -306,6 +508,7 @@ export async function runInventoryAgent(query: string): Promise<string> {
   const result = await inventoryAgentGraph.invoke({
     query,
     messages: [new HumanMessage(query)],
+    searchQuery: undefined,
     intent: '',
     inventoryList: [],
     lowStockItems: [],
