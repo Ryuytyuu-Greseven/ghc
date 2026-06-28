@@ -8,6 +8,7 @@ import type { InventoryMaster, InventoryCategory } from '../../types';
 import { InventoryMasterForm } from './InventoryMasterForm';
 import { InventoryDetailModal } from './InventoryDetailModal';
 import { PaginationControls } from '../../components/ui/PaginationControls';
+import { useTranslation } from 'react-i18next';
 import { clsx } from 'clsx';
 
 const categoryVariant: Record<
@@ -33,6 +34,7 @@ const categories: (InventoryCategory | 'All')[] = [
 ];
 
 export function InventoryMasterTab() {
+  const { t } = useTranslation();
   const { masters, mastersPagination, loadingMasters, error, loadMasters, deleteMaster } =
     useInventory();
 
@@ -48,13 +50,6 @@ export function InventoryMasterTab() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [viewItem, setViewItem] = useState<InventoryMaster | null>(null);
-
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      setSearch(searchInput);
-      setPage(1);
-    }
-  };
 
   // Load masters on query state changes
   useEffect(() => {
@@ -73,6 +68,13 @@ export function InventoryMasterTab() {
 
     loadMasters(params.toString());
   }, [page, pageSize, sortBy, sortOrder, filterCat, search, loadMasters]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setSearch(searchInput);
+      setPage(1);
+    }
+  };
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -96,7 +98,7 @@ export function InventoryMasterTab() {
   const handleDeactivate = async (m: InventoryMaster) => {
     if (
       confirm(
-        `Deactivate "${m.itemName}"? It will be marked as Inactive and hidden from active lists.`,
+        t('inventory.master.deactivateConfirm', { name: m.itemName })
       )
     ) {
       await deleteMaster(m._id);
@@ -125,7 +127,7 @@ export function InventoryMasterTab() {
                     : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700',
                 )}
               >
-                {c}
+                {c === 'All' ? t('common.all') : t(`inventory.categories.${c}`)}
               </button>
             ))}
           </div>
@@ -137,7 +139,7 @@ export function InventoryMasterTab() {
               />
               <input
                 type="text"
-                placeholder="Search items..."
+                placeholder={t('inventory.master.searchPlaceholder')}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
@@ -145,7 +147,7 @@ export function InventoryMasterTab() {
               />
             </div>
             <Button onClick={openAdd}>
-              <Plus size={15} /> Add Item
+              <Plus size={15} /> {t('inventory.master.addItem')}
             </Button>
           </div>
         </div>
@@ -173,7 +175,7 @@ export function InventoryMasterTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Item Name
+                        {t('inventory.fields.itemName')}
                         {sortBy === 'itemName' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -184,7 +186,7 @@ export function InventoryMasterTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Category
+                        {t('inventory.fields.category')}
                         {sortBy === 'category' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -195,7 +197,7 @@ export function InventoryMasterTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Status
+                        {t('inventory.fields.status')}
                         {sortBy === 'status' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -222,11 +224,11 @@ export function InventoryMasterTab() {
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
-                        <Badge variant={categoryVariant[m.category]}>{m.category}</Badge>
+                        <Badge variant={categoryVariant[m.category]}>{t(`inventory.categories.${m.category}`)}</Badge>
                       </td>
                       <td className="px-5 py-3.5">
                         <Badge variant={m.status === 'Active' ? 'success' : 'danger'}>
-                          {m.status}
+                          {t(`inventory.status.${m.status}`)}
                         </Badge>
                       </td>
                       <td className="px-5 py-3.5">
@@ -234,14 +236,14 @@ export function InventoryMasterTab() {
                           <button
                             onClick={() => setViewItem(m)}
                             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-primary-500 transition"
-                            title="View Details"
+                            title={t('common.viewDetails')}
                           >
                             <Eye size={14} />
                           </button>
                           <button
                             onClick={() => openEdit(m)}
                             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
-                            title="Edit"
+                            title={t('common.edit')}
                           >
                             <Pencil size={14} />
                           </button>
@@ -249,7 +251,7 @@ export function InventoryMasterTab() {
                             <button
                               onClick={() => handleDeactivate(m)}
                               className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition"
-                              title="Deactivate"
+                              title={t('inventory.status.Inactive')}
                             >
                               <PowerOff size={14} />
                             </button>
@@ -266,8 +268,8 @@ export function InventoryMasterTab() {
           {masters.length === 0 && !loadingMasters && (
             <div className="text-center py-16 text-slate-400 dark:text-slate-500">
               <Package size={36} className="mx-auto mb-3 opacity-30" />
-              <p className="font-medium text-slate-500 dark:text-slate-400">No items found</p>
-              <p className="text-sm mt-1">Try changing the search or category filters.</p>
+              <p className="font-medium text-slate-500 dark:text-slate-400">{t('inventory.common.noItemsFound')}</p>
+              <p className="text-sm mt-1">{t('inventory.common.noItemsFoundDesc')}</p>
             </div>
           )}
 
@@ -288,7 +290,7 @@ export function InventoryMasterTab() {
       <Modal
         open={formOpen}
         onClose={() => setFormOpen(false)}
-        title={editing ? 'Edit Inventory Item' : 'Add Inventory Item'}
+        title={editing ? t('inventory.master.editItem') : t('inventory.master.addItemTitle')}
       >
         <InventoryMasterForm initial={editing} onClose={() => setFormOpen(false)} />
       </Modal>
@@ -297,11 +299,11 @@ export function InventoryMasterTab() {
         <InventoryDetailModal
           open={true}
           onClose={() => setViewItem(null)}
-          title="Inventory Item Details"
+          title={t('inventory.master.itemDetails')}
           fields={[
-            { label: 'Item Name', value: viewItem.itemName },
-            { label: 'Category', value: <Badge variant={categoryVariant[viewItem.category]}>{viewItem.category}</Badge> },
-            { label: 'Status', value: <Badge variant={viewItem.status === 'Active' ? 'success' : 'danger'}>{viewItem.status}</Badge> },
+            { label: t('inventory.fields.itemName'), value: viewItem.itemName },
+            { label: t('inventory.fields.category'), value: <Badge variant={categoryVariant[viewItem.category]}>{t(`inventory.categories.${viewItem.category}`)}</Badge> },
+            { label: t('inventory.fields.status'), value: <Badge variant={viewItem.status === 'Active' ? 'success' : 'danger'}>{t(`inventory.status.${viewItem.status}`)}</Badge> },
           ]}
         />
       )}

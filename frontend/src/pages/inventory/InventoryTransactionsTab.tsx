@@ -6,6 +6,7 @@ import { useApp } from '../../context/AppContext';
 import type { TransactionType } from '../../types';
 import { PaginationControls } from '../../components/ui/PaginationControls';
 import { InventoryDetailModal } from './InventoryDetailModal';
+import { useTranslation } from 'react-i18next';
 
 const typeVariant: Record<
   TransactionType,
@@ -21,6 +22,7 @@ const typeVariant: Record<
 };
 
 export function InventoryTransactionsTab() {
+  const { t, i18n } = useTranslation();
   const { transactions, transactionsPagination, loadingTransactions, error, loadTransactions } =
     useInventory();
   const { hospitals } = useApp();
@@ -84,7 +86,8 @@ export function InventoryTransactionsTab() {
 
   const resolveLocation = (loc: string) => {
     if (!loc) return '—';
-    if (loc === 'External' || loc === 'Central') return loc;
+    if (loc === 'Central') return t('inventory.transactions.centralStore');
+    if (loc === 'External') return t('inventory.transactions.externalLocation');
     const hosp = hospitals.find((h) => h.id === loc);
     return hosp ? hosp.name : loc;
   };
@@ -103,7 +106,7 @@ export function InventoryTransactionsTab() {
               />
               <input
                 type="text"
-                placeholder="Search transactions..."
+                placeholder={t('inventory.transactions.searchPlaceholder')}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
@@ -120,14 +123,14 @@ export function InventoryTransactionsTab() {
               }}
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
-              <option value="All">All Types</option>
-              <option value="Purchase">Purchase</option>
-              <option value="Transfer">Transfer</option>
-              <option value="Issue">Issue</option>
-              <option value="Return">Return</option>
-              <option value="Damage">Damage</option>
-              <option value="Expiry">Expiry</option>
-              <option value="Adjustment">Adjustment</option>
+              <option value="All">{t('inventory.transactions.allTypes')}</option>
+              <option value="Purchase">{t('inventory.transactions.types.Purchase')}</option>
+              <option value="Transfer">{t('inventory.transactions.types.Transfer')}</option>
+              <option value="Issue">{t('inventory.transactions.types.Issue')}</option>
+              <option value="Return">{t('inventory.transactions.types.Return')}</option>
+              <option value="Damage">{t('inventory.transactions.types.Damage')}</option>
+              <option value="Expiry">{t('inventory.transactions.types.Expiry')}</option>
+              <option value="Adjustment">{t('inventory.transactions.types.Adjustment')}</option>
             </select>
 
             {/* Location Selector */}
@@ -139,8 +142,8 @@ export function InventoryTransactionsTab() {
               }}
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500 max-w-[180px]"
             >
-              <option value="All">All Locations</option>
-              <option value="Central">Central Store</option>
+              <option value="All">{t('inventory.transactions.allLocations')}</option>
+              <option value="Central">{t('inventory.transactions.centralStore')}</option>
               {hospitals.map((h) => (
                 <option key={h.id} value={h.id}>
                   {h.name}
@@ -159,7 +162,7 @@ export function InventoryTransactionsTab() {
                 }}
                 className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-2 py-1.5 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
-              <span>to</span>
+              <span>{t('inventory.requests.to')}</span>
               <input
                 type="date"
                 value={toDate}
@@ -196,7 +199,7 @@ export function InventoryTransactionsTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Item Name
+                        {t('inventory.fields.itemName')}
                         {sortBy === 'itemName' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -207,7 +210,7 @@ export function InventoryTransactionsTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Type
+                        {t('inventory.transactions.transactionType')}
                         {sortBy === 'transactionType' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -218,24 +221,24 @@ export function InventoryTransactionsTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Quantity
+                        {t('inventory.transactions.quantity')}
                         {sortBy === 'quantity' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      From Location
+                      {t('inventory.transactions.fromLocation')}
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      To Location
+                      {t('inventory.transactions.toLocation')}
                     </th>
                     <th
                       onClick={() => handleSort('requestNumber')}
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none hidden md:table-cell transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Req Reference
+                        {t('inventory.transactions.requestRef')}
                         {sortBy === 'requestNumber' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -246,7 +249,7 @@ export function InventoryTransactionsTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Performed By
+                        {t('inventory.transactions.performedBy')}
                         {sortBy === 'performedBy' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -257,13 +260,13 @@ export function InventoryTransactionsTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Timestamp
+                        {t('inventory.transactions.date')}
                         {sortBy === 'createdAt' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
-                    <th className="px-5 py-3 w-10" />
+                    <th className="px-5 py-3 w-16" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -280,7 +283,7 @@ export function InventoryTransactionsTab() {
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
-                        <Badge variant={typeVariant[tx.transactionType]}>{tx.transactionType}</Badge>
+                        <Badge variant={typeVariant[tx.transactionType]}>{t(`inventory.transactions.types.${tx.transactionType}`)}</Badge>
                       </td>
                       <td className="px-5 py-3.5 font-semibold tabular-nums text-slate-800 dark:text-slate-200">
                         {tx.quantity.toLocaleString()}
@@ -298,7 +301,7 @@ export function InventoryTransactionsTab() {
                         {tx.performedBy}
                       </td>
                       <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 text-xs">
-                        {new Date(tx.createdAt).toLocaleDateString('en-IN', {
+                        {new Date(tx.createdAt).toLocaleDateString(i18n.language, {
                           day: '2-digit',
                           month: 'short',
                           year: 'numeric',
@@ -310,7 +313,7 @@ export function InventoryTransactionsTab() {
                         <button
                           onClick={() => setViewTx(tx)}
                           className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-primary-500 transition"
-                          title="View Details"
+                          title={t('common.viewDetails')}
                         >
                           <Eye size={14} />
                         </button>
@@ -326,9 +329,9 @@ export function InventoryTransactionsTab() {
             <div className="text-center py-16 text-slate-400 dark:text-slate-500">
               <ArrowLeftRight size={36} className="mx-auto mb-3 opacity-30" />
               <p className="font-medium text-slate-500 dark:text-slate-400">
-                No transactions found
+                {t('inventory.transactions.noTransactionsFound')}
               </p>
-              <p className="text-sm mt-1">Try resetting filters or search query.</p>
+              <p className="text-sm mt-1">{t('inventory.transactions.noTransactionsFoundDesc')}</p>
             </div>
           )}
 
@@ -350,18 +353,18 @@ export function InventoryTransactionsTab() {
         <InventoryDetailModal
           open={true}
           onClose={() => setViewTx(null)}
-          title="Transaction Details"
+          title={t('inventory.transactions.detailsTitle')}
           fields={[
-            { label: 'Item Name', value: viewTx.itemId?.itemName },
-            { label: 'Transaction Type', value: <Badge variant={typeVariant[viewTx.transactionType]}>{viewTx.transactionType}</Badge> },
-            { label: 'Quantity', value: viewTx.quantity.toLocaleString() },
-            { label: 'From Location', value: resolveLocation(viewTx.fromLocation) },
-            { label: 'To Location', value: resolveLocation(viewTx.toLocation) },
-            { label: 'Request Ref', value: viewTx.requestId?.requestNumber || '—' },
-            { label: 'Performed By', value: viewTx.performedBy },
+            { label: t('inventory.fields.itemName'), value: viewTx.itemId?.itemName },
+            { label: t('inventory.transactions.transactionType'), value: <Badge variant={typeVariant[viewTx.transactionType]}>{t(`inventory.transactions.types.${viewTx.transactionType}`)}</Badge> },
+            { label: t('inventory.transactions.quantity'), value: viewTx.quantity.toLocaleString() },
+            { label: t('inventory.transactions.fromLocation'), value: resolveLocation(viewTx.fromLocation) },
+            { label: t('inventory.transactions.toLocation'), value: resolveLocation(viewTx.toLocation) },
+            { label: t('inventory.transactions.requestRef'), value: viewTx.requestId?.requestNumber || '—' },
+            { label: t('inventory.transactions.performedBy'), value: viewTx.performedBy },
             {
-              label: 'Date & Time',
-              value: new Date(viewTx.createdAt).toLocaleDateString('en-IN', {
+              label: t('inventory.transactions.date'),
+              value: new Date(viewTx.createdAt).toLocaleDateString(i18n.language, {
                 day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
               }),
               full: true,

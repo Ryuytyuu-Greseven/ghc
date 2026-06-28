@@ -4,20 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useInventory } from '../../context/InventoryContext';
 import type { InventoryMaster } from '../../types';
-
-const categoryOptions = [
-  { value: 'Medicine', label: 'Medicine' },
-  { value: 'Equipment', label: 'Equipment' },
-  { value: 'Consumable', label: 'Consumable' },
-  { value: 'Surgical', label: 'Surgical' },
-  { value: 'Diagnostic', label: 'Diagnostic' },
-  { value: 'Other', label: 'Other' },
-];
-
-const statusOptions = [
-  { value: 'Active', label: 'Active' },
-  { value: 'Inactive', label: 'Inactive' },
-];
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   initial: InventoryMaster | null;
@@ -25,8 +12,23 @@ interface Props {
 }
 
 export function InventoryMasterForm({ initial, onClose }: Props) {
+  const { t } = useTranslation();
   const { createMaster, updateMaster } = useInventory();
   const [submitting, setSubmitting] = useState(false);
+
+  const categoryOptions = [
+    { value: 'Medicine', label: t('inventory.categories.Medicine') },
+    { value: 'Equipment', label: t('inventory.categories.Equipment') },
+    { value: 'Consumable', label: t('inventory.categories.Consumable') },
+    { value: 'Surgical', label: t('inventory.categories.Surgical') },
+    { value: 'Diagnostic', label: t('inventory.categories.Diagnostic') },
+    { value: 'Other', label: t('inventory.categories.Other') },
+  ];
+
+  const statusOptions = [
+    { value: 'Active', label: t('inventory.status.Active') },
+    { value: 'Inactive', label: t('inventory.status.Inactive') },
+  ];
 
   const [form, setForm] = useState({
     itemName: initial?.itemName ?? '',
@@ -58,14 +60,14 @@ export function InventoryMasterForm({ initial, onClose }: Props) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <Input
-          label="Item Name"
+          label={t('inventory.fields.itemName')}
           required
           value={form.itemName}
           onChange={(e) => set('itemName', e.target.value)}
-          placeholder="e.g. Medicine or supply name"
+          placeholder={t('inventory.fields.itemNamePlaceholder')}
         />
         <Select
-          label="Category"
+          label={t('inventory.fields.category')}
           value={form.category}
           onChange={(e) => set('category', e.target.value)}
           options={categoryOptions}
@@ -74,7 +76,7 @@ export function InventoryMasterForm({ initial, onClose }: Props) {
 
       {initial && (
         <Select
-          label="Status"
+          label={t('inventory.fields.status')}
           value={form.status}
           onChange={(e) => set('status', e.target.value)}
           options={statusOptions}
@@ -83,10 +85,10 @@ export function InventoryMasterForm({ initial, onClose }: Props) {
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button type="submit" disabled={submitting}>
-          {submitting ? 'Saving…' : initial ? 'Save Changes' : 'Add Item'}
+          {submitting ? t('inventory.common.saving') : initial ? t('inventory.common.saveChanges') : t('inventory.common.addItem')}
         </Button>
       </div>
     </form>

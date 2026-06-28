@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { useInventory } from '../../context/InventoryContext';
 import { useApp } from '../../context/AppContext';
 import type { InventoryRequest, RequestStatus } from '../../types';
+import { useTranslation } from 'react-i18next';
 import { clsx } from 'clsx';
 
 const statusVariant: Record<RequestStatus, 'warning' | 'success' | 'danger' | 'purple'> = {
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function RequestDetailModal({ request, onClose }: Props) {
+  const { t, i18n } = useTranslation();
   const { approveRequest, rejectRequest } = useInventory();
   const { hospitals } = useApp();
   const [submitting, setSubmitting] = useState(false);
@@ -74,7 +76,7 @@ export function RequestDetailModal({ request, onClose }: Props) {
   };
 
   const handleReject = async () => {
-    if (!confirm('Reject this request?')) return;
+    if (!confirm(t('inventory.requests.rejectWarning', { branch: branchInfo.name }))) return;
     setSubmitting(true);
     try {
       await rejectRequest(request._id, { remarks });
@@ -92,7 +94,7 @@ export function RequestDetailModal({ request, onClose }: Props) {
       <div className="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl p-4">
         <div>
           <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
-            Request #
+            {t('inventory.requests.requestNumber')}
           </p>
           <p className="font-mono text-sm font-medium text-slate-800 dark:text-slate-200">
             {request.requestNumber}
@@ -100,13 +102,13 @@ export function RequestDetailModal({ request, onClose }: Props) {
         </div>
         <div>
           <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
-            Status
+            {t('inventory.requests.status')}
           </p>
-          <Badge variant={statusVariant[request.status]}>{request.status}</Badge>
+          <Badge variant={statusVariant[request.status]}>{t(`inventory.status.${request.status}`)}</Badge>
         </div>
         <div>
           <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
-            Branch
+            {t('inventory.requests.branch')}
           </p>
           <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
             {branchInfo.name ?? '—'}
@@ -119,16 +121,16 @@ export function RequestDetailModal({ request, onClose }: Props) {
         </div>
         <div>
           <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
-            Requested By
+            {t('inventory.requests.requestedBy')}
           </p>
           <p className="text-sm text-slate-700 dark:text-slate-300">{request.requestedBy}</p>
         </div>
         <div className="col-span-2">
           <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
-            Created At
+            {t('inventory.requests.date')}
           </p>
           <p className="text-sm text-slate-700 dark:text-slate-300">
-            {new Date(request.createdAt).toLocaleString('en-IN', {
+            {new Date(request.createdAt).toLocaleString(i18n.language, {
               dateStyle: 'medium',
               timeStyle: 'short',
             })}
@@ -139,7 +141,7 @@ export function RequestDetailModal({ request, onClose }: Props) {
       {/* Items table */}
       <div>
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-          Requested Items
+          {t('inventory.requests.itemsRequested')}
         </p>
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="overflow-x-auto">
@@ -147,16 +149,16 @@ export function RequestDetailModal({ request, onClose }: Props) {
               <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Item
+                    {t('inventory.fields.itemName')}
                   </th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Requested
+                    {t('inventory.requests.requestedQty')}
                   </th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Approved
+                    {t('inventory.requests.approvedQty')}
                   </th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Issued
+                    {t('inventory.requests.issuedQty')}
                   </th>
                 </tr>
               </thead>
@@ -212,14 +214,14 @@ export function RequestDetailModal({ request, onClose }: Props) {
       {/* Remarks */}
       <div>
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1">
-          Remarks
+          {t('inventory.requests.remarks')}
         </label>
         {isPending ? (
           <textarea
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
             rows={3}
-            placeholder="Optional remarks…"
+            placeholder={t('inventory.requests.approvalRemarksPlaceholder')}
             className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700/50 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
           />
         ) : (
@@ -231,7 +233,7 @@ export function RequestDetailModal({ request, onClose }: Props) {
                 : 'text-slate-400 dark:text-slate-500 italic',
             )}
           >
-            {request.remarks || 'No remarks provided'}
+            {request.remarks || t('inventory.requests.noRemarks')}
           </p>
         )}
       </div>
@@ -245,7 +247,7 @@ export function RequestDetailModal({ request, onClose }: Props) {
             onClick={handleReject}
             disabled={submitting}
           >
-            {submitting ? 'Processing…' : 'Reject'}
+            {submitting ? t('inventory.common.saving') : t('inventory.requests.reject')}
           </Button>
           <Button
             type="button"
@@ -253,7 +255,7 @@ export function RequestDetailModal({ request, onClose }: Props) {
             onClick={handleApprove}
             disabled={submitting}
           >
-            {submitting ? 'Processing…' : 'Approve'}
+            {submitting ? t('inventory.common.saving') : t('inventory.requests.approve')}
           </Button>
         </div>
       )}
