@@ -4,6 +4,7 @@ import { PatientRepository } from '../repositories/patient.repository';
 import { Patient } from '../schemas/patient.schema';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { HospitalsCommonService } from '../common/services/hospitals.service';
 
 const requiredCreateFields: (keyof CreatePatientDto)[] = [
   'name',
@@ -23,7 +24,10 @@ const allowedBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 @Injectable()
 export class PatientsService {
-  constructor(private readonly patientRepository: PatientRepository) {}
+  constructor(
+    private readonly patientRepository: PatientRepository,
+    private readonly hospitalsCommonService: HospitalsCommonService,
+  ) {}
 
   async findAll() {
     return this.patientRepository.findAll({ isActive: true });
@@ -42,7 +46,18 @@ export class PatientsService {
   async create(data: CreatePatientDto) {
     const patient = this.prepareCreate(data);
     await this.ensureUniqueAadhaar(patient);
-    return this.patientRepository.create(this.toPatientPersistence(patient));
+    const createdPatient = await this.patientRepository.create(this.toPatientPersistence(patient));
+    if (patient.bedRequired && patient.hospitalId) {
+      try {
+        await this.hospitalsCommonService.allocateBed(patient.hospitalId, createdPatient._id.toString());
+      } catch (err) {
+        // Rollback patient registration if bed allocation fails
+        await this.patientRepository.delete(createdPatient._id.toString());
+        throw err;
+      }
+    }
+
+    return createdPatient;
   }
 
   async update(id: string, data: UpdatePatientDto) {
@@ -57,8 +72,15 @@ export class PatientsService {
   }
 
   async remove(id: string) {
-    const patient = await this.patientRepository.delete(id);
+    const patient = await this.patientRepository.findById(id);
     if (!patient) throw new NotFoundException(`Patient ${id} not found`);
+
+    if (patient.bedRequired && patient.hospitalId) {
+      const hospitalId = patient.populated('hospitalId') || patient.hospitalId;
+      await this.hospitalsCommonService.deallocateBed(hospitalId.toString(), patient._id.toString());
+    }
+
+    await this.patientRepository.delete(id);
     return { id, removed: true };
   }
 
@@ -99,6 +121,7 @@ export class PatientsService {
       address: data.address?.trim(),
       hospitalId: data.hospitalId?.trim(),
       age: data.age === undefined ? undefined : Number(data.age),
+      bedRequired: data.bedRequired === undefined ? undefined : ((data.bedRequired as any) === true || (data.bedRequired as any) === 'true'),
     };
   }
 

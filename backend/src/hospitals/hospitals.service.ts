@@ -3,10 +3,14 @@ import { Types } from 'mongoose';
 import { HospitalRepository } from '../repositories/hospital.repository';
 import { Hospital } from '../schemas/hospital.schema';
 import { buildPaginatedResponse } from '../inventory/utils/pagination.util';
+import { BedAllocationRepository } from '../repositories/bed-allocation.repository';
 
 @Injectable()
 export class HospitalsService {
-  constructor(private readonly hospitalRepository: HospitalRepository) {}
+  constructor(
+    private readonly hospitalRepository: HospitalRepository,
+    private readonly bedAllocationRepository: BedAllocationRepository,
+  ) {}
 
   async getAllHospitals(query: Record<string, any> = {}) {
     // If no pagination properties are provided, return the flat backwards-compatible array
@@ -88,5 +92,13 @@ export class HospitalsService {
 
   async getHospitalHistory(hospitalId: string) {
     return this.hospitalRepository.findHistory(hospitalId);
+  }
+
+  async getHospitalBedAllocations(id: string) {
+    const hospital = await this.hospitalRepository.findById(id);
+    if (!hospital) throw new NotFoundException(`Hospital ${id} not found`);
+
+    const logicalId = hospital.hospitalId || hospital._id.toString();
+    return this.bedAllocationRepository.findByHospital(logicalId);
   }
 }

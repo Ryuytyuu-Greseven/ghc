@@ -12,14 +12,19 @@ export class HospitalsController {
     return this.hospitalsService.getAllHospitals(query);
   }
 
-  @Get(':id')
-  getHospital(@Param('id') id: string) {
-    return this.hospitalsService.getHospitalById(id);
-  }
-
   @Get(':id/history')
   getHospitalHistory(@Param('id') id: string) {
     return this.hospitalsService.getHospitalHistory(id);
+  }
+
+  @Get(':id/bed-allocations')
+  getHospitalBedAllocations(@Param('id') id: string) {
+    return this.hospitalsService.getHospitalBedAllocations(id);
+  }
+
+  @Get(':id')
+  getHospital(@Param('id') id: string) {
+    return this.hospitalsService.getHospitalById(id);
   }
 
   @Post()

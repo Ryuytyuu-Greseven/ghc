@@ -29,4 +29,5 @@ export const hospitalApi = {
   updateHospital: (id: string, data: Partial<Hospital>) => put<Hospital>(`/hospitals/${id}`, data),
   deleteHospital: (id: string) => del<{ id: string; removed: boolean }>(`/hospitals/${id}`),
   getHospitalHistory: (id: string) => get<Hospital[]>(`/hospitals/${id}/history`),
+  getBedAllocationHistory: (id: string) => get<any[]>(`/hospitals/${id}/bed-allocations`),
 };
