@@ -12,6 +12,8 @@ import { ChatGatewayModule } from './chat-gateway/chat-gateway.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { InventoryModule } from './inventory/inventory.module';
+import { UsersModule } from './users/users.module';
+import { CommonModule } from './common/common.module';
 import { config } from 'dotenv';
 config();
 
@@ -26,6 +28,7 @@ config();
         uri: config.get<string>('MONGODB_URI'),
       }),
     }),
+    CommonModule,
     HospitalsModule,
     PatientsModule,
     MedicinesModule,
@@ -33,6 +36,7 @@ config();
     ChatGatewayModule,
     AuthModule,
     InventoryModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [

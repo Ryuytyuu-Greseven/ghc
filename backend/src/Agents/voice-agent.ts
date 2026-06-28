@@ -9,15 +9,15 @@ import { inventoryNode } from './nodes/inventory.node';
 import { transcribeAudio, type TranscribeOptions } from '../google/speech.service';
 import { toPlainSpeechText } from './prompts/guardrails.prompt';
 
-const DOMAIN_NODES = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory']);
+const DOMAIN_NODES = ['hospital', 'patient', 'medicine', 'staff', 'inventory'] as const;
+const DOMAIN_SET = new Set<string>(DOMAIN_NODES);
 
-function routeDomain(state: typeof AgentState.State): string {
-  console.log('Route Domain', state.domain);
-  return DOMAIN_NODES.has(state.domain) ? state.domain : 'patient';
+export function routeDomain(state: typeof AgentState.State): string {
+  const domain = state.domain?.trim().toLowerCase() ?? '';
+  console.log('[voice-agent] routeDomain', domain);
+  return DOMAIN_SET.has(domain) ? domain : 'patient';
 }
 
-// Each domain node runs a full createAgent ReAct loop internally,
-// so no ToolNode or tool-routing edges are needed in the outer graph.
 export const voiceAgentGraph = new StateGraph(AgentState)
   .addNode('supervisor', supervisorNode)
   .addNode('hospital', hospitalNode)
@@ -26,7 +26,13 @@ export const voiceAgentGraph = new StateGraph(AgentState)
   .addNode('staff', staffNode)
   .addNode('inventory', inventoryNode)
   .addEdge(START, 'supervisor')
-  .addConditionalEdges('supervisor', routeDomain)
+  .addConditionalEdges('supervisor', routeDomain, {
+    hospital: 'hospital',
+    patient: 'patient',
+    medicine: 'medicine',
+    staff: 'staff',
+    inventory: 'inventory',
+  })
   .addEdge('hospital', END)
   .addEdge('patient', END)
   .addEdge('medicine', END)

@@ -6,8 +6,12 @@ export type StaffDocument = Staff & Document;
 
 @Schema({ timestamps: true })
 export class Staff {
-  @Prop({ required: true, unique: true, trim: true })
-  employeeId: string;
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'User',
+    required: true,
+  })
+  userId: Types.ObjectId;
 
   @Prop({ required: true, trim: true })
   firstName: string;
@@ -35,11 +39,7 @@ export class Staff {
   })
   email?: string;
 
-  @Prop({
-    required: true,
-    enum: UserRole,
-  })
-  role: UserRole;
+
 
   @Prop({
     required: true,
@@ -61,11 +61,7 @@ export class Staff {
 
 
 
-  @Prop({ trim: true })
-  username?: string;
 
-  @Prop()
-  passwordHash?: string;
 
   // Doctor Details
   @Prop()
@@ -120,8 +116,8 @@ export class Staff {
   @Prop({ default: false })
   isMedicalIncharge?: boolean;
 
-  @Prop({ default: true })
-  isActive: boolean;
+  @Prop({ type: [String], default: [] })
+  unavailableOnDays: string[];
 }
 
 export const StaffSchema = SchemaFactory.createForClass(Staff);
