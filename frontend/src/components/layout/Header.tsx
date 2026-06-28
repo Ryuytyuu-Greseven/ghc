@@ -148,6 +148,19 @@ export function Header({ title, subtitle }: HeaderProps) {
               >
                 தமிழ் (Tamil)
               </button>
+              <button
+                onClick={() => {
+                  i18n.changeLanguage('gu');
+                  setLangOpen(false);
+                }}
+                className={`w-full text-left px-3 py-1.5 text-xs font-medium transition ${
+                  currentLang === 'gu'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                }`}
+              >
+                ગુજરાતી (Gujarati)
+              </button>
             </div>
           )}
         </div>

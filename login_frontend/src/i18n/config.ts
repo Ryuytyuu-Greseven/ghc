@@ -7,6 +7,7 @@ import { te } from './locales/te';
 import { bn } from './locales/bn';
 import { kn } from './locales/kn';
 import { ta } from './locales/ta';
+import { gu } from './locales/gu';
 
 i18n
   .use(LanguageDetector)
@@ -19,6 +20,7 @@ i18n
       bn,
       kn,
       ta,
+      gu,
     },
     fallbackLng: 'en',
     detection: {
