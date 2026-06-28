@@ -8,6 +8,7 @@ import { useInventory } from '../../context/InventoryContext';
 import { AddStockForm } from './AddStockForm';
 import { InventoryDetailModal } from './InventoryDetailModal';
 import { PaginationControls } from '../../components/ui/PaginationControls';
+import { useTranslation } from 'react-i18next';
 import { clsx } from 'clsx';
 
 const isExpiringSoon = (date: string | null): boolean => {
@@ -21,6 +22,7 @@ const isExpired = (date: string | null): boolean => {
 };
 
 export function CentralInventoryTab() {
+  const { t, i18n } = useTranslation();
   const {
     centralStock,
     centralPagination,
@@ -90,7 +92,7 @@ export function CentralInventoryTab() {
   };
 
   const handleRemove = async (id: string) => {
-    if (confirm('Remove this stock entry?')) {
+    if (confirm(t('inventory.central.removeConfirm'))) {
       await removeCentralStock(id);
     }
   };
@@ -108,29 +110,29 @@ export function CentralInventoryTab() {
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            label="Total Stock Lines"
+            label={t('inventory.central.totalStockLines')}
             value={totalLines}
             icon={<Warehouse size={20} className="text-cyan-600 dark:text-cyan-400" />}
             color="bg-cyan-50 dark:bg-cyan-900/30"
           />
           <StatCard
-            label="Total Available Qty"
+            label={t('inventory.central.totalAvailableQty')}
             value={totalAvailable.toLocaleString()}
             icon={<Warehouse size={20} className="text-emerald-600 dark:text-emerald-400" />}
             color="bg-emerald-50 dark:bg-emerald-900/30"
           />
           <StatCard
-            label="Total Damaged"
+            label={t('inventory.central.totalDamaged')}
             value={totalDamaged.toLocaleString()}
             icon={<AlertTriangle size={20} className="text-red-600 dark:text-red-400" />}
             color="bg-red-50 dark:bg-red-900/30"
           />
           <StatCard
-            label="Low Stock Alerts"
+            label={t('inventory.central.lowStockAlerts')}
             value={lowStockCount}
             icon={<AlertTriangle size={20} className="text-amber-600 dark:text-amber-400" />}
             color="bg-amber-50 dark:bg-amber-900/30"
-            sub={`${expiringCount} expiring within 90 days`}
+            sub={t('inventory.central.expiring90Days', { count: expiringCount })}
           />
         </div>
 
@@ -145,7 +147,7 @@ export function CentralInventoryTab() {
               />
               <input
                 type="text"
-                placeholder="Search central stock..."
+                placeholder={t('inventory.central.searchPlaceholder')}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
@@ -162,13 +164,13 @@ export function CentralInventoryTab() {
               }}
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
-              <option value="All">All Categories</option>
-              <option value="Medicine">Medicine</option>
-              <option value="Equipment">Equipment</option>
-              <option value="Consumable">Consumable</option>
-              <option value="Surgical">Surgical</option>
-              <option value="Diagnostic">Diagnostic</option>
-              <option value="Other">Other</option>
+              <option value="All">{t('inventory.central.allCategories')}</option>
+              <option value="Medicine">{t('inventory.categories.Medicine')}</option>
+              <option value="Equipment">{t('inventory.categories.Equipment')}</option>
+              <option value="Consumable">{t('inventory.categories.Consumable')}</option>
+              <option value="Surgical">{t('inventory.categories.Surgical')}</option>
+              <option value="Diagnostic">{t('inventory.categories.Diagnostic')}</option>
+              <option value="Other">{t('inventory.categories.Other')}</option>
             </select>
 
             {/* Alert/Type filter */}
@@ -180,15 +182,15 @@ export function CentralInventoryTab() {
               }}
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
-              <option value="All">All Stock</option>
-              <option value="Low Stock">Low Stock Alerts</option>
-              <option value="Expired">Expired Stock</option>
-              <option value="Expiring Soon">Expiring Soon (90d)</option>
+              <option value="All">{t('inventory.central.allStock')}</option>
+              <option value="Low Stock">{t('inventory.central.lowStockAlerts')}</option>
+              <option value="Expired">{t('inventory.central.expiredStock')}</option>
+              <option value="Expiring Soon">{t('inventory.central.expiringSoon90')}</option>
             </select>
           </div>
 
           <Button onClick={() => setAddOpen(true)}>
-            <Plus size={15} /> Add Stock
+            <Plus size={15} /> {t('inventory.central.addStock')}
           </Button>
         </div>
 
@@ -221,10 +223,10 @@ export function CentralInventoryTab() {
                   <tr>
                     <th
                       onClick={() => handleSort('itemName')}
-                      className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none select-none transition-colors"
+                      className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Item Name
+                        {t('inventory.fields.itemName')}
                         {sortBy === 'itemName' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -235,7 +237,7 @@ export function CentralInventoryTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Batch No
+                        {t('inventory.fields.batchNo')}
                         {sortBy === 'batchNo' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -246,7 +248,7 @@ export function CentralInventoryTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Available
+                        {t('inventory.fields.available')}
                         {sortBy === 'availableQty' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -257,7 +259,7 @@ export function CentralInventoryTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none hidden lg:table-cell transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Damaged
+                        {t('inventory.fields.damaged')}
                         {sortBy === 'damagedQty' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -268,14 +270,14 @@ export function CentralInventoryTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Expiry Date
+                        {t('inventory.fields.expiryDate')}
                         {sortBy === 'expiryDate' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden xl:table-cell">
-                      Updated
+                      {t('inventory.fields.updated')}
                     </th>
                     <th className="px-5 py-3 w-16" />
                   </tr>
@@ -296,7 +298,7 @@ export function CentralInventoryTab() {
                             <span className="font-medium text-slate-800 dark:text-slate-200">
                               {entry.itemId?.itemName ?? '—'}
                             </span>
-                            {lowStock && <Badge variant="warning">Low Stock</Badge>}
+                            {lowStock && <Badge variant="warning">{t('inventory.fields.lowStock')}</Badge>}
                           </div>
                         </td>
                         <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
@@ -349,21 +351,21 @@ export function CentralInventoryTab() {
                                     : 'text-slate-500 dark:text-slate-400',
                                 )}
                               >
-                                {new Date(entry.expiryDate).toLocaleDateString('en-IN', {
+                                {new Date(entry.expiryDate).toLocaleDateString(i18n.language, {
                                   day: '2-digit',
                                   month: 'short',
                                   year: 'numeric',
                                 })}
                               </span>
-                              {expired && <Badge variant="danger">Expired</Badge>}
-                              {expiring && <Badge variant="warning">Soon</Badge>}
+                              {expired && <Badge variant="danger">{t('inventory.fields.expired')}</Badge>}
+                              {expiring && <Badge variant="warning">{t('inventory.fields.soon')}</Badge>}
                             </div>
                           ) : (
                             <span className="text-slate-400 dark:text-slate-500">—</span>
                           )}
                         </td>
                         <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 text-xs hidden xl:table-cell">
-                          {new Date(entry.updatedAt).toLocaleDateString('en-IN', {
+                          {new Date(entry.updatedAt).toLocaleDateString(i18n.language, {
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric',
@@ -374,14 +376,14 @@ export function CentralInventoryTab() {
                             <button
                               onClick={() => setViewEntry(entry)}
                               className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-primary-500 transition"
-                              title="View Details"
+                              title={t('common.viewDetails')}
                             >
                               <Eye size={14} />
                             </button>
                             <button
                               onClick={() => handleRemove(entry._id)}
                               className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition"
-                              title="Remove entry"
+                              title={t('inventory.central.removeEntry')}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -399,9 +401,9 @@ export function CentralInventoryTab() {
             <div className="text-center py-16 text-slate-400 dark:text-slate-500">
               <Warehouse size={36} className="mx-auto mb-3 opacity-30" />
               <p className="font-medium text-slate-500 dark:text-slate-400">
-                No central stock entries found
+                {t('inventory.central.noStockFound')}
               </p>
-              <p className="text-sm mt-1">Try resetting filters or search query.</p>
+              <p className="text-sm mt-1">{t('inventory.central.noStockFoundDesc')}</p>
             </div>
           )}
 
@@ -419,7 +421,7 @@ export function CentralInventoryTab() {
         </div>
       </div>
 
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Central Stock">
+      <Modal open={addOpen} onClose={() => setAddOpen(false)} title={t('inventory.central.addStock')}>
         <AddStockForm onClose={() => setAddOpen(false)} />
       </Modal>
 
@@ -427,22 +429,22 @@ export function CentralInventoryTab() {
         <InventoryDetailModal
           open={true}
           onClose={() => setViewEntry(null)}
-          title="Central Stock Details"
+          title={t('inventory.central.detailsTitle')}
           fields={[
-            { label: 'Item Name', value: viewEntry.itemId?.itemName },
-            { label: 'Category', value: viewEntry.itemId?.category },
-            { label: 'Batch No', value: viewEntry.batchNo || '—' },
-            { label: 'Available Qty', value: viewEntry.availableQty.toLocaleString() },
-            { label: 'Damaged Qty', value: viewEntry.damagedQty.toLocaleString() },
+            { label: t('inventory.fields.itemName'), value: viewEntry.itemId?.itemName },
+            { label: t('inventory.fields.category'), value: viewEntry.itemId?.category ? t(`inventory.categories.${viewEntry.itemId.category}`) : '—' },
+            { label: t('inventory.fields.batchNo'), value: viewEntry.batchNo || '—' },
+            { label: t('inventory.fields.available'), value: viewEntry.availableQty.toLocaleString() },
+            { label: t('inventory.fields.damaged'), value: viewEntry.damagedQty.toLocaleString() },
             {
-              label: 'Expiry Date',
+              label: t('inventory.fields.expiryDate'),
               value: viewEntry.expiryDate
-                ? new Date(viewEntry.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                ? new Date(viewEntry.expiryDate).toLocaleDateString(i18n.language, { day: '2-digit', month: 'short', year: 'numeric' })
                 : '—',
             },
             {
-              label: 'Last Updated',
-              value: new Date(viewEntry.updatedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+              label: t('inventory.fields.updated'),
+              value: new Date(viewEntry.updatedAt).toLocaleDateString(i18n.language, { day: '2-digit', month: 'short', year: 'numeric' }),
             },
           ]}
         />

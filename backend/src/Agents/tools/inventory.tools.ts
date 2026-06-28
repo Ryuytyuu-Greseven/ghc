@@ -1,38 +1,18 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { httpClient } from '../../common/services/http.service';
+import { appInstance } from '../../main';
+import { InventoryMasterService } from '../../inventory/inventory-master/inventory-master.service';
+import { CentralInventoryService } from '../../inventory/central-inventory/central-inventory.service';
+import { BranchInventoryService } from '../../inventory/branch-inventory/branch-inventory.service';
+import { InventoryRequestsService } from '../../inventory/inventory-requests/inventory-requests.service';
+import { InventoryTransactionsService } from '../../inventory/inventory-transactions/inventory-transactions.service';
+import { HospitalsService } from '../../hospitals/hospitals.service';
 
-const BASE = process.env.API_BASE_URL ?? 'http://localhost:3000';
-
-async function fetch(url: string, init?: any) {
-  const path = url.startsWith(BASE) ? url.substring(BASE.length) : url;
-  const method = init?.method ?? 'GET';
-  const headers = init?.headers;
-  const data = init?.body ? JSON.parse(init.body) : undefined;
-
-  const res = await httpClient.request({
-    url: path,
-    method,
-    headers,
-    data,
-  });
-
-  return {
-    ok: res.status >= 200 && res.status < 300,
-    status: res.status,
-    json: async () => res.data,
-  };
-}
-
-const listInventoryMasters = tool(
+export const listInventoryMasters = tool(
   async ({ query, category, status }) => {
-    const params = new URLSearchParams();
-    if (query) params.append('q', query);
-    if (category) params.append('category', category);
-    if (status) params.append('status', status);
-    
-    const res = await fetch(`${BASE}/inventory-master?${params.toString()}`);
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(InventoryMasterService);
+    const result = await service.findAll({ search: query, q: query, category, status });
+    return JSON.stringify(result);
   },
   {
     name: 'list_inventory_masters',
@@ -45,10 +25,11 @@ const listInventoryMasters = tool(
   },
 );
 
-const getInventoryMaster = tool(
+export const getInventoryMaster = tool(
   async ({ id }) => {
-    const res = await fetch(`${BASE}/inventory-master/${id}`);
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(InventoryMasterService);
+    const result = await service.findOne(id);
+    return JSON.stringify(result);
   },
   {
     name: 'get_inventory_master',
@@ -59,36 +40,28 @@ const getInventoryMaster = tool(
   },
 );
 
-const createInventoryMaster = tool(
+export const createInventoryMaster = tool(
   async (data) => {
-    const res = await fetch(`${BASE}/inventory-master`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(InventoryMasterService);
+    const result = await service.create(data);
+    return JSON.stringify(result);
   },
   {
     name: 'create_inventory_master',
     description: 'Create a new item definition in the inventory master catalog',
     schema: z.object({
-      itemCode: z.string().describe('Unique item code, e.g. PARA500, SYR2ML'),
       itemName: z.string().describe('Descriptive name of the item'),
       category: z.string().describe('Category, e.g. Medicine, Equipment, Consumable, Surgical, Diagnostic, Other'),
-      unit: z.string().describe('Measurement unit, e.g. Box, Bottle, Pack, Vial'),
       status: z.string().optional().describe('Status, Active or Inactive. Defaults to Active'),
     }),
   },
 );
 
-const updateInventoryMaster = tool(
+export const updateInventoryMaster = tool(
   async ({ id, ...data }) => {
-    const res = await fetch(`${BASE}/inventory-master/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(InventoryMasterService);
+    const result = await service.update(id, data);
+    return JSON.stringify(result);
   },
   {
     name: 'update_inventory_master',
@@ -97,16 +70,16 @@ const updateInventoryMaster = tool(
       id: z.string().describe('MongoDB ObjectId of the item to update'),
       itemName: z.string().optional(),
       category: z.string().optional(),
-      unit: z.string().optional(),
       status: z.string().optional(),
     }),
   },
 );
 
-const deleteInventoryMaster = tool(
+export const deleteInventoryMaster = tool(
   async ({ id }) => {
-    const res = await fetch(`${BASE}/inventory-master/${id}`, { method: 'DELETE' });
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(InventoryMasterService);
+    const result = await service.softDelete(id);
+    return JSON.stringify(result);
   },
   {
     name: 'delete_inventory_master',
@@ -117,23 +90,49 @@ const deleteInventoryMaster = tool(
   },
 );
 
-const listCentralInventory = tool(
-  async () => {
-    const res = await fetch(`${BASE}/central-inventory`);
-    return JSON.stringify(await res.json());
+const STATIC_CATEGORIES = ['Medicine', 'Equipment', 'Consumable', 'Surgical', 'Diagnostic', 'Other'];
+
+function normalizeCategory(category?: string): string | undefined {
+  if (!category) return undefined;
+  const lower = category.toLowerCase().trim();
+  const matched = STATIC_CATEGORIES.find(
+    (c) =>
+      c.toLowerCase() === lower ||
+      c.toLowerCase() + 's' === lower ||
+      (c.toLowerCase().endsWith('s') && c.toLowerCase().slice(0, -1) === lower)
+  );
+  return matched || category;
+}
+
+export const listCentralInventory = tool(
+  async ({ expiringSoon, pageSize, query, category }) => {
+    const service = appInstance.get(CentralInventoryService);
+    const result = await service.findAll({
+      expiringSoon,
+      pageSize,
+      search: query,
+      q: query,
+      category: normalizeCategory(category),
+    });
+    return JSON.stringify(result);
   },
   {
     name: 'list_central_inventory',
-    description: 'List all stock levels, batch numbers, and expiries in the Central Store (Head Office warehouse)',
-    schema: z.object({}),
+    description: 'List all stock levels, batch numbers, and expiries in the Central Store (Head Office warehouse). Can optionally search by item name/code, filter by category, or find expiring items.',
+    schema: z.object({
+      query: z.string().optional().describe('Search query for item name or item code'),
+      category: z.string().optional().describe('Category name e.g. Medicine, Equipment, Consumable, Surgical, Diagnostic, Other'),
+      expiringSoon: z.boolean().optional().describe('Whether to only show items expiring soon'),
+      pageSize: z.number().optional().describe('Page size limit for central inventory list'),
+    }),
   },
 );
 
-const getLowStockCentral = tool(
+export const getLowStockCentral = tool(
   async ({ threshold }) => {
-    const limit = threshold ?? 50;
-    const res = await fetch(`${BASE}/central-inventory/low-stock?threshold=${limit}`);
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(CentralInventoryService);
+    const result = await service.findLowStock(threshold ?? 50);
+    return JSON.stringify(result);
   },
   {
     name: 'get_low_stock_central',
@@ -144,14 +143,11 @@ const getLowStockCentral = tool(
   },
 );
 
-const addCentralStock = tool(
+export const addCentralStock = tool(
   async (data) => {
-    const res = await fetch(`${BASE}/central-inventory`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, performedBy: data.performedBy ?? 'Agent' }),
-    });
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(CentralInventoryService);
+    const result = await service.addStock({ ...data, performedBy: data.performedBy ?? 'Agent' });
+    return JSON.stringify(result);
   },
   {
     name: 'add_central_stock',
@@ -167,24 +163,51 @@ const addCentralStock = tool(
   },
 );
 
-const listBranchStock = tool(
-  async ({ branchId }) => {
-    const res = await fetch(`${BASE}/branch-inventory/branch/${branchId}`);
-    return JSON.stringify(await res.json());
+export const listBranchStock = tool(
+  async ({ branchId, query, category }) => {
+    const service = appInstance.get(BranchInventoryService);
+
+    // Resolve branchId/name if needed
+    let resolvedBranchId = branchId;
+    if (branchId && !branchId.match(/^[0-9a-fA-F]{24}$/)) {
+      try {
+        const hospitalService = appInstance.get(HospitalsService);
+        const res = (await hospitalService.getAllHospitals()) as any;
+        const hospitals = Array.isArray(res) ? res : (res?.data ?? []);
+        const matched = hospitals.find(
+          (h: any) =>
+            h.name.toLowerCase().includes(branchId.toLowerCase()) ||
+            h.name.toLowerCase().replace(/[\s-_]+/g, '').includes(branchId.toLowerCase().replace(/[\s-_]+/g, ''))
+        );
+        if (matched) {
+          resolvedBranchId = matched._id.toString();
+        }
+      } catch {}
+    }
+
+    const result = await service.findByBranch(resolvedBranchId, {
+      search: query,
+      q: query,
+      category: normalizeCategory(category),
+    });
+    return JSON.stringify(result);
   },
   {
     name: 'list_branch_stock',
-    description: 'List all stock levels, batch numbers, and expiries at a specific branch hospital/PHC/CHC',
+    description: 'List stock levels, batch numbers, and expiries at a specific branch hospital/PHC/CHC. Can optionally search by item name/code or filter by category.',
     schema: z.object({
-      branchId: z.string().describe('Branch ID (e.g. h1, h2, h3) or MongoDB ObjectId of the hospital'),
+      branchId: z.string().describe('Branch ID (e.g. h1, h2, h3) or name (e.g. PHC A) of the hospital'),
+      query: z.string().optional().describe('Search query for item name or item code'),
+      category: z.string().optional().describe('Category name e.g. Medicine, Equipment, Consumable, Surgical, Diagnostic, Other'),
     }),
   },
 );
 
-const getItemAvailability = tool(
+export const getItemAvailability = tool(
   async ({ itemId }) => {
-    const res = await fetch(`${BASE}/branch-inventory/item/${itemId}`);
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(BranchInventoryService);
+    const result = await service.findByItem(itemId);
+    return JSON.stringify(result);
   },
   {
     name: 'get_item_availability',
@@ -195,33 +218,46 @@ const getItemAvailability = tool(
   },
 );
 
-const listInventoryRequests = tool(
+export const listInventoryRequests = tool(
   async ({ status, branchId }) => {
-    const params = new URLSearchParams();
-    if (status) params.append('status', status);
-    if (branchId) params.append('branchId', branchId);
-    
-    const res = await fetch(`${BASE}/inventory-requests?${params.toString()}`);
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(InventoryRequestsService);
+
+    // Resolve branchId/name if needed
+    let resolvedBranchId = branchId;
+    if (branchId && !branchId.match(/^[0-9a-fA-F]{24}$/)) {
+      try {
+        const hospitalService = appInstance.get(HospitalsService);
+        const res = (await hospitalService.getAllHospitals()) as any;
+        const hospitals = Array.isArray(res) ? res : (res?.data ?? []);
+        const matched = hospitals.find(
+          (h: any) =>
+            h.name.toLowerCase().includes(branchId.toLowerCase()) ||
+            h.name.toLowerCase().replace(/[\s-_]+/g, '').includes(branchId.toLowerCase().replace(/[\s-_]+/g, ''))
+        );
+        if (matched) {
+          resolvedBranchId = matched._id.toString();
+        }
+      } catch {}
+    }
+
+    const result = await service.findAll({ status, branchId: resolvedBranchId });
+    return JSON.stringify(result);
   },
   {
     name: 'list_inventory_requests',
-    description: 'List branch inventory transfer requests. Can filter by status (Pending, Approved, Rejected, Partial) or branchId.',
+    description: 'List branch inventory transfer requests. Can filter by status (Pending, Approved, Rejected, Partial) or branchId/branchName.',
     schema: z.object({
       status: z.string().optional().describe('Status e.g. Pending, Approved, Rejected, Partial'),
-      branchId: z.string().optional().describe('Branch ID (e.g. h1, h2)'),
+      branchId: z.string().optional().describe('Branch ID (e.g. h1, h2) or name (e.g. PHC A)'),
     }),
   },
 );
 
-const createInventoryRequest = tool(
+export const createInventoryRequest = tool(
   async (data) => {
-    const res = await fetch(`${BASE}/inventory-requests`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(InventoryRequestsService);
+    const result = await service.create(data);
+    return JSON.stringify(result);
   },
   {
     name: 'create_inventory_request',
@@ -238,14 +274,11 @@ const createInventoryRequest = tool(
   },
 );
 
-const approveInventoryRequest = tool(
+export const approveInventoryRequest = tool(
   async ({ id, approvedItems, remarks, performedBy }) => {
-    const res = await fetch(`${BASE}/inventory-requests/${id}/approve`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ approvedItems, remarks, performedBy: performedBy ?? 'Agent' }),
-    });
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(InventoryRequestsService);
+    const result = await service.approve(id, { approvedItems, remarks, performedBy: performedBy ?? 'Agent' });
+    return JSON.stringify(result);
   },
   {
     name: 'approve_inventory_request',
@@ -263,14 +296,11 @@ const approveInventoryRequest = tool(
   },
 );
 
-const rejectInventoryRequest = tool(
+export const rejectInventoryRequest = tool(
   async ({ id, remarks }) => {
-    const res = await fetch(`${BASE}/inventory-requests/${id}/reject`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ remarks }),
-    });
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(InventoryRequestsService);
+    const result = await service.reject(id, { remarks });
+    return JSON.stringify(result);
   },
   {
     name: 'reject_inventory_request',
@@ -282,17 +312,17 @@ const rejectInventoryRequest = tool(
   },
 );
 
-const listInventoryTransactions = tool(
+export const listInventoryTransactions = tool(
   async ({ type, itemId, location, fromDate, toDate }) => {
-    const params = new URLSearchParams();
-    if (type) params.append('type', type);
-    if (itemId) params.append('itemId', itemId);
-    if (location) params.append('location', location);
-    if (fromDate) params.append('from', fromDate);
-    if (toDate) params.append('to', toDate);
-    
-    const res = await fetch(`${BASE}/inventory-transactions?${params.toString()}`);
-    return JSON.stringify(await res.json());
+    const service = appInstance.get(InventoryTransactionsService);
+    const result = await service.findAll({
+      transactionType: type,
+      itemId,
+      branchId: location,
+      fromDate,
+      toDate,
+    });
+    return JSON.stringify(result);
   },
   {
     name: 'list_inventory_transactions',

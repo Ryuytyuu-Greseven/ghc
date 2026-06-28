@@ -6,6 +6,7 @@ import { InventoryDetailModal } from './InventoryDetailModal';
 import { useApp } from '../../context/AppContext';
 import { useInventory } from '../../context/InventoryContext';
 import { PaginationControls } from '../../components/ui/PaginationControls';
+import { useTranslation } from 'react-i18next';
 import { clsx } from 'clsx';
 
 const isExpired = (date: string | null): boolean => {
@@ -19,6 +20,7 @@ const isExpiringSoon = (date: string | null): boolean => {
 };
 
 export function BranchInventoryTab() {
+  const { t, i18n } = useTranslation();
   const { hospitals } = useApp();
   const { branchStock, branchPagination, loadingBranch, error, actionError, clearActionError, loadBranchStock } = useInventory();
   const [selectedBranchId, setSelectedBranchId] = useState('');
@@ -96,19 +98,18 @@ export function BranchInventoryTab() {
         <div className="flex items-start gap-3 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl px-4 py-3 shadow-sm">
           <Info size={16} className="text-cyan-600 dark:text-cyan-400 mt-0.5 shrink-0" />
           <p className="text-sm text-cyan-700 dark:text-cyan-300">
-            Branch stock can only be updated through approved inventory requests. This view is
-            read-only.
+            {t('inventory.branch.infoBanner')}
           </p>
         </div>
 
         {/* Branch selector */}
         <div className="max-w-sm">
           <CustomSelect
-            label="Select Branch"
+            label={t('inventory.branch.selectBranch')}
             value={selectedBranchId}
             onChange={(e) => handleBranchChange(e.target.value)}
             options={branchOptions}
-            placeholder="Choose a branch…"
+            placeholder={t('inventory.branch.chooseBranchPlaceholder')}
           />
         </div>
 
@@ -123,7 +124,7 @@ export function BranchInventoryTab() {
               />
               <input
                 type="text"
-                placeholder="Search branch stock..."
+                placeholder={t('inventory.branch.searchPlaceholder')}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
@@ -140,13 +141,13 @@ export function BranchInventoryTab() {
               }}
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
-              <option value="All">All Categories</option>
-              <option value="Medicine">Medicine</option>
-              <option value="Equipment">Equipment</option>
-              <option value="Consumable">Consumable</option>
-              <option value="Surgical">Surgical</option>
-              <option value="Diagnostic">Diagnostic</option>
-              <option value="Other">Other</option>
+              <option value="All">{t('inventory.central.allCategories')}</option>
+              <option value="Medicine">{t('inventory.categories.Medicine')}</option>
+              <option value="Equipment">{t('inventory.categories.Equipment')}</option>
+              <option value="Consumable">{t('inventory.categories.Consumable')}</option>
+              <option value="Surgical">{t('inventory.categories.Surgical')}</option>
+              <option value="Diagnostic">{t('inventory.categories.Diagnostic')}</option>
+              <option value="Other">{t('inventory.categories.Other')}</option>
             </select>
 
             {/* Alert/Type filter */}
@@ -158,10 +159,10 @@ export function BranchInventoryTab() {
               }}
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
-              <option value="All">All Stock</option>
-              <option value="Low Stock">Low Stock Alerts</option>
-              <option value="Expired">Expired Stock</option>
-              <option value="Expiring Soon">Expiring Soon (90d)</option>
+              <option value="All">{t('inventory.central.allStock')}</option>
+              <option value="Low Stock">{t('inventory.central.lowStockAlerts')}</option>
+              <option value="Expired">{t('inventory.central.expiredStock')}</option>
+              <option value="Expiring Soon">{t('inventory.central.expiringSoon90')}</option>
             </select>
           </div>
         )}
@@ -187,10 +188,10 @@ export function BranchInventoryTab() {
           <div className="text-center py-16 text-slate-400 dark:text-slate-500">
             <GitBranch size={36} className="mx-auto mb-3 opacity-30" />
             <p className="font-medium text-slate-500 dark:text-slate-400">
-              Select a branch to view its inventory
+              {t('inventory.branch.selectBranchPrompt')}
             </p>
             <p className="text-sm mt-1">
-              Choose a branch from the dropdown above to see its current stock.
+              {t('inventory.branch.selectBranchPromptDesc')}
             </p>
           </div>
         ) : (
@@ -206,10 +207,10 @@ export function BranchInventoryTab() {
                     <tr>
                       <th
                         onClick={() => handleSort('itemName')}
-                        className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none select-none transition-colors"
+                        className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                       >
                         <div className="flex items-center gap-1">
-                          Item Name
+                          {t('inventory.fields.itemName')}
                           {sortBy === 'itemName' && (
                             <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                           )}
@@ -220,7 +221,7 @@ export function BranchInventoryTab() {
                         className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                       >
                         <div className="flex items-center gap-1">
-                          Batch No
+                          {t('inventory.fields.batchNo')}
                           {sortBy === 'batchNo' && (
                             <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                           )}
@@ -231,7 +232,7 @@ export function BranchInventoryTab() {
                         className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                       >
                         <div className="flex items-center gap-1">
-                          Available
+                          {t('inventory.fields.available')}
                           {sortBy === 'availableQty' && (
                             <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                           )}
@@ -242,7 +243,7 @@ export function BranchInventoryTab() {
                         className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none hidden lg:table-cell transition-colors"
                       >
                         <div className="flex items-center gap-1">
-                          Damaged
+                          {t('inventory.fields.damaged')}
                           {sortBy === 'damagedQty' && (
                             <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                           )}
@@ -253,7 +254,7 @@ export function BranchInventoryTab() {
                         className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                       >
                         <div className="flex items-center gap-1">
-                          Expiry Date
+                          {t('inventory.fields.expiryDate')}
                           {sortBy === 'expiryDate' && (
                             <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                           )}
@@ -277,7 +278,7 @@ export function BranchInventoryTab() {
                               <span className="font-medium text-slate-800 dark:text-slate-200">
                                 {entry.itemId?.itemName ?? '—'}
                               </span>
-                              {lowStock && <Badge variant="warning">Low</Badge>}
+                              {lowStock && <Badge variant="warning">{t('inventory.fields.lowStock')}</Badge>}
                             </div>
                           </td>
                           <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
@@ -321,14 +322,14 @@ export function BranchInventoryTab() {
                                       : 'text-slate-500 dark:text-slate-400',
                                   )}
                                 >
-                                  {new Date(entry.expiryDate).toLocaleDateString('en-IN', {
+                                  {new Date(entry.expiryDate).toLocaleDateString(i18n.language, {
                                     day: '2-digit',
                                     month: 'short',
                                     year: 'numeric',
                                   })}
                                 </span>
-                                {expired && <Badge variant="danger">Expired</Badge>}
-                                {expiring && <Badge variant="warning">Soon</Badge>}
+                                {expired && <Badge variant="danger">{t('inventory.fields.expired')}</Badge>}
+                                {expiring && <Badge variant="warning">{t('inventory.fields.soon')}</Badge>}
                               </div>
                             ) : (
                               <span className="text-slate-400 dark:text-slate-500">—</span>
@@ -338,7 +339,7 @@ export function BranchInventoryTab() {
                             <button
                               onClick={() => setViewEntry(entry)}
                               className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-primary-500 transition"
-                              title="View Details"
+                              title={t('common.viewDetails')}
                             >
                               <Eye size={14} />
                             </button>
@@ -355,9 +356,9 @@ export function BranchInventoryTab() {
               <div className="text-center py-16 text-slate-400 dark:text-slate-500">
                 <GitBranch size={36} className="mx-auto mb-3 opacity-30" />
                 <p className="font-medium text-slate-500 dark:text-slate-400">
-                  No stock found for this branch
+                  {t('inventory.branch.noStockFound')}
                 </p>
-                <p className="text-sm mt-1">Try changing the filter or search query.</p>
+                <p className="text-sm mt-1">{t('inventory.branch.noStockFoundDesc')}</p>
               </div>
             )}
 
@@ -380,17 +381,17 @@ export function BranchInventoryTab() {
         <InventoryDetailModal
           open={true}
           onClose={() => setViewEntry(null)}
-          title="Branch Stock Details"
+          title={t('inventory.branch.detailsTitle')}
           fields={[
-            { label: 'Item Name', value: viewEntry.itemId?.itemName },
-            { label: 'Category', value: viewEntry.itemId?.category },
-            { label: 'Batch No', value: viewEntry.batchNo || '—' },
-            { label: 'Available Qty', value: viewEntry.availableQty.toLocaleString() },
-            { label: 'Damaged Qty', value: viewEntry.damagedQty.toLocaleString() },
+            { label: t('inventory.fields.itemName'), value: viewEntry.itemId?.itemName },
+            { label: t('inventory.fields.category'), value: viewEntry.itemId?.category ? t(`inventory.categories.${viewEntry.itemId.category}`) : '—' },
+            { label: t('inventory.fields.batchNo'), value: viewEntry.batchNo || '—' },
+            { label: t('inventory.fields.available'), value: viewEntry.availableQty.toLocaleString() },
+            { label: t('inventory.fields.damaged'), value: viewEntry.damagedQty.toLocaleString() },
             {
-              label: 'Expiry Date',
+              label: t('inventory.fields.expiryDate'),
               value: viewEntry.expiryDate
-                ? new Date(viewEntry.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                ? new Date(viewEntry.expiryDate).toLocaleDateString(i18n.language, { day: '2-digit', month: 'short', year: 'numeric' })
                 : '—',
             },
           ]}
