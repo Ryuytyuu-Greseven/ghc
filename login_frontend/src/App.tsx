@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Lock, User, AlertCircle, Loader2, ShieldCheck, Languages, ChevronDown } from 'lucide-react';
 import logo from './assets/logo.png';
-import { environment } from './config/environment';
+import { environment } from '@env/environment';
 import { useTranslation } from 'react-i18next';
 
 export default function App() {

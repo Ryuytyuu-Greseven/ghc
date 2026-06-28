@@ -10,7 +10,13 @@ process.on('uncaughtException', (err, origin) => {
 export let appInstance: INestApplication;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  // shall change to actual domain later
+  app.enableCors({
+    origin: ['https://ghc-login.web.app', 'https://project-3857994f-2565-4c14-9a7.web.app'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, Authorization',
+    credentials: true,
+  });
   appInstance = app;
   await app.listen(process.env.PORT ?? 3000);
 }
