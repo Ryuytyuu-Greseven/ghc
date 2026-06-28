@@ -5,6 +5,8 @@ import { en } from './locales/en';
 import { hi } from './locales/hi';
 import { te } from './locales/te';
 import { bn } from './locales/bn';
+import { kn } from './locales/kn';
+import { ta } from './locales/ta';
 
 i18n
   .use(LanguageDetector)
@@ -15,6 +17,8 @@ i18n
       hi,
       te,
       bn,
+      kn,
+      ta,
     },
     fallbackLng: 'en',
     detection: {

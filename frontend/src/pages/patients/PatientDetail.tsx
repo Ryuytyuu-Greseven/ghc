@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, CalendarDays, Pill, Plus, UserRound } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
@@ -60,9 +61,10 @@ function getVisitOrdinal(index: number) {
 }
 
 function PatientDetailSkeleton() {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col h-full">
-      <Header title="Loading..." subtitle="Loading patient visit history" />
+      <Header title={t('common.loading')} subtitle={t('patients.detail.loadingSubtitle')} />
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-5">
         <div className="max-w-screen-2xl mx-auto space-y-5 animate-pulse">
           <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-700" />
@@ -133,6 +135,7 @@ function VisitHistorySkeleton() {
 }
 
 export function PatientDetail() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const { patients, loading: appLoading } = useApp();
   const patient = patients.find(p => p.id === id);
@@ -161,7 +164,7 @@ export function PatientDetail() {
       try {
         setLoading(true);
         const res = await authFetch(`${API_BASE}/patient-data/by-patient/${id}`);
-        if (!res.ok) throw new Error('Failed to load patient history');
+        if (!res.ok) throw new Error(t('patients.detail.loadError'));
         const data = await res.json();
         setHistory(data.map(mapPatientDataFromBackend));
       } catch (err) {
@@ -185,7 +188,7 @@ export function PatientDetail() {
       try {
         setLoadingDoctors(true);
         const res = await authFetch(`${API_BASE}/staff/available-doctors?date=${encodeURIComponent(form.visitDate)}`);
-        if (!res.ok) throw new Error('Failed to load available doctors');
+        if (!res.ok) throw new Error(t('patients.detail.loadDoctorsError'));
         const data = await res.json();
         if (!active) return;
 
@@ -205,7 +208,7 @@ export function PatientDetail() {
       } catch (err) {
         if (!active) return;
         setDoctorOptions([]);
-        setError(err instanceof Error ? err.message : 'Failed to load available doctors');
+        setError(err instanceof Error ? err.message : t('patients.detail.loadDoctorsError'));
       } finally {
         if (active) setLoadingDoctors(false);
       }
@@ -325,12 +328,12 @@ export function PatientDetail() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to save medicine details');
+      if (!res.ok) throw new Error(t('patients.detail.saveMedicineError'));
       const updated = mapPatientDataFromBackend(await res.json());
       setHistory(current => current.map(item => (item.id === updated.id ? updated : item)));
       setMedicineVisit(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save medicine details');
+      setError(err instanceof Error ? err.message : t('patients.detail.saveMedicineError'));
     }
   };
 
@@ -349,7 +352,7 @@ export function PatientDetail() {
     setVisitTouched(true);
 
     if (!form.problem.trim() || !form.visitDate || !form.doctor.trim()) {
-      setError('Problem, visit date, and doctor are required to save a visit.');
+      setError(t('patients.detail.validationError'));
       return;
     }
 
@@ -365,7 +368,7 @@ export function PatientDetail() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to save patient visit');
+      if (!res.ok) throw new Error(t('patients.detail.saveVisitError'));
       const created = mapPatientDataFromBackend(await res.json());
       setHistory(current => [created, ...current]);
       setForm({
@@ -375,7 +378,7 @@ export function PatientDetail() {
       });
       setVisitTouched(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save patient visit');
+      setError(err instanceof Error ? err.message : t('patients.detail.saveVisitError'));
     }
   };
 
@@ -387,11 +390,11 @@ export function PatientDetail() {
     return (
       <div className="p-8">
         <Link to="/patients" className="text-sm font-medium text-primary-600 hover:text-primary-700">
-          Back to patients
+          {t('patients.detail.backToPatients')}
         </Link>
         <div className="mt-16 text-center text-slate-400">
           <UserRound size={40} className="mx-auto mb-3 opacity-30" />
-          <p className="font-medium">Patient not found</p>
+          <p className="font-medium">{t('patients.detail.patientNotFound')}</p>
         </div>
       </div>
     );
@@ -402,7 +405,7 @@ export function PatientDetail() {
   return (
     <>
       <div className="flex flex-col h-full">
-        <Header title={patient.name} subtitle="Patient visit history and prescribed medicines" />
+        <Header title={patient.name} subtitle={t('patients.detail.subtitle')} />
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-5">
           <div className="max-w-screen-2xl mx-auto space-y-5">
@@ -410,7 +413,7 @@ export function PatientDetail() {
               to="/patients"
               className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary-600"
             >
-              <ArrowLeft size={16} /> Back to patients
+              <ArrowLeft size={16} /> {t('patients.detail.backToPatients')}
             </Link>
 
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5">
@@ -420,24 +423,24 @@ export function PatientDetail() {
                   <div>
                     <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{patient.name}</h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {patient.age} yrs · {patient.gender} · {patient.bloodGroup}
+                      {patient.age} {t('dashboard.yrs')} · {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)} · {patient.bloodGroup}
                     </p>
                   </div>
                   <Badge variant={patient.bedRequired ? 'danger' : 'success'}>
-                    {patient.bedRequired ? 'Bed Allocated' : 'No Bed Needed'}
+                    {patient.bedRequired ? t('patients.bedAllocated') : t('patients.noBedNeeded')}
                   </Badge>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 text-sm">
                   <div>
-                    <p className="text-slate-400">Phone</p>
+                    <p className="text-slate-400">{t('patients.phoneLabel')}</p>
                     <p className="font-medium text-slate-700 dark:text-slate-200">{patient.phone}</p>
                   </div>
                   <div>
-                    <p className="text-slate-400">Aadhaar</p>
+                    <p className="text-slate-400">{t('patients.aadhaarLabel')}</p>
                     <p className="font-medium text-slate-700 dark:text-slate-200">{patient.aadhaarNumber}</p>
                   </div>
                   <div>
-                    <p className="text-slate-400">Admitted</p>
+                    <p className="text-slate-400">{t('patients.admitted')}</p>
                     <p className="font-medium text-slate-700 dark:text-slate-200">{patient.admittedAt}</p>
                   </div>
                 </div>
@@ -461,7 +464,7 @@ export function PatientDetail() {
                       >
                         <div className="p-5 border-b border-slate-100 dark:border-slate-700">
                           <h3 className="font-semibold text-slate-800 dark:text-slate-100">
-                            {getVisitOrdinal(index)} Visit ({group.problem})
+                            {t('patients.detail.visitHeading', { count: index + 1, problem: group.problem })}
                           </h3>
                         </div>
                         <div className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -483,10 +486,10 @@ export function PatientDetail() {
                                       <Pill size={15} className="text-primary-500 mt-0.5" />
                                       <div>
                                         <p className="font-medium text-slate-700 dark:text-slate-200">
-                                          {visit.category ? getCategoryLabel(visit.category) : 'Medicine details pending'}
+                                          {visit.category ? t(`inventory.categories.${getCategoryLabel(visit.category)}`) : t('patients.detail.medicinePending')}
                                         </p>
                                         <p className="text-slate-500 dark:text-slate-400">
-                                          {visit.medicines.length > 0 ? visit.medicines.join(', ') : 'Click to add medicines'}
+                                          {visit.medicines.length > 0 ? visit.medicines.join(', ') : t('patients.detail.clickToAdd')}
                                         </p>
                                       </div>
                                     </div>
@@ -498,7 +501,7 @@ export function PatientDetail() {
                               );
                             })
                           ) : (
-                            <div className="p-5 text-sm text-slate-400">No visits found for this date.</div>
+                            <div className="p-5 text-sm text-slate-400">{t('patients.detail.noVisitsForDate')}</div>
                           )}
                         </div>
                       </section>
@@ -506,7 +509,7 @@ export function PatientDetail() {
                   })
                 ) : (
                   <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 text-center text-slate-400">
-                    No visit history yet.
+                    {t('patients.detail.noHistory')}
                   </div>
                 )}
               </div>
@@ -517,43 +520,43 @@ export function PatientDetail() {
               className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 h-fit space-y-4"
             >
               <div>
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">Add Visit</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Record visit reason and assigned doctor.</p>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('patients.detail.addVisit')}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t('patients.detail.recordVisitDesc')}</p>
               </div>
               <Input
-                label="Problem"
+                label={t('patients.detail.problemLabel')}
                 required
                 value={form.problem}
                 onChange={event => setForm(current => ({ ...current, problem: event.target.value }))}
                 onBlur={() => setVisitTouched(true)}
-                error={visitTouched && !form.problem.trim() ? 'Problem is required' : undefined}
-                placeholder="e.g. Fever"
+                error={visitTouched && !form.problem.trim() ? t('patients.detail.problemRequired') : undefined}
+                placeholder={t('patients.detail.problemPlaceholder')}
               />
               <Input
-                label="Visit Date"
+                label={t('patients.detail.visitDateLabel')}
                 type="date"
                 required
                 value={form.visitDate}
                 onChange={event => setForm(current => ({ ...current, visitDate: event.target.value }))}
                 onBlur={() => setVisitTouched(true)}
-                error={visitTouched && !form.visitDate ? 'Visit date is required' : undefined}
+                error={visitTouched && !form.visitDate ? t('patients.detail.visitDateRequired') : undefined}
               />
               <Select
-                label="Doctor"
+                label={t('patients.detail.doctorLabel')}
                 required
                 value={form.doctor}
                 onChange={event => setForm(current => ({ ...current, doctor: event.target.value }))}
                 onBlur={() => setVisitTouched(true)}
-                error={visitTouched && !form.doctor.trim() ? 'Doctor is required' : undefined}
+                error={visitTouched && !form.doctor.trim() ? t('patients.detail.doctorRequired') : undefined}
                 options={doctorOptions}
-                placeholder={loadingDoctors ? 'Loading doctors...' : '— Select doctor —'}
+                placeholder={loadingDoctors ? t('patients.detail.loadingDoctors') : t('patients.detail.selectDoctor')}
                 dropdownPlacement="up"
               />
               {!loadingDoctors && form.visitDate && doctorOptions.length === 0 && (
-                <p className="text-xs text-slate-400">No available doctors found for this date.</p>
+                <p className="text-xs text-slate-400">{t('patients.detail.noDoctors')}</p>
               )}
               <Button type="submit" className="w-full justify-center">
-                <Plus size={15} /> Save Visit
+                <Plus size={15} /> {t('patients.detail.saveVisit')}
               </Button>
             </form>
           </div>
@@ -564,7 +567,7 @@ export function PatientDetail() {
       <Modal
         open={!!medicineVisit}
         onClose={() => setMedicineVisit(null)}
-        title={medicineVisit ? `Medicine Details - ${medicineVisit.problem}` : 'Medicine Details'}
+        title={medicineVisit ? t('patients.detail.medicineDetailsWithProblem', { problem: medicineVisit.problem }) : t('patients.detail.medicineDetails')}
         size="md"
       >
         {medicineVisit && medicineDraft && (
@@ -581,18 +584,18 @@ export function PatientDetail() {
             </div>
 
             <Select
-              label="Medicine Category"
+              label={t('patients.detail.medicineCategory')}
               value={medicineDraft.category}
               onChange={event => handleMedicineCategoryChange(medicineVisit.id, event.target.value)}
-              options={categorySelectOptions}
-              placeholder="— Select category —"
+              options={categoryOptions.map(category => ({ value: category.id, label: t(`inventory.categories.${category.value}`) }))}
+              placeholder={t('patients.detail.selectCategory')}
             />
 
             <div className="space-y-2">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Medicines</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('patients.detail.medicinesTitle')}</p>
               <div className="flex flex-wrap gap-2">
                 {loadingMedicines ? (
-                  <p className="text-sm text-slate-400">Loading medicines...</p>
+                  <p className="text-sm text-slate-400">{t('patients.detail.loadingMedicines')}</p>
                 ) : medicineOptions.length > 0 ? (
                   medicineOptions.map(option => (
                     <button
@@ -610,25 +613,25 @@ export function PatientDetail() {
                   ))
                 ) : (
                   <p className="text-sm text-slate-400">
-                    {medicineDraft.category ? 'No medicines found for this category.' : 'Select a category to view medicines.'}
+                    {medicineDraft.category ? t('patients.detail.noMedicinesForCategory') : t('patients.detail.selectCategoryToView')}
                   </p>
                 )}
               </div>
             </div>
 
             <Input
-              label="Notes"
+              label={t('patients.detail.notesLabel')}
               value={medicineDraft.notes}
               onChange={event => setMedicineDraft(medicineVisit.id, { notes: event.target.value })}
-              placeholder="Symptoms, advice, or follow-up"
+              placeholder={t('patients.detail.notesPlaceholder')}
             />
 
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="secondary" onClick={() => setMedicineVisit(null)}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="button" onClick={() => saveMedicineDetails(medicineVisit)}>
-                Save Medicine Details
+                {t('patients.detail.saveMedicineDetails')}
               </Button>
             </div>
           </div>

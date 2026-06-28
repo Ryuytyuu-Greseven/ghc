@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bell, AlertTriangle, Info, CheckCircle, X, Check } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useTranslation } from 'react-i18next';
 
 type NotifType = 'warning' | 'info' | 'success';
 
@@ -78,6 +79,7 @@ const typeConfig: Record<
 };
 
 export function NotificationsPanel() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState<Notification[]>(INITIAL);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -120,7 +122,7 @@ export function NotificationsPanel() {
             ? 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
             : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
         )}
-        aria-label="Notifications"
+        aria-label={t('common.notifications')}
       >
         <Bell size={18} />
         {unreadCount > 0 && (
@@ -137,11 +139,11 @@ export function NotificationsPanel() {
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
-                Notifications
+                {t('common.notifications')}
               </h3>
               {unreadCount > 0 && (
                 <span className="bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 text-xs font-medium px-1.5 py-0.5 rounded-full">
-                  {unreadCount} new
+                  {unreadCount} {t('common.newNotif')}
                 </span>
               )}
             </div>
@@ -150,7 +152,7 @@ export function NotificationsPanel() {
                 onClick={markAllRead}
                 className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center gap-1 transition-colors"
               >
-                <Check size={12} /> Mark all read
+                <Check size={12} /> {t('common.markAllRead')}
               </button>
             )}
           </div>
@@ -160,7 +162,7 @@ export function NotificationsPanel() {
             {notifs.length === 0 ? (
               <div className="py-10 text-center text-slate-400 dark:text-slate-500">
                 <Bell size={24} className="mx-auto mb-2 opacity-30" />
-                <p className="text-sm">All caught up!</p>
+                <p className="text-sm">{t('common.allCaughtUp')}</p>
               </div>
             ) : (
               notifs.map(n => {
@@ -192,7 +194,7 @@ export function NotificationsPanel() {
                         <button
                           onClick={e => { e.stopPropagation(); dismiss(n.id); }}
                           className="shrink-0 p-0.5 rounded text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 opacity-0 group-hover:opacity-100 transition"
-                          title="Dismiss"
+                          title={t('common.dismiss')}
                         >
                           <X size={12} />
                         </button>
@@ -220,7 +222,7 @@ export function NotificationsPanel() {
                 onClick={() => setNotifs([])}
                 className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
               >
-                Clear all notifications
+                {t('common.clearAllNotifications')}
               </button>
             </div>
           )}

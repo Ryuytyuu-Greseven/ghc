@@ -373,7 +373,7 @@ export function HospitalList() {
                                   )}
                                 </>
                               ) : (
-                                <span className="text-slate-400 dark:text-slate-500 italic">None</span>
+                                <span className="text-slate-400 dark:text-slate-500 italic">{t('common.none')}</span>
                               )}
                             </div>
 

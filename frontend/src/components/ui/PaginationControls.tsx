@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { PaginationMeta } from '../../types';
 
 interface PaginationControlsProps {
@@ -12,6 +13,7 @@ export function PaginationControls({
   onPageChange,
   onPageSizeChange,
 }: PaginationControlsProps) {
+  const { t } = useTranslation();
   if (!meta || meta.totalPages <= 1) return null;
 
   const { page, pageSize, totalRecords, totalPages, hasNext, hasPrevious } = meta;
@@ -33,26 +35,26 @@ export function PaginationControls({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
       {/* Records count info */}
       <div className="text-xs text-slate-500 dark:text-slate-400">
-        Showing{' '}
+        {t('common.showing')}{' '}
         <span className="font-medium text-slate-800 dark:text-slate-200">
           {((page - 1) * pageSize + 1).toLocaleString()}
         </span>{' '}
-        to{' '}
+        {t('common.to')}{' '}
         <span className="font-medium text-slate-800 dark:text-slate-200">
           {Math.min(page * pageSize, totalRecords).toLocaleString()}
         </span>{' '}
-        of{' '}
+        {t('common.of')}{' '}
         <span className="font-medium text-slate-800 dark:text-slate-200">
           {totalRecords.toLocaleString()}
         </span>{' '}
-        records
+        {t('common.records')}
       </div>
 
       {/* Navigation and Page Size */}
       <div className="flex items-center gap-4">
         {onPageSizeChange && (
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-xs text-slate-500 dark:text-slate-400">Rows per page:</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">{t('common.rowsPerPage')}</span>
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
@@ -74,7 +76,7 @@ export function PaginationControls({
             disabled={!hasPrevious}
             onClick={() => onPageChange(page - 1)}
             className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-            title="Previous Page"
+            title={t('common.previousPage')}
           >
             <ChevronLeft size={16} />
           </button>
@@ -99,7 +101,7 @@ export function PaginationControls({
             disabled={!hasNext}
             onClick={() => onPageChange(page + 1)}
             className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-            title="Next Page"
+            title={t('common.nextPage')}
           >
             <ChevronRight size={16} />
           </button>
