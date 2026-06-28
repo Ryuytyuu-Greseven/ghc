@@ -18,6 +18,14 @@ export interface QueryConfig {
   objectIdFilters?: string[];
   sortMapping?: { [paramName: string]: string };
   defaultSort?: { field: string; order: 'asc' | 'desc' };
+  /**
+   * When true, the search term is matched using fuzzy regex:
+   * the original term + all single-character deletion variants are
+   * combined with $or so that a 1-character typo or DB spelling
+   * difference still resolves correctly (e.g. "paracetamol" matches
+   * "Paracetmol" stored in the DB).
+   */
+  fuzzySearch?: boolean;
 }
 
 @Injectable()
@@ -28,9 +36,25 @@ export class QueryService {
 
     // 1. Search (OR group over multiple fields)
     if (options.search && config.searchFields && config.searchFields.length > 0) {
-      filter.$or = config.searchFields.map((field) => ({
-        [field]: { $regex: options.search, $options: 'i' },
-      }));
+      if (config.fuzzySearch) {
+        // Build fuzzy patterns: original term + all single-char deletions.
+        // This tolerates a 1-character difference between the query and the
+        // stored value (typo, abbreviation, or DB spelling variation).
+        const term = options.search as string;
+        const variants = new Set<string>();
+        variants.add(term); // exact
+        for (let i = 0; i < term.length; i++) {
+          variants.add(term.slice(0, i) + term.slice(i + 1)); // delete char at i
+        }
+        const patterns = [...variants].map((v) => new RegExp(v, 'i'));
+        filter.$or = patterns.flatMap((re) =>
+          config.searchFields!.map((field) => ({ [field]: { $regex: re } }))
+        );
+      } else {
+        filter.$or = config.searchFields.map((field) => ({
+          [field]: { $regex: options.search, $options: 'i' },
+        }));
+      }
     }
 
     // 2. Exact Match Filters

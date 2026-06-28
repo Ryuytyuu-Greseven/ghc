@@ -65,6 +65,7 @@ export class CentralInventoryRepository {
     const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
       searchFields: ['item.itemName'],
       exactFilters: ['item.category', 'item.status', 'batchNo'],
+      fuzzySearch: true,
       sortMapping: {
         itemName: 'item.itemName',
       },
