@@ -12,15 +12,16 @@ import {
 import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
 import { useApp } from '../../context/AppContext';
+import { useTranslation } from 'react-i18next';
 
 const allNavItems = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/hospitals', label: 'Hospitals & Clinics', icon: Building2 },
-  { to: '/staff', label: 'Staff', icon: Users },
-  { to: '/patients', label: 'Patients', icon: UserRound },
-  { to: '/medicines', label: 'Medicines & Supplies', icon: Pill },
-  { to: '/availability', label: 'My Availability', icon: Calendar },
-  { to: '/transfers', label: 'Coverage & Transfers', icon: Shuffle },
+  { to: '/', key: 'dashboard', icon: LayoutDashboard, end: true },
+  { to: '/hospitals', key: 'hospitals', icon: Building2 },
+  { to: '/staff', key: 'staff', icon: Users },
+  { to: '/patients', key: 'patients', icon: UserRound },
+  { to: '/medicines', key: 'medicines', icon: Pill },
+  { to: '/availability', key: 'availability', icon: Calendar },
+  { to: '/transfers', key: 'transfers', icon: Shuffle },
 ];
 
 const roleNavItemsMap: Record<string, string[]> = {
@@ -37,6 +38,7 @@ const roleNavItemsMap: Record<string, string[]> = {
 export function Sidebar() {
   const { isOpen, close } = useSidebar();
   const { currentUser } = useApp();
+  const { t } = useTranslation();
 
   const role = currentUser?.role || 'Admin';
   const allowedPaths = roleNavItemsMap[role] || ['/', '/availability'];
@@ -74,9 +76,9 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         <p className="px-3 pb-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-          Main Menu
+          {t('common.mainMenu')}
         </p>
-        {filteredNavItems.map(({ to, label, icon: Icon, end }) => (
+        {filteredNavItems.map(({ to, key, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}
@@ -97,7 +99,7 @@ export function Sidebar() {
                   size={18}
                   className={clsx('shrink-0 transition-colors', isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500')}
                 />
-                {label}
+                {t(`nav.${key}`)}
               </>
             )}
           </NavLink>
@@ -111,7 +113,9 @@ export function Sidebar() {
         </div>
         <div className="min-w-0">
           <p className="text-slate-800 dark:text-white text-xs font-medium truncate">{currentUser?.username || 'User'}</p>
-          <p className="text-slate-500 dark:text-slate-400 text-xs truncate">{currentUser?.role || 'Staff'}</p>
+          <p className="text-slate-500 dark:text-slate-400 text-xs truncate">
+            {currentUser?.role ? t(`roles.${currentUser.role}`) : t('roles.Staff')}
+          </p>
         </div>
       </div>
     </aside>
