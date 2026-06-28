@@ -22,6 +22,7 @@ interface AppContextValue {
   updateHospital: (id: string, h: Partial<Hospital>) => Promise<void>;
   deleteHospital: (id: string) => void;
   getHospitalHistory: (id: string) => Promise<Hospital[]>;
+  getBedAllocationHistory: (id: string) => Promise<any[]>;
 
   addStaff: (s: Omit<Staff, 'id' | 'createdAt'>) => void;
   updateStaff: (id: string, s: Partial<Staff>) => void;
@@ -397,6 +398,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getBedAllocationHistory = async (id: string): Promise<any[]> => {
+    try {
+      return await hospitalApi.getBedAllocationHistory(id);
+    } catch (err) {
+      console.error('Failed to fetch bed allocation history:', err);
+      return [];
+    }
+  };
+
   const addStaff = async (s: Omit<Staff, 'id' | 'createdAt'>) => {
     try {
       const body = mapStaffToBackend(s);
@@ -563,7 +573,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider
       value={{
         hospitals, staff, patients, medicines, hospitalMedicines,
-        addHospital, updateHospital, deleteHospital, getHospitalHistory,
+        addHospital, updateHospital, deleteHospital, getHospitalHistory, getBedAllocationHistory,
         addStaff, updateStaff, deleteStaff, assignStaff,
         addPatient, updatePatient, deletePatient,
         addMedicine, updateMedicine, deleteMedicine,
