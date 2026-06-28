@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
@@ -6,40 +7,41 @@ import { useApp } from '../../context/AppContext';
 import { hospitalApi } from '../../services/hospitalApi';
 import type { Staff, StaffRole, Department } from '../../types';
 
-const roleOptions = [
-  { value: 'Doctor', label: 'Doctor' },
-  { value: 'Nurse', label: 'Nurse' },
-  { value: 'Receptionist', label: 'Receptionist' },
-  { value: 'Pharmacist', label: 'Pharmacist' },
-  { value: 'Lab Technician', label: 'Lab Technician' },
-  { value: 'Compounder', label: 'Compounder' },
-  { value: 'Cashier', label: 'Cashier' },
-];
-
-const departmentOptions = [
-  { value: 'General', label: 'General' },
-  { value: 'Cardiology', label: 'Cardiology' },
-  { value: 'Orthopedics', label: 'Orthopedics' },
-  { value: 'Pediatrics', label: 'Pediatrics' },
-  { value: 'Gynecology', label: 'Gynecology' },
-  { value: 'Dermatology', label: 'Dermatology' },
-  { value: 'Neurology', label: 'Neurology' },
-  { value: 'Radiology', label: 'Radiology' },
-  { value: 'Laboratory', label: 'Laboratory' },
-  { value: 'Pharmacy', label: 'Pharmacy' },
-  { value: 'Emergency', label: 'Emergency' },
-  { value: 'ICU', label: 'ICU' },
-  { value: 'Operation Theatre', label: 'Operation Theatre' },
-  { value: 'Administration', label: 'Administration' },
-];
-
 interface Props {
   initial: Staff | null;
   onClose: () => void;
 }
 
 export function StaffForm({ initial, onClose }: Props) {
+  const { t } = useTranslation();
   const { addStaff, updateStaff } = useApp();
+
+  const roleOptions = [
+    { value: 'Doctor', label: t('roles.Doctor') },
+    { value: 'Nurse', label: t('roles.Nurse') },
+    { value: 'Receptionist', label: t('roles.Receptionist') },
+    { value: 'Pharmacist', label: t('roles.Pharmacist') },
+    { value: 'Lab Technician', label: t('roles.Lab Technician') },
+    { value: 'Compounder', label: t('roles.Compounder') },
+    { value: 'Cashier', label: t('roles.Cashier') },
+  ];
+
+  const departmentOptions = [
+    { value: 'General', label: t('departments.General') },
+    { value: 'Cardiology', label: t('departments.Cardiology') },
+    { value: 'Orthopedics', label: t('departments.Orthopedics') },
+    { value: 'Pediatrics', label: t('departments.Pediatrics') },
+    { value: 'Gynecology', label: t('departments.Gynecology') },
+    { value: 'Dermatology', label: t('departments.Dermatology') },
+    { value: 'Neurology', label: t('departments.Neurology') },
+    { value: 'Radiology', label: t('departments.Radiology') },
+    { value: 'Laboratory', label: t('departments.Laboratory') },
+    { value: 'Pharmacy', label: t('departments.Pharmacy') },
+    { value: 'Emergency', label: t('departments.Emergency') },
+    { value: 'ICU', label: t('departments.ICU') },
+    { value: 'Operation Theatre', label: t('departments.Operation Theatre') },
+    { value: 'Administration', label: t('departments.Administration') },
+  ];
 
   const [form, setForm] = useState({
     firstName: initial?.firstName ?? (initial?.name ? initial.name.split(' ')[0] : ''),
@@ -150,81 +152,81 @@ export function StaffForm({ initial, onClose }: Props) {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* 1. Personal & Contact Details */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">1. Personal & Contact Details</h3>
+        <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">{t('staff.form.sectionPersonal')}</h3>
 
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="First Name"
+            label={t('staff.form.firstName')}
             required
             value={form.firstName}
             onChange={e => set('firstName', e.target.value)}
-            placeholder="e.g. Priya"
+            placeholder={t('staff.form.firstNamePlaceholder')}
           />
           <Input
-            label="Last Name"
+            label={t('staff.form.lastName')}
             value={form.lastName}
             onChange={e => set('lastName', e.target.value)}
-            placeholder="e.g. Sharma"
+            placeholder={t('staff.form.lastNamePlaceholder')}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Display Name"
+            label={t('staff.form.displayName')}
             value={form.displayName}
             onChange={e => set('displayName', e.target.value)}
-            placeholder="e.g. Dr. Priya"
+            placeholder={t('staff.form.displayNamePlaceholder')}
           />
           <Select
-            label="Gender"
+            label={t('staff.form.gender')}
             value={form.gender}
             onChange={e => set('gender', e.target.value)}
             options={[
-              { value: 'Male', label: 'Male' },
-              { value: 'Female', label: 'Female' },
-              { value: 'Other', label: 'Other' },
+              { value: 'Male', label: t('staff.form.genderMale') },
+              { value: 'Female', label: t('staff.form.genderFemale') },
+              { value: 'Other', label: t('staff.form.genderOther') },
             ]}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Date of Birth"
+            label={t('staff.form.dateOfBirth')}
             type="date"
             value={form.dateOfBirth}
             onChange={e => set('dateOfBirth', e.target.value)}
           />
           <Input
-            label="Mobile Number"
+            label={t('staff.form.mobileNumber')}
             required
             value={form.mobileNumber}
             onChange={e => set('mobileNumber', e.target.value)}
-            placeholder="e.g. +91 98000 00000"
+            placeholder={t('staff.form.mobilePlaceholder')}
           />
         </div>
 
         <Input
-          label="Email"
+          label={t('staff.form.email')}
           type="email"
           value={form.email}
           onChange={e => set('email', e.target.value)}
-          placeholder="name@ghc.health"
+          placeholder={t('staff.form.emailPlaceholder')}
         />
       </div>
 
       {/* 2. Employment & Facility Details */}
       <div className="space-y-4 border-t border-slate-100 pt-4">
-        <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">2. Employment & Facility</h3>
+        <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">{t('staff.form.sectionEmployment')}</h3>
 
         <div className="grid grid-cols-2 gap-4">
           <Select
-            label="Role"
+            label={t('staff.form.role')}
             value={form.role}
             onChange={e => set('role', e.target.value)}
             options={roleOptions}
           />
           <Select
-            label="Department"
+            label={t('staff.form.department')}
             value={form.department}
             onChange={e => set('department', e.target.value)}
             options={departmentOptions}
@@ -233,13 +235,13 @@ export function StaffForm({ initial, onClose }: Props) {
 
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Designation"
+            label={t('staff.form.designation')}
             value={form.designation}
             onChange={e => set('designation', e.target.value)}
-            placeholder="e.g. Senior Cardiologist"
+            placeholder={t('staff.form.designationPlaceholder')}
           />
           <Input
-            label="Joining Date"
+            label={t('staff.form.joiningDate')}
             type="date"
             value={form.joiningDate}
             onChange={e => set('joiningDate', e.target.value)}
@@ -247,22 +249,22 @@ export function StaffForm({ initial, onClose }: Props) {
         </div>
 
         <Select
-          label="Employment Type"
+          label={t('staff.form.employmentType')}
           value={form.employmentType}
           onChange={e => set('employmentType', e.target.value)}
           options={[
-            { value: 'Full Time', label: 'Full Time' },
-            { value: 'Part Time', label: 'Part Time' },
-            { value: 'Visiting', label: 'Visiting' },
+            { value: 'Full Time', label: t('staff.form.empFullTime') },
+            { value: 'Part Time', label: t('staff.form.empPartTime') },
+            { value: 'Visiting', label: t('staff.form.empVisiting') },
           ]}
         />
 
         <Select
-          label="Assign to Facility"
+          label={t('staff.form.assignToFacility')}
           value={form.assignedHospitalId}
           onChange={e => set('assignedHospitalId', e.target.value)}
           options={hospitalOptions}
-          placeholder="— Leave unassigned —"
+          placeholder={t('staff.form.leaveUnassigned')}
         />
 
         <div className="flex items-center gap-2 mt-2">
@@ -274,46 +276,46 @@ export function StaffForm({ initial, onClose }: Props) {
             className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500 cursor-pointer"
           />
           <label htmlFor="isMedicalIncharge" className="text-sm font-medium text-slate-700 dark:text-slate-300 select-none cursor-pointer">
-            Nominate as medical incharge
+            {t('staff.form.nominateIncharge')}
           </label>
         </div>
       </div>
 
       {/* 3. Address Details */}
       <div className="space-y-4 border-t border-slate-100 pt-4">
-        <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">3. Address Details</h3>
+        <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">{t('staff.form.sectionAddress')}</h3>
 
         <Input
-          label="Address Line 1"
+          label={t('staff.form.address1')}
           value={form.addressLine1}
           onChange={e => set('addressLine1', e.target.value)}
-          placeholder="Street address, P.O. box, company name"
+          placeholder={t('staff.form.address1Placeholder')}
         />
         <Input
-          label="Address Line 2"
+          label={t('staff.form.address2')}
           value={form.addressLine2}
           onChange={e => set('addressLine2', e.target.value)}
-          placeholder="Apartment, suite, unit, building, floor, etc."
+          placeholder={t('staff.form.address2Placeholder')}
         />
 
         <div className="grid grid-cols-3 gap-4">
           <Input
-            label="City"
+            label={t('staff.form.city')}
             value={form.city}
             onChange={e => set('city', e.target.value)}
-            placeholder="City"
+            placeholder={t('staff.form.cityPlaceholder')}
           />
           <Input
-            label="State"
+            label={t('staff.form.state')}
             value={form.state}
             onChange={e => set('state', e.target.value)}
-            placeholder="State"
+            placeholder={t('staff.form.statePlaceholder')}
           />
           <Input
-            label="Pincode"
+            label={t('staff.form.pincode')}
             value={form.pincode}
             onChange={e => set('pincode', e.target.value)}
-            placeholder="Pincode"
+            placeholder={t('staff.form.pincodePlaceholder')}
           />
         </div>
       </div>
@@ -321,37 +323,37 @@ export function StaffForm({ initial, onClose }: Props) {
       {/* 4. Role-Specific Details (Conditional) */}
       {(form.role === 'Doctor' || form.role === 'Pharmacist') && (
         <div className="space-y-4 border-t border-slate-100 pt-4">
-          <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">4. Role-Specific Details</h3>
+          <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">{t('staff.form.sectionRoleSpecific')}</h3>
 
           {form.role === 'Doctor' && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <Input
-                  label="Specialization"
+                  label={t('staff.form.specialization')}
                   value={form.specialization}
                   onChange={e => set('specialization', e.target.value)}
-                  placeholder="e.g. Cardiology"
+                  placeholder={t('staff.form.specializationPlaceholder')}
                 />
                 <Input
-                  label="Qualification"
+                  label={t('staff.form.qualification')}
                   value={form.qualification}
                   onChange={e => set('qualification', e.target.value)}
-                  placeholder="e.g. MBBS, MD"
+                  placeholder={t('staff.form.qualificationPlaceholder')}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <Input
-                  label="Registration Number"
+                  label={t('staff.form.registrationNumber')}
                   value={form.registrationNumber}
                   onChange={e => set('registrationNumber', e.target.value)}
-                  placeholder="e.g. REG12345"
+                  placeholder={t('staff.form.registrationNumberPlaceholder')}
                 />
                 <Input
-                  label="Experience (Years)"
+                  label={t('staff.form.experience')}
                   type="number"
                   value={form.experience}
                   onChange={e => set('experience', e.target.value)}
-                  placeholder="e.g. 10"
+                  placeholder={t('staff.form.experiencePlaceholder')}
                 />
               </div>
             </div>
@@ -359,10 +361,10 @@ export function StaffForm({ initial, onClose }: Props) {
 
           {form.role === 'Pharmacist' && (
             <Input
-              label="License Number"
+              label={t('staff.form.licenseNumber')}
               value={form.licenseNumber}
               onChange={e => set('licenseNumber', e.target.value)}
-              placeholder="e.g. LIC98765"
+              placeholder={t('staff.form.licenseNumberPlaceholder')}
             />
           )}
         </div>
@@ -370,54 +372,54 @@ export function StaffForm({ initial, onClose }: Props) {
 
       {/* 5. Emergency Contact Details */}
       <div className="space-y-4 border-t border-slate-100 pt-4">
-        <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">5. Emergency Contact Info</h3>
+        <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">{t('staff.form.sectionEmergency')}</h3>
 
         <div className="grid grid-cols-3 gap-4">
           <Input
-            label="Contact Name"
+            label={t('staff.form.contactName')}
             value={form.emergencyContactName}
             onChange={e => set('emergencyContactName', e.target.value)}
-            placeholder="Name"
+            placeholder={t('staff.form.contactNamePlaceholder')}
           />
           <Input
-            label="Relationship"
+            label={t('staff.form.relationship')}
             value={form.emergencyContactRelationship}
             onChange={e => set('emergencyContactRelationship', e.target.value)}
-            placeholder="Relationship"
+            placeholder={t('staff.form.relationshipPlaceholder')}
           />
           <Input
-            label="Mobile Number"
+            label={t('staff.form.mobileNumber')}
             value={form.emergencyContactMobile}
             onChange={e => set('emergencyContactMobile', e.target.value)}
-            placeholder="Mobile number"
+            placeholder={t('staff.form.emergencyMobilePlaceholder')}
           />
         </div>
       </div>
 
       {/* 6. Account Credentials */}
       <div className="space-y-4 border-t border-slate-100 pt-4">
-        <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">6. Account Credentials</h3>
+        <h3 className="text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">{t('staff.form.sectionCredentials')}</h3>
 
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Username"
+            label={t('staff.form.username')}
             value={form.username}
             onChange={e => set('username', e.target.value)}
-            placeholder="e.g. priya.sharma"
+            placeholder={t('staff.form.usernamePlaceholder')}
           />
           <Input
-            label="Password"
+            label={t('staff.form.password')}
             type="password"
             value={form.password}
             onChange={e => set('password', e.target.value)}
-            placeholder="••••••••"
+            placeholder={t('staff.form.passwordPlaceholder')}
           />
         </div>
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-        <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
-        <Button type="submit">{initial ? 'Save Changes' : 'Add Staff'}</Button>
+        <Button type="button" variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+        <Button type="submit">{initial ? t('staff.form.saveChanges') : t('staff.form.addStaff')}</Button>
       </div>
     </form>
   );
