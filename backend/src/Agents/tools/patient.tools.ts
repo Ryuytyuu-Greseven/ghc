@@ -28,10 +28,13 @@ const bloodGroupEnum = z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 
 const listPatients = tool(
   async ({ hospitalId }) => {
-    const url = hospitalId
-      ? `${BASE}/patients/by-hospital/${hospitalId}`
-      : `${BASE}/patients`;
-    const res = await fetch(url);
+    const res = hospitalId
+      ? await fetch(`${BASE}/patients/by-hospital/${hospitalId}`)
+      : await fetch(`${BASE}/patients`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page: 1, pageSize: 1000 }),
+      });
     return JSON.stringify(await res.json());
   },
   {
@@ -73,7 +76,7 @@ const getPatient = tool(
 
 const createPatient = tool(
   async (data) => {
-    const res = await fetch(`${BASE}/patients`, {
+    const res = await fetch(`${BASE}/patients/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

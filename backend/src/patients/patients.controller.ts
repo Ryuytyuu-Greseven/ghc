@@ -3,15 +3,16 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { SearchPatientsDto } from './dto/search-patients.dto';
 
 @Controller('patients')
 @UseGuards(JwtAuthGuard)
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
-  @Get()
-  findAll() {
-    return this.patientsService.findAll();
+  @Post()
+  findAll(@Body() body: SearchPatientsDto) {
+    return this.patientsService.findAll(body);
   }
 
   @Get('by-hospital/:hospitalId')
@@ -24,7 +25,7 @@ export class PatientsController {
     return this.patientsService.findOne(id);
   }
 
-  @Post()
+  @Post('create')
   create(@Body() body: CreatePatientDto) {
     return this.patientsService.create(body);
   }

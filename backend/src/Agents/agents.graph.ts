@@ -366,7 +366,11 @@ Reply with ONE option only — one of: discharge_dates, by_disease, by_age, gene
 
 // ── Node: fetch all active patients ──────────────────────────────────────────
 async function patientFetchAll(state: typeof PatientState.State) {
-  const raw = await apiFetch('/patients');
+  const raw = await apiFetch('/patients', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: 1, pageSize: 1000 }),
+  });
   const patients = Array.isArray(raw) ? raw : (raw?.data ?? []);
   return { patients };
 }
