@@ -11,10 +11,14 @@ export let appInstance: INestApplication;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // shall change to actual domain later
+  // const allowedOrigins = [
+  //   'https://ghc-login.web.app',
+  //   'https://project-3857994f-2565-4c14-9a7.web.app',
+  // ];
   app.enableCors({
-    origin: ['https://ghc-login.web.app', 'https://project-3857994f-2565-4c14-9a7.web.app'],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Authorization',
+    origin: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
   appInstance = app;
