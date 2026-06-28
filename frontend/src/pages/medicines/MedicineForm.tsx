@@ -47,7 +47,7 @@ export function MedicineForm({ initial, onClose }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Input label="Item Name" required value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Paracetamol 500mg" />
+      <Input label="Item Name" required value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Medicine or supply name" />
 
       <div className="grid grid-cols-2 gap-4">
         <Select

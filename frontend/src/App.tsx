@@ -74,6 +74,14 @@ export default function App() {
                     }
                   />
                   <Route
+                    path="/patients/:id"
+                    element={
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist']}>
+                        <PatientDetail />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
                     path="/medicines"
                     element={
                       <RoleGuard allowedRoles={['Admin', 'Pharmacist', 'Compounder', 'Lab Technician']}>

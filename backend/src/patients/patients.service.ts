@@ -71,19 +71,6 @@ export class PatientsService {
     return updated;
   }
 
-  async remove(id: string) {
-    const patient = await this.patientRepository.findById(id);
-    if (!patient) throw new NotFoundException(`Patient ${id} not found`);
-
-    if (patient.bedRequired && patient.hospitalId) {
-      const hospitalId = patient.populated('hospitalId') || patient.hospitalId;
-      await this.hospitalsCommonService.deallocateBed(hospitalId.toString(), patient._id.toString());
-    }
-
-    await this.patientRepository.delete(id);
-    return { id, removed: true };
-  }
-
   private prepareCreate(data: CreatePatientDto): CreatePatientDto {
     // DTO classes are typed at compile time; runtime payloads still need explicit checks.
     requiredCreateFields.forEach(field => {

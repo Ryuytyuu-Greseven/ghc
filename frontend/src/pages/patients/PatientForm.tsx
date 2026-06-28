@@ -3,8 +3,10 @@ import type { FormEvent } from 'react';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
 import { useApp } from '../../context/AppContext';
 import type { Patient, Gender, BloodGroup, PatientDraft, PatientFormValues } from '../../types';
+import { Pencil, Plus, UserRound } from 'lucide-react';
 
 interface Props {
   initial: Patient | null;
@@ -105,6 +107,7 @@ export function PatientForm({ initial, onClose }: Props) {
   const [touched, setTouched] = useState<PatientFormTouched>({});
   const [toast, setToast] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [pendingData, setPendingData] = useState<PatientDraft | null>(null);
 
   const errors = validatePatientForm(form);
 
@@ -148,14 +151,21 @@ export function PatientForm({ initial, onClose }: Props) {
       bedRequired: form.bedRequired,
     };
 
+    setPendingData(data);
+  };
+
+  const confirmSave = async () => {
+    if (!pendingData) return;
+
     try {
       setSaving(true);
       setToast(null);
       if (initial) {
-        await updatePatient(initial.id, data);
+        await updatePatient(initial.id, pendingData);
       } else {
-        await addPatient(data);
+        await addPatient(pendingData);
       }
+      setPendingData(null);
       onClose();
     } catch (err) {
       // Backend duplicate Aadhaar conflicts are surfaced here as a toast.
@@ -168,12 +178,13 @@ export function PatientForm({ initial, onClose }: Props) {
   const hospitalOptions = hospitals.map(h => ({ value: h.id, label: `${h.name} — ${h.city}` }));
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-      {toast && (
-        <div className="fixed right-6 top-6 z-[100] max-w-sm rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-lg dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
-          {toast}
-        </div>
-      )}
+    <>
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        {toast && (
+          <div className="fixed right-6 top-6 z-[100] max-w-sm rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-lg dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+            {toast}
+          </div>
+        )}
 
       <Input
         label="Patient Full Name"
@@ -286,14 +297,62 @@ export function PatientForm({ initial, onClose }: Props) {
           className="w-4 h-4 accent-primary-600 cursor-pointer"
         />
         <label htmlFor="bedRequired" className="text-sm font-medium text-slate-700 cursor-pointer">
-          Bed required (inpatient admission)
+          {form.bedRequired ? 'DeAllocate Bed' : 'Allocate Bed'}
         </label>
       </div>
 
-      <div className="flex justify-end gap-3 pt-2">
-        <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
-        <Button type="submit" disabled={saving}>{saving ? 'Saving...' : initial ? 'Save Changes' : 'Admit Patient'}</Button>
-      </div>
-    </form>
+        <div className="flex justify-end gap-3 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button type="submit" disabled={saving}>{saving ? 'Saving...' : initial ? 'Save Changes' : 'Admit Patient'}</Button>
+        </div>
+      </form>
+
+      <Modal
+        open={!!pendingData}
+        onClose={() => setPendingData(null)}
+        title={initial ? 'Confirm Save Changes' : 'Confirm Admit Patient'}
+        size="sm"
+      >
+        <div className="flex flex-col items-center text-center gap-4 py-2">
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-full">
+            {initial ? (
+              <Pencil size={32} className="text-blue-500 dark:text-blue-400" />
+            ) : (
+              <UserRound size={32} className="text-primary-500 dark:text-primary-400" />
+            )}
+          </div>
+          <div>
+            <p className="text-slate-700 dark:text-slate-200 font-semibold text-base">
+              {initial ? 'Save changes to ' : 'Admit patient '}
+              <span className="text-primary-600 dark:text-primary-400">
+                {pendingData?.name || initial?.name}
+              </span>
+              ?
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {initial
+                ? 'This will update this patient record.'
+                : 'This will create a new patient admission and allocate a bed if required.'}
+            </p>
+          </div>
+          <div className="flex gap-3 w-full pt-2">
+            <Button variant="secondary" className="flex-1" onClick={() => setPendingData(null)}>
+              Go Back
+            </Button>
+            <Button variant="primary" className="flex-1" onClick={confirmSave} disabled={saving}>
+              {initial ? (
+                <>
+                  <Pencil size={14} /> {saving ? 'Saving...' : 'Yes, Save'}
+                </>
+              ) : (
+                <>
+                  <Plus size={14} /> {saving ? 'Admitting...' : 'Yes, Admit'}
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }

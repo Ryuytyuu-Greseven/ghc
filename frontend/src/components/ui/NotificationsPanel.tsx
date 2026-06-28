@@ -34,7 +34,7 @@ const INITIAL: Notification[] = [
     id: '3',
     type: 'warning',
     title: 'Low medicine stock',
-    body: 'Paracetamol 500mg is running critically low across 3 facilities.',
+    body: 'A medicine item is running critically low across 3 facilities.',
     time: '3h ago',
     read: false,
   },
