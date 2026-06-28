@@ -1,7 +1,8 @@
-import { Search, Menu } from 'lucide-react';
+import { LogOut, Menu } from 'lucide-react';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { NotificationsPanel } from '../ui/NotificationsPanel';
 import { useSidebar } from '../../context/SidebarContext';
+import { environment } from '../../config/environment';
 
 interface HeaderProps {
   title: string;
@@ -12,7 +13,7 @@ export function Header({ title, subtitle }: HeaderProps) {
   const { toggle } = useSidebar();
 
   return (
-    <div className="sticky top-0 z-20 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between gap-3 shadow-sm dark:shadow-slate-900/30">
+    <div className="sticky top-0 z-20 h-20 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 shadow-sm dark:shadow-slate-900/30">
       <div className="flex items-center gap-3 min-w-0">
         {/* Hamburger — mobile/tablet only */}
         <button
@@ -36,21 +37,21 @@ export function Header({ title, subtitle }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
-        {/* Search */}
-        <div className="relative hidden sm:block">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none"
-          />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="pl-8 pr-3 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent w-32 md:w-40 lg:w-48 transition"
-          />
-        </div>
-
         <ThemeToggle />
         <NotificationsPanel />
+
+        {/* Logout */}
+        <button
+          onClick={() => {
+            localStorage.removeItem('ghc_auth_token');
+            window.location.replace(environment.loginFrontendUrl);
+          }}
+          className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-slate-700 transition"
+          aria-label="Sign out"
+          title="Sign Out"
+        >
+          <LogOut size={18} />
+        </button>
       </div>
     </div>
   );
