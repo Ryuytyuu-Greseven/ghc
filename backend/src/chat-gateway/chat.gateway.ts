@@ -23,7 +23,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {}
 
   handleConnection(@ConnectedSocket() client: Socket) {
-    this.sessionService.create(client.id);
+    const lang = client.handshake.auth?.lang || 'en';
+    const transcribeOptions = {
+      languageCode:
+        lang === 'hi' ? 'hi-IN' : lang === 'te' ? 'te-IN' : lang === 'bn' ? 'bn-IN' : 'en-US',
+    };
+    this.sessionService.create(client.id, transcribeOptions);
     client.emit('session:ready', { sessionId: client.id });
     console.log(
       `[chat] connected: ${client.id} | total: ${this.sessionService.size()}`,
@@ -49,7 +54,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!session) return;
 
     const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
-    httpLocalStorage.run({ token }, () => {
+    const lang = client.handshake.auth?.lang || 'en';
+    httpLocalStorage.run({ token, lang }, () => {
       void this.agentPipeline.processUserMessage(
         (event, data) => client.emit(event, data),
         session,
@@ -108,7 +114,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!session || !transcript.trim()) return;
 
     const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
-    httpLocalStorage.run({ token }, () => {
+    const lang = client.handshake.auth?.lang || 'en';
+    httpLocalStorage.run({ token, lang }, () => {
       void this.agentPipeline.processUserMessage(
         (event, data) => client.emit(event, data),
         session,

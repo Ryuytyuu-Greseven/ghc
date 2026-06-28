@@ -17,9 +17,9 @@ Domains:
 CRITICAL INSTRUCTION:
 If the user asks to "list medicines", "show medicines", "medicine list", "medicines list", or asks about availability, quantities, stock levels, or store inventory of ANY medicine/drug (e.g. "Do we have Paracetamol?", "How many syringes are left?"), you MUST classify it as "inventory" (NOT "medicine").
 
-Reply with ONLY one word: hospital | patient | medicine | staff | inventory`;
+Reply with ONLY one word: hospital | patient | medicine | staff | inventory | out_of_scope`;
 
-const VALID_DOMAINS = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory']);
+const VALID_DOMAINS = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory', 'out_of_scope']);
 
 function parseDomain(content: string): string {
   const normalized = content.trim().toLowerCase();

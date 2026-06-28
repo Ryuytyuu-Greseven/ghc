@@ -135,12 +135,13 @@ export function Dashboard() {
                     <thead>
                       <tr className="border-b border-slate-100 dark:border-slate-700">
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          {t('hospitals.detail.patient')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Admitted
+                          {t('hospitals.detail.admitted')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Bed
+                          {t('hospitals.detail.bed')}
                         </th>
                       </tr>
                     </thead>
@@ -153,7 +154,7 @@ export function Dashboard() {
                           <td className="px-6 py-3">
                             <p className="font-medium text-slate-800 dark:text-slate-200">{p.name}</p>
                             <p className="text-xs text-slate-400 dark:text-slate-500">
-                              {p.age} yrs · {p.gender}
+                              {p.age} {t('dashboard.yrs')} · {p.gender}
                             </p>
                           </td>
                           <td className="px-6 py-3 text-slate-500 dark:text-slate-400 tabular-nums">
@@ -161,7 +162,7 @@ export function Dashboard() {
                           </td>
                           <td className="px-6 py-3">
                             <Badge variant={p.bedRequired ? 'danger' : 'success'}>
-                              {p.bedRequired ? 'Required' : 'Not needed'}
+                              {p.bedRequired ? t('hospitals.detail.required') : t('hospitals.detail.notNeeded')}
                             </Badge>
                           </td>
                         </tr>
@@ -175,7 +176,7 @@ export function Dashboard() {
             {/* Facilities */}
             <Card>
               <CardHeader>
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">Facilities</h3>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('dashboard.facilities')}</h3>
               </CardHeader>
               <CardBody className="space-y-1 py-3">
                 {recentHospitals.map(h => (
@@ -191,7 +192,7 @@ export function Dashboard() {
                     <div className="text-right">
                       <Badge variant={h.type === 'CHC' ? 'warning' : 'success'}>{h.type}</Badge>
                       <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                        {h.availableBeds}/{h.totalBeds} beds free
+                        {h.availableBeds}/{h.totalBeds} {t('dashboard.beds_free')}
                       </p>
                     </div>
                   </Link>

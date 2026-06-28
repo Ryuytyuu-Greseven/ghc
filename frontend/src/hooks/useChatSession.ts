@@ -246,10 +246,11 @@ export function useChatSession({
     setError(null);
 
     const token = localStorage.getItem('ghc_auth_token');
+    const currentLang = localStorage.getItem('ghc-lang') || 'en';
     const namespace = mode === 'voice' ? 'voice' : 'chat';
     const socket = io(`${BACKEND_URL}/${namespace}`, {
       transports: ['websocket'],
-      auth: { token },
+      auth: { token, lang: currentLang },
     });
     socketRef.current = socket;
 

@@ -77,7 +77,10 @@ export const bn = {
       assigned: "নিযুক্ত",
       available_beds: "উপলব্ধ শয্যা",
       across_all_facilities: "সমস্ত কেন্দ্র জুড়ে",
-      recent_patients: "সাম্প্রতিক রোগী"
+      recent_patients: "সাম্প্রতিক রোগী",
+      yrs: "বছর",
+      facilities: "সুবিধাসমূহ",
+      beds_free: "শয্যা খালি"
     },
     hospitals: {
       title: "হাসপাতাল ও ক্লিনিক",

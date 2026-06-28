@@ -77,7 +77,10 @@ export const en = {
       assigned: "assigned",
       available_beds: "Available Beds",
       across_all_facilities: "across all facilities",
-      recent_patients: "Recent Patients"
+      recent_patients: "Recent Patients",
+      yrs: "yrs",
+      facilities: "Facilities",
+      beds_free: "beds free"
     },
     hospitals: {
       title: "Hospitals & Clinics",

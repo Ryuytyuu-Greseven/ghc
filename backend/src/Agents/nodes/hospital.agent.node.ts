@@ -20,6 +20,7 @@ import {
   fetchAvailableSpecialists,
 } from '../tools/hospital.tools';
 import { createAgent } from 'langchain';
+import { withGuardrails } from '../prompts/guardrails.prompt';
 
 export function createHospitalTools(): HospitalTools {
   if (!appInstance) {
@@ -87,7 +88,7 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const agent = createAgent({
       model: llmInstance,
       tools: [fetchHospitalByName],
-      systemPrompt: HOSPITAL_SEARCH_PROMPT,
+      systemPrompt: withGuardrails(HOSPITAL_SEARCH_PROMPT),
     });
     const response = await agent.invoke({ messages: state.messages });
     console.log('Fetch Hospitals Response', response);
@@ -106,7 +107,7 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const agent = createAgent({
       model: llmInstance,
       tools: [fetchBedsAvailability],
-      systemPrompt: HOSPITAL_BEDS_PROMPT,
+      systemPrompt: withGuardrails(HOSPITAL_BEDS_PROMPT),
     });
     const response = await agent.invoke({ messages: state.messages });
     console.log('Beds Availability Response', response);
@@ -125,7 +126,7 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const agent = createAgent({
       model: llmInstance,
       tools: [fetchMedicalInchargeDetails],
-      systemPrompt: HOSPITAL_INCHARGE_PROMPT,
+      systemPrompt: withGuardrails(HOSPITAL_INCHARGE_PROMPT),
     });
     const response = await agent.invoke({ messages: state.messages });
     console.log('Medical Incharge Details Response', response);
@@ -144,7 +145,7 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const agent = createAgent({
       model: llmInstance,
       tools: [fetchPatientsDetails],
-      systemPrompt: HOSPITAL_PATIENTS_PROMPT,
+      systemPrompt: withGuardrails(HOSPITAL_PATIENTS_PROMPT),
     });
     const response = await agent.invoke({ messages: state.messages });
     console.log('Patients Details Response', response);
@@ -163,7 +164,7 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const agent = createAgent({
       model: llmInstance,
       tools: [fetchStaffDetails],
-      systemPrompt: HOSPITAL_STAFF_PROMPT,
+      systemPrompt: withGuardrails(HOSPITAL_STAFF_PROMPT),
     });
     const response = await agent.invoke({ messages: state.messages });
     console.log('Staff Details Response', response);
@@ -182,7 +183,7 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const agent = createAgent({
       model: llmInstance,
       tools: [fetchAvailableSpecialists],
-      systemPrompt: HOSPITAL_SPECIALISTS_PROMPT,
+      systemPrompt: withGuardrails(HOSPITAL_SPECIALISTS_PROMPT),
     });
     const response = await agent.invoke({ messages: state.messages });
     console.log('Available Specialists Response', response);

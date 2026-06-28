@@ -77,7 +77,10 @@ export const hi = {
       assigned: "आवंटित",
       available_beds: "उपलब्ध बिस्तर",
       across_all_facilities: "सभी सुविधाओं में",
-      recent_patients: "हाल के मरीज"
+      recent_patients: "हाल के मरीज",
+      yrs: "वर्ष",
+      facilities: "सुविधाएं",
+      beds_free: "बिस्तर खाली"
     },
     hospitals: {
       title: "अस्पताल और क्लीनिक",

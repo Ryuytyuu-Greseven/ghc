@@ -6,10 +6,11 @@ import { patientNode } from './nodes/patient.node';
 import { medicineNode } from './nodes/medicine.node';
 import { staffNode } from './nodes/staff.node';
 import { inventoryNode } from './nodes/inventory.node';
+import { outOfScopeNode } from './nodes/out-of-scope.node';
 import { transcribeAudio, type TranscribeOptions } from '../google/speech.service';
 import { toPlainSpeechText } from './prompts/guardrails.prompt';
 
-const DOMAIN_NODES = ['hospital', 'patient', 'medicine', 'staff', 'inventory'] as const;
+const DOMAIN_NODES = ['hospital', 'patient', 'medicine', 'staff', 'inventory', 'out_of_scope'] as const;
 const DOMAIN_SET = new Set<string>(DOMAIN_NODES);
 
 export function routeDomain(state: typeof AgentState.State): string {
@@ -25,6 +26,7 @@ export const voiceAgentGraph = new StateGraph(AgentState)
   .addNode('medicine', medicineNode)
   .addNode('staff', staffNode)
   .addNode('inventory', inventoryNode)
+  .addNode('out_of_scope', outOfScopeNode)
   .addEdge(START, 'supervisor')
   .addConditionalEdges('supervisor', routeDomain, {
     hospital: 'hospital',
@@ -32,12 +34,14 @@ export const voiceAgentGraph = new StateGraph(AgentState)
     medicine: 'medicine',
     staff: 'staff',
     inventory: 'inventory',
+    out_of_scope: 'out_of_scope',
   })
   .addEdge('hospital', END)
   .addEdge('patient', END)
   .addEdge('medicine', END)
   .addEdge('staff', END)
   .addEdge('inventory', END)
+  .addEdge('out_of_scope', END)
   .compile();
 
 export async function runVoiceAgent(
