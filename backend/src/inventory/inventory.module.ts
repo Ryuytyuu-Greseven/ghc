@@ -31,10 +31,12 @@ import { InventoryRequestsService } from './inventory-requests/inventory-request
 import { InventoryRequestsHelperService } from './inventory-requests/inventory-requests-helper.service';
 import { InventoryTransactionsService } from './inventory-transactions/inventory-transactions.service';
 import { AuthModule } from '../auth/auth.module';
+import { StaffModule } from '../staff/staff.module';
 
 @Module({
   imports: [
     AuthModule,
+    StaffModule,
     MongooseModule.forFeature([
       { name: InventoryMaster.name, schema: InventoryMasterSchema },
       { name: CentralInventory.name, schema: CentralInventorySchema },

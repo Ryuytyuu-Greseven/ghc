@@ -21,9 +21,14 @@ const isExpiringSoon = (date: string | null): boolean => {
 
 export function BranchInventoryTab() {
   const { t, i18n } = useTranslation();
-  const { hospitals } = useApp();
+  const { hospitals, currentUser, staff } = useApp();
   const { branchStock, branchPagination, loadingBranch, error, actionError, clearActionError, loadBranchStock } = useInventory();
   const [selectedBranchId, setSelectedBranchId] = useState('');
+
+  const isAdmin = currentUser?.role === 'Admin';
+  const currentStaff = staff.find((s) => s.userId === currentUser?.id || s.username === currentUser?.username);
+  const userHospitalId = currentStaff?.assignedHospitalId;
+  const assignedHospital = hospitals.find((h) => h.id === userHospitalId || h._id === userHospitalId);
 
   // Search, Sort, Filter, Page States
   const [searchInput, setSearchInput] = useState('');
@@ -36,7 +41,17 @@ export function BranchInventoryTab() {
   const [pageSize, setPageSize] = useState(10);
   const [viewEntry, setViewEntry] = useState<typeof branchStock[number] | null>(null);
 
-  const branchOptions = hospitals.map((h) => ({ value: h.id, label: h.name }));
+  useEffect(() => {
+    if (!isAdmin && assignedHospital && !selectedBranchId) {
+      setSelectedBranchId(assignedHospital.id);
+    }
+  }, [isAdmin, assignedHospital, selectedBranchId]);
+
+  const branchOptions = isAdmin
+    ? hospitals.map((h) => ({ value: h.id, label: h.name }))
+    : assignedHospital
+    ? [{ value: assignedHospital.id, label: assignedHospital.name }]
+    : [];
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {

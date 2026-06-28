@@ -3,7 +3,7 @@ import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useApp, authFetch } from '../context/AppContext';
-import { Users, AlertTriangle, ArrowRight, CheckCircle2, Building, UserCheck, Loader2, Calendar, ClipboardList } from 'lucide-react';
+import { AlertTriangle, ArrowRight, CheckCircle2, Building, UserCheck, Loader2, Calendar, ClipboardList } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface CoverageRequest {
@@ -214,7 +214,7 @@ export function Transfers() {
                           <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">
                             {req.staffId?.name || 'Staff Member'}
                           </span>
-                          <Badge variant={req.status === 'Pending' ? 'warning' : req.status === 'Approved' ? 'success' : 'info'} className="text-[10px] py-0.5">
+                          <Badge variant={req.status === 'Pending' ? 'warning' : req.status === 'Approved' ? 'success' : 'info'}>
                             {req.staffId?.department || 'Department'}
                           </Badge>
                         </div>

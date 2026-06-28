@@ -26,13 +26,13 @@ const allNavItems = [
 
 const roleNavItemsMap: Record<string, string[]> = {
   Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/transfers'],
-  Doctor: ['/', '/hospitals', '/patients', '/availability'],
-  Nurse: ['/', '/hospitals', '/patients', '/availability'],
-  Receptionist: ['/', '/hospitals', '/patients', '/availability'],
+  Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability'],
+  Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability'],
+  Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability'],
   Pharmacist: ['/', '/medicines', '/availability'],
   Compounder: ['/', '/medicines', '/availability'],
   'Lab Technician': ['/', '/medicines', '/availability'],
-  Cashier: ['/', '/availability'],
+  Cashier: ['/', '/medicines', '/availability'],
 };
 
 export function Sidebar() {
