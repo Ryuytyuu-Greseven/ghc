@@ -328,6 +328,18 @@ export class StaffService {
       }
     }
 
+    if (status === 'Unavailable' && dates.length > 0) {
+      const existingRequest = await this.coverageRequestModel.findOne({
+        staffId: staff._id,
+        status: { $ne: 'Rejected' },
+        dates: { $in: dates },
+      });
+
+      if (existingRequest) {
+        throw new BadRequestException('A coverage request has already been raised for one or more of these dates');
+      }
+    }
+
     const updated = await this.staffRepository.update(staff._id.toString(), {
       unavailableOnDays: dates,
     });

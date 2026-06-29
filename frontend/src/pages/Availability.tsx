@@ -94,7 +94,13 @@ export function Availability() {
         },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error(t('availability.updateError'));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const errorMsg = Array.isArray(errorData.message)
+          ? errorData.message.join(', ')
+          : errorData.message;
+        throw new Error(errorMsg || t('availability.updateError'));
+      }
       const data = await res.json();
       
       setCurrentSchedule(data.unavailableOnDays || []);
