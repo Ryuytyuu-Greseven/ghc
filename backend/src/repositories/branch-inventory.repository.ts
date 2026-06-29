@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
 import { BranchInventory, BranchInventoryDocument } from '../schemas/branch-inventory.schema';
 import { QueryService } from '../common/services/query.service';
@@ -15,6 +15,40 @@ export class BranchInventoryRepository {
 
   async findAll(filter: object = {}): Promise<BranchInventoryDocument[]> {
     return this.model.find(filter).populate('itemId').exec();
+  }
+
+  async findByBranchAndCategory(branchId: string, category: string): Promise<any[]> {
+    const pipeline = [
+      {
+        $lookup: {
+          from: 'inventorymasters',
+          localField: 'itemId',
+          foreignField: '_id',
+          as: 'item',
+        },
+      },
+      { $unwind: '$item' },
+      {
+        $match: {
+          branchId: new Types.ObjectId(branchId),
+          'item.category': category,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          branchId: 1,
+          itemId: '$item',
+          availableQty: 1,
+          damagedQty: 1,
+          batchNo: 1,
+          expiryDate: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    ];
+    return this.model.aggregate(pipeline).exec();
   }
 
   async findById(id: string): Promise<BranchInventoryDocument | null> {

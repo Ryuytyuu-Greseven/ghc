@@ -41,8 +41,9 @@ function PatientCardSkeleton() {
 
 export function PatientList() {
   const { t } = useTranslation();
-  const { patients, hospitals, loading } = useApp();
+  const { patients, hospitals, loading, currentUser } = useApp();
   const navigate = useNavigate();
+  const isAdmin = currentUser?.role === 'Admin';
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Patient | null>(null);
   const [filterHospital, setFilterHospital] = useState('all');
@@ -107,15 +108,17 @@ export function PatientList() {
                 <span className="tabular-nums">{t('hospitals.detail.needBeds', { count: bedRequired })}</span>
               </span>
             </div>
-            <Button
-              className="shrink-0"
-              onClick={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            >
-              <Plus size={15} /> {t('patients.admitPatient')}
-            </Button>
+            {!isAdmin && (
+              <Button
+                className="shrink-0"
+                onClick={() => {
+                  setEditing(null);
+                  setFormOpen(true);
+                }}
+              >
+                <Plus size={15} /> {t('patients.admitPatient')}
+              </Button>
+            )}
           </div>
 
           {/* Cards grid */}
@@ -162,16 +165,18 @@ export function PatientList() {
                       >
                         <ExternalLink size={14} />
                       </button>
-                      <button
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          openEdit(p);
-                        }}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
-                        title={t('common.edit')}
-                      >
-                        <Pencil size={14} />
-                      </button>
+                      {!isAdmin && (
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openEdit(p);
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+                          title={t('common.edit')}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
 

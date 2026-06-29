@@ -33,4 +33,18 @@ export class BranchInventoryService {
     if (!entry) throw new NotFoundException(`Branch inventory entry ${id} not found`);
     return entry;
   }
+
+  async findByBranchAndCategory(branchId: string, category: string) {
+    return this.repo.findByBranchAndCategory(branchId, category);
+  }
+
+  async adjustStock(
+    branchId: string,
+    itemId: string,
+    quantity: number,
+    batchNo: string,
+    expiryDate: Date | null = null,
+  ) {
+    return this.repo.upsertBranchStock(branchId, itemId, quantity, batchNo, expiryDate);
+  }
 }

@@ -146,27 +146,35 @@ export function Dashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {recentPatients.map(p => (
-                        <tr
-                          key={p.id}
-                          className="border-b border-slate-50 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
-                        >
-                          <td className="px-6 py-3">
-                            <p className="font-medium text-slate-800 dark:text-slate-200">{p.name}</p>
-                            <p className="text-xs text-slate-400 dark:text-slate-500">
-                              {p.age} {t('dashboard.yrs')} · {p.gender}
-                            </p>
-                          </td>
-                          <td className="px-6 py-3 text-slate-500 dark:text-slate-400 tabular-nums">
-                            {p.admittedAt}
-                          </td>
-                          <td className="px-6 py-3">
-                            <Badge variant={p.bedRequired ? 'danger' : 'success'}>
-                              {p.bedRequired ? t('hospitals.detail.required') : t('hospitals.detail.notNeeded')}
-                            </Badge>
+                      {recentPatients.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="px-6 py-10 text-center text-slate-400 dark:text-slate-500">
+                            {t('dashboard.no_recent_patients', 'No recent patients admitted to this hospital')}
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        recentPatients.map(p => (
+                          <tr
+                            key={p.id}
+                            className="border-b border-slate-50 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                          >
+                            <td className="px-6 py-3">
+                              <p className="font-medium text-slate-800 dark:text-slate-200">{p.name}</p>
+                              <p className="text-xs text-slate-400 dark:text-slate-500">
+                                {p.age} {t('dashboard.yrs')} · {p.gender}
+                              </p>
+                            </td>
+                            <td className="px-6 py-3 text-slate-500 dark:text-slate-400 tabular-nums">
+                              {p.admittedAt}
+                            </td>
+                            <td className="px-6 py-3">
+                              <Badge variant={p.bedRequired ? 'danger' : 'success'}>
+                                {p.bedRequired ? t('hospitals.detail.required') : t('hospitals.detail.notNeeded')}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -179,24 +187,30 @@ export function Dashboard() {
                 <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('dashboard.facilities')}</h3>
               </CardHeader>
               <CardBody className="space-y-1 py-3">
-                {recentHospitals.map(h => (
-                  <Link
-                    key={h.id}
-                    to={`/hospitals/${h.id}`}
-                    className="flex items-center justify-between py-2.5 px-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors group"
-                  >
-                    <div>
-                      <p className="font-medium text-slate-800 dark:text-slate-200 text-sm group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{h.name}</p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500">{h.city}</p>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant={h.type === 'CHC' ? 'warning' : 'success'}>{h.type}</Badge>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                        {h.availableBeds}/{h.totalBeds} {t('dashboard.beds_free')}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
+                {recentHospitals.length === 0 ? (
+                  <div className="py-10 text-center text-slate-400 dark:text-slate-500 text-sm">
+                    {t('dashboard.no_facilities', 'No facilities found for this hospital')}
+                  </div>
+                ) : (
+                  recentHospitals.map(h => (
+                    <Link
+                      key={h.id}
+                      to={`/hospitals/${h.id}`}
+                      className="flex items-center justify-between py-2.5 px-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors group"
+                    >
+                      <div>
+                        <p className="font-medium text-slate-800 dark:text-slate-200 text-sm group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{h.name}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500">{h.city}</p>
+                      </div>
+                      <div className="text-right">
+                        <Badge variant={h.type === 'CHC' ? 'warning' : 'success'}>{h.type}</Badge>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                          {h.availableBeds}/{h.totalBeds} {t('dashboard.beds_free')}
+                        </p>
+                      </div>
+                    </Link>
+                  ))
+                )}
               </CardBody>
             </Card>
           </div>

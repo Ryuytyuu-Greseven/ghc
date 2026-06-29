@@ -22,8 +22,9 @@ const typeStyles: Record<FacilityType, { bg: string; text: string; badge: 'info'
 };
 
 export function HospitalList() {
-  const { deleteHospital, staff, patients, hospitals } = useApp();
+  const { deleteHospital, staff, patients, hospitals, currentUser } = useApp();
   const { t } = useTranslation();
+  const isAdmin = currentUser?.role === 'Admin';
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Hospital | null>(null);
   const [filterType, setFilterType] = useState<FilterType>('all');
@@ -198,9 +199,11 @@ export function HospitalList() {
                 />
               </div>
 
-              <Button onClick={openAdd} className="shrink-0">
-                <Plus size={15} /> {t('common.addFacility')}
-              </Button>
+              {isAdmin && (
+                <Button onClick={openAdd} className="shrink-0">
+                  <Plus size={15} /> {t('common.addFacility')}
+                </Button>
+              )}
             </div>
           </div>
 
@@ -256,20 +259,24 @@ export function HospitalList() {
                           >
                             <ExternalLink size={14} />
                           </Link>
-                          <button
-                            onClick={() => openEdit(h)}
-                            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
-                            title="Edit"
-                          >
-                            <Pencil size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(h)}
-                            className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition"
-                            title="Delete"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          {isAdmin && (
+                            <>
+                              <button
+                                onClick={() => openEdit(h)}
+                                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+                                title="Edit"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(h)}
+                                className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition"
+                                title="Delete"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
 
