@@ -12,10 +12,10 @@ export class HospitalsService {
     private readonly bedAllocationRepository: BedAllocationRepository,
   ) {}
 
-  async getAllHospitals(query: Record<string, any> = {}) {
+  async getAllHospitals(query: Record<string, any> = {}, extraFilter: Record<string, any> = {}) {
     // If no pagination properties are provided, return the flat backwards-compatible array
     if (query.page === undefined && query.pageSize === undefined && query.limit === undefined) {
-      return this.hospitalRepository.findAll({ isActive: true });
+      return this.hospitalRepository.findAll({ isActive: true, ...extraFilter });
     }
 
     // Map 'limit' to 'pageSize' if passed
@@ -23,7 +23,7 @@ export class HospitalsService {
       query.pageSize = query.limit;
     }
 
-    const { data, total, page, pageSize } = await this.hospitalRepository.findPaginated(query);
+    const { data, total, page, pageSize } = await this.hospitalRepository.findPaginated(query, extraFilter);
     return buildPaginatedResponse(data, total, page, pageSize);
   }
 

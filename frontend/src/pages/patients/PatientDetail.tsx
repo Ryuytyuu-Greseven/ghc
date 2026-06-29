@@ -137,8 +137,9 @@ function VisitHistorySkeleton() {
 export function PatientDetail() {
   const { t } = useTranslation();
   const { id } = useParams();
-  const { patients, loading: appLoading } = useApp();
+  const { patients, loading: appLoading, currentUser } = useApp();
   const patient = patients.find(p => p.id === id);
+  const isAdmin = currentUser?.role === 'Admin';
   const [history, setHistory] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -416,7 +417,7 @@ export function PatientDetail() {
               <ArrowLeft size={16} /> {t('patients.detail.backToPatients')}
             </Link>
 
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5">
+          <div className={`grid grid-cols-1 ${isAdmin ? '' : 'xl:grid-cols-[1fr_360px]'} gap-5`}>
             <div className="space-y-5">
               <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
                 <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -474,8 +475,9 @@ export function PatientDetail() {
                                 <div key={visit.id} className="p-5 space-y-4">
                                   <button
                                     type="button"
-                                    onClick={() => openMedicineModal(visit)}
-                                    className="w-full text-left space-y-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
+                                    onClick={() => !isAdmin && openMedicineModal(visit)}
+                                    className={`w-full text-left space-y-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${isAdmin ? 'cursor-default' : 'cursor-pointer'}`}
+                                    disabled={isAdmin}
                                   >
                                     <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                                       <CalendarDays size={15} />
@@ -515,50 +517,52 @@ export function PatientDetail() {
               </div>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 h-fit space-y-4"
-            >
-              <div>
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('patients.detail.addVisit')}</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{t('patients.detail.recordVisitDesc')}</p>
-              </div>
-              <Input
-                label={t('patients.detail.problemLabel')}
-                required
-                value={form.problem}
-                onChange={event => setForm(current => ({ ...current, problem: event.target.value }))}
-                onBlur={() => setVisitTouched(true)}
-                error={visitTouched && !form.problem.trim() ? t('patients.detail.problemRequired') : undefined}
-                placeholder={t('patients.detail.problemPlaceholder')}
-              />
-              <Input
-                label={t('patients.detail.visitDateLabel')}
-                type="date"
-                required
-                value={form.visitDate}
-                onChange={event => setForm(current => ({ ...current, visitDate: event.target.value }))}
-                onBlur={() => setVisitTouched(true)}
-                error={visitTouched && !form.visitDate ? t('patients.detail.visitDateRequired') : undefined}
-              />
-              <Select
-                label={t('patients.detail.doctorLabel')}
-                required
-                value={form.doctor}
-                onChange={event => setForm(current => ({ ...current, doctor: event.target.value }))}
-                onBlur={() => setVisitTouched(true)}
-                error={visitTouched && !form.doctor.trim() ? t('patients.detail.doctorRequired') : undefined}
-                options={doctorOptions}
-                placeholder={loadingDoctors ? t('patients.detail.loadingDoctors') : t('patients.detail.selectDoctor')}
-                dropdownPlacement="up"
-              />
-              {!loadingDoctors && form.visitDate && doctorOptions.length === 0 && (
-                <p className="text-xs text-slate-400">{t('patients.detail.noDoctors')}</p>
-              )}
-              <Button type="submit" className="w-full justify-center">
-                <Plus size={15} /> {t('patients.detail.saveVisit')}
-              </Button>
-            </form>
+            {!isAdmin && (
+              <form
+                onSubmit={handleSubmit}
+                className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 h-fit space-y-4"
+              >
+                <div>
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('patients.detail.addVisit')}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{t('patients.detail.recordVisitDesc')}</p>
+                </div>
+                <Input
+                  label={t('patients.detail.problemLabel')}
+                  required
+                  value={form.problem}
+                  onChange={event => setForm(current => ({ ...current, problem: event.target.value }))}
+                  onBlur={() => setVisitTouched(true)}
+                  error={visitTouched && !form.problem.trim() ? t('patients.detail.problemRequired') : undefined}
+                  placeholder={t('patients.detail.problemPlaceholder')}
+                />
+                <Input
+                  label={t('patients.detail.visitDateLabel')}
+                  type="date"
+                  required
+                  value={form.visitDate}
+                  onChange={event => setForm(current => ({ ...current, visitDate: event.target.value }))}
+                  onBlur={() => setVisitTouched(true)}
+                  error={visitTouched && !form.visitDate ? t('patients.detail.visitDateRequired') : undefined}
+                />
+                <Select
+                  label={t('patients.detail.doctorLabel')}
+                  required
+                  value={form.doctor}
+                  onChange={event => setForm(current => ({ ...current, doctor: event.target.value }))}
+                  onBlur={() => setVisitTouched(true)}
+                  error={visitTouched && !form.doctor.trim() ? t('patients.detail.doctorRequired') : undefined}
+                  options={doctorOptions}
+                  placeholder={loadingDoctors ? t('patients.detail.loadingDoctors') : t('patients.detail.selectDoctor')}
+                  dropdownPlacement="up"
+                />
+                {!loadingDoctors && form.visitDate && doctorOptions.length === 0 && (
+                  <p className="text-xs text-slate-400">{t('patients.detail.noDoctors')}</p>
+                )}
+                <Button type="submit" className="w-full justify-center">
+                  <Plus size={15} /> {t('patients.detail.saveVisit')}
+                </Button>
+              </form>
+            )}
           </div>
         </div>
         </div>

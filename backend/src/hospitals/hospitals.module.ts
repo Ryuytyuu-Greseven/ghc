@@ -9,6 +9,7 @@ import { QueryService } from '../common/services/query.service';
 import { HospitalsCommonService } from '../common/services/hospitals.service';
 import { BedAllocation, BedAllocationSchema } from '../schemas/bed-allocation.schema';
 import { BedAllocationRepository } from '../repositories/bed-allocation.repository';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { BedAllocationRepository } from '../repositories/bed-allocation.reposito
       { name: Hospital.name, schema: HospitalSchema },
       { name: BedAllocation.name, schema: BedAllocationSchema },
     ]),
+    UsersModule,
   ],
   controllers: [HospitalsController],
   providers: [

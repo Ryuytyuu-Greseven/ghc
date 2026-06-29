@@ -29,8 +29,8 @@ export class PatientsService {
     private readonly hospitalsCommonService: HospitalsCommonService,
   ) {}
 
-  async findAll() {
-    return this.patientRepository.findAll({ isActive: true });
+  async findAll(filter: object = {}) {
+    return this.patientRepository.findAll({ isActive: true, ...filter });
   }
 
   async findOne(id: string) {

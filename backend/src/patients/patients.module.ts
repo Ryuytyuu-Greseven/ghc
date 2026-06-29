@@ -7,12 +7,14 @@ import { PatientsHelperService } from './patients-helper.service';
 import { Patient, PatientSchema } from '../schemas/patient.schema';
 import { PatientRepository } from '../repositories/patient.repository';
 import { HospitalsModule } from '../hospitals/hospitals.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     AuthModule,
     MongooseModule.forFeature([{ name: Patient.name, schema: PatientSchema }]),
     HospitalsModule,
+    UsersModule,
   ],
   controllers: [PatientsController],
   providers: [PatientsService, PatientsHelperService, PatientRepository],

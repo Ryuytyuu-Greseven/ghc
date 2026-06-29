@@ -1,19 +1,32 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req, Query, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { StaffService } from './staff.service';
+import { UsersService } from '../users/users.service';
 
 @Controller('staff')
 @UseGuards(JwtAuthGuard)
 export class StaffController {
-  constructor(private readonly staffService: StaffService) { }
+  constructor(
+    private readonly staffService: StaffService,
+    private readonly usersService: UsersService,
+  ) { }
 
   @Get()
-  findAll() {
-    return this.staffService.findAll();
+  async findAll(@Req() req: any, @Query() query?: Record<string, any>) {
+    const user = req.user;
+    const isDashboard = query?.dashboard === 'true';
+    const hospitalId = isDashboard ? await this.usersService.getAssignedHospitalId(user.userId, user.role) : null;
+    const filter = hospitalId ? { hospitalId } : {};
+    return this.staffService.findAll(filter);
   }
 
   @Get('by-hospital/:hospitalId')
-  findByHospital(@Param('hospitalId') hospitalId: string) {
+  async findByHospital(@Req() req: any, @Param('hospitalId') hospitalId: string) {
+    const user = req.user;
+    const userHospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    if (userHospitalId && userHospitalId !== hospitalId) {
+      throw new ForbiddenException('Access denied to other hospital staff list');
+    }
     return this.staffService.findByHospital(hospitalId);
   }
 
@@ -56,22 +69,49 @@ export class StaffController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.staffService.findOne(id);
+  async findOne(@Req() req: any, @Param('id') id: string) {
+    const user = req.user;
+    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const staff = await this.staffService.findOne(id);
+    if (hospitalId && staff.hospitalId && staff.hospitalId.toString() !== hospitalId) {
+      throw new ForbiddenException('Access denied to this staff member');
+    }
+    return staff;
   }
 
   @Post()
-  create(@Body() body: Record<string, any>) {
+  async create(@Req() req: any, @Body() body: Record<string, any>) {
+    const user = req.user;
+    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    if (hospitalId) {
+      body.hospitalId = hospitalId;
+    }
     return this.staffService.create(body);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: Record<string, any>) {
+  async update(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() body: Record<string, any>,
+  ) {
+    const user = req.user;
+    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    if (hospitalId) {
+      const staff = await this.staffService.findOne(id);
+      if (staff.hospitalId && staff.hospitalId.toString() !== hospitalId) {
+        throw new ForbiddenException('Access denied to update this staff member');
+      }
+      body.hospitalId = hospitalId;
+    }
     return this.staffService.update(id, body);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Req() req: any, @Param('id') id: string) {
+    if (req.user.role !== 'Admin') {
+      throw new ForbiddenException('Only Administrators can delete staff');
+    }
     return this.staffService.remove(id);
   }
 }

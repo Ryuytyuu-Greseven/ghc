@@ -7,7 +7,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HospitalsModule } from './hospitals/hospitals.module';
 import { PatientsModule } from './patients/patients.module';
-import { MedicinesModule } from './medicines/medicines.module';
 import { StaffModule } from './staff/staff.module';
 import { ChatGatewayModule } from './chat-gateway/chat-gateway.module';
 import { AuthModule } from './auth/auth.module';
@@ -34,7 +33,6 @@ config();
     CommonModule,
     HospitalsModule,
     PatientsModule,
-    MedicinesModule,
     StaffModule,
     ChatGatewayModule,
     AuthModule,

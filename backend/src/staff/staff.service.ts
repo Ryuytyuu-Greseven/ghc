@@ -31,8 +31,8 @@ export class StaffService {
     private readonly coverageRequestModel: Model<CoverageRequestDocument>,
   ) { }
 
-  async findAll() {
-    const list = await this.staffRepository.findAll();
+  async findAll(filter: object = {}) {
+    const list = await this.staffRepository.findAll(filter);
     return list.map(flattenStaff);
   }
 

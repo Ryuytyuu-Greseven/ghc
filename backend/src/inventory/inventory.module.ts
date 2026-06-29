@@ -32,11 +32,14 @@ import { InventoryRequestsHelperService } from './inventory-requests/inventory-r
 import { InventoryTransactionsService } from './inventory-transactions/inventory-transactions.service';
 import { AuthModule } from '../auth/auth.module';
 import { StaffModule } from '../staff/staff.module';
+import { UsersModule } from '../users/users.module';
+import { MedicinesController } from './medicines.controller';
 
 @Module({
   imports: [
     AuthModule,
     StaffModule,
+    UsersModule,
     MongooseModule.forFeature([
       { name: InventoryMaster.name, schema: InventoryMasterSchema },
       { name: CentralInventory.name, schema: CentralInventorySchema },
@@ -51,6 +54,7 @@ import { StaffModule } from '../staff/staff.module';
     BranchInventoryController,
     InventoryRequestsController,
     InventoryTransactionsController,
+    MedicinesController,
   ],
   providers: [
     QueryService,
