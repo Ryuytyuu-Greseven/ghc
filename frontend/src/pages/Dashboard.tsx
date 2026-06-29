@@ -5,9 +5,11 @@ import { StatCard } from '../components/ui/StatCard';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { useApp } from '../context/AppContext';
+import { useTranslation } from 'react-i18next';
 
 export function Dashboard() {
   const { hospitals, staff, patients, medicines } = useApp();
+  const { t } = useTranslation();
 
   const totalBeds = hospitals.reduce((s, h) => s + h.totalBeds, 0);
   const availableBeds = hospitals.reduce((s, h) => s + h.availableBeds, 0);
@@ -30,7 +32,7 @@ export function Dashboard() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Dashboard" subtitle="GHC Health Care Management Overview" />
+      <Header title={t('dashboard.title')} subtitle={t('dashboard.subtitle')} />
 
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <div className="max-w-screen-2xl mx-auto space-y-6">
@@ -38,32 +40,32 @@ export function Dashboard() {
           {/* Stat cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard
-              label="PHCs & CHCs"
+              label={t('common.hospitals')}
               value={hospitals.length}
               icon={<Building2 size={20} className="text-primary-600 dark:text-primary-400" />}
               color="bg-primary-50 dark:bg-primary-900/30"
-              sub={`${hospitals.filter(h => h.type === 'CHC').length} CHCs · ${hospitals.filter(h => h.type === 'PHC').length} PHCs`}
+              sub={`${hospitals.filter(h => h.type === 'CHC').length} ${t('common.chcs')} · ${hospitals.filter(h => h.type === 'PHC').length} ${t('common.phcs')}`}
             />
             <StatCard
-              label="Total Staff"
+              label={t('common.staff')}
               value={staff.length}
               icon={<Users size={20} className="text-violet-600 dark:text-violet-400" />}
               color="bg-violet-50 dark:bg-violet-900/30"
-              sub={`${unassignedStaff} unassigned`}
+              sub={`${unassignedStaff} ${t('dashboard.unassigned')}`}
             />
             <StatCard
-              label="Active Patients"
+              label={t('common.patients')}
               value={patients.length}
               icon={<UserRound size={20} className="text-cyan-600 dark:text-cyan-400" />}
               color="bg-cyan-50 dark:bg-cyan-900/30"
-              sub={`${bedPatients} requiring beds`}
+              sub={`${bedPatients} ${t('dashboard.requiringBeds')}`}
             />
             <StatCard
-              label="Medicine Items"
+              label={t('common.medicines')}
               value={medicines.length}
               icon={<Pill size={20} className="text-amber-600 dark:text-amber-400" />}
               color="bg-amber-50 dark:bg-amber-900/30"
-              sub="in inventory"
+              sub={t('dashboard.in_inventory')}
             />
           </div>
 
@@ -75,7 +77,7 @@ export function Dashboard() {
                 <BedDouble size={20} className="text-rose-600 dark:text-rose-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Bed Occupancy</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t('dashboard.bed_occupancy')}</p>
                 <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5 tabular-nums">
                   {totalBeds - availableBeds}
                   <span className="text-sm text-slate-400 dark:text-slate-500 font-normal"> / {totalBeds}</span>
@@ -92,7 +94,7 @@ export function Dashboard() {
                     style={{ width: `${occupancyPct}%` }}
                   />
                 </div>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{occupancyPct}% occupied</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{occupancyPct}% {t('dashboard.occupied')}</p>
               </div>
             </div>
 
@@ -102,21 +104,21 @@ export function Dashboard() {
                 <TrendingUp size={20} className="text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Staff Assignment Rate</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t('dashboard.staff_assignment')}</p>
                 <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5 tabular-nums">
                   {assignmentPct}%
                 </p>
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                  {staff.length - unassignedStaff} of {staff.length} assigned
+                  {staff.length - unassignedStaff} {t('common.of')} {staff.length} {t('dashboard.assigned')}
                 </p>
               </div>
             </div>
 
             {/* Available beds highlight */}
             <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-5 text-white shadow-sm shadow-primary-600/20">
-              <p className="text-primary-100 text-sm font-medium">Available Beds</p>
+              <p className="text-primary-100 text-sm font-medium">{t('dashboard.available_beds')}</p>
               <p className="text-4xl font-bold mt-1 tabular-nums">{availableBeds}</p>
-              <p className="text-primary-200 text-xs mt-1">across all facilities</p>
+              <p className="text-primary-200 text-xs mt-1">{t('dashboard.across_all_facilities')}</p>
             </div>
           </div>
 
@@ -125,7 +127,7 @@ export function Dashboard() {
             {/* Recent patients */}
             <Card>
               <CardHeader>
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">Recent Patients</h3>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('dashboard.recent_patients')}</h3>
               </CardHeader>
               <CardBody className="p-0">
                 <div className="overflow-x-auto">
@@ -133,38 +135,46 @@ export function Dashboard() {
                     <thead>
                       <tr className="border-b border-slate-100 dark:border-slate-700">
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Patient
+                          {t('hospitals.detail.patient')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Admitted
+                          {t('hospitals.detail.admitted')}
                         </th>
                         <th className="text-left px-6 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Bed
+                          {t('hospitals.detail.bed')}
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {recentPatients.map(p => (
-                        <tr
-                          key={p.id}
-                          className="border-b border-slate-50 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
-                        >
-                          <td className="px-6 py-3">
-                            <p className="font-medium text-slate-800 dark:text-slate-200">{p.name}</p>
-                            <p className="text-xs text-slate-400 dark:text-slate-500">
-                              {p.age} yrs · {p.gender}
-                            </p>
-                          </td>
-                          <td className="px-6 py-3 text-slate-500 dark:text-slate-400 tabular-nums">
-                            {p.admittedAt}
-                          </td>
-                          <td className="px-6 py-3">
-                            <Badge variant={p.bedRequired ? 'danger' : 'success'}>
-                              {p.bedRequired ? 'Required' : 'Not needed'}
-                            </Badge>
+                      {recentPatients.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="px-6 py-10 text-center text-slate-400 dark:text-slate-500">
+                            {t('dashboard.no_recent_patients', 'No recent patients admitted to this hospital')}
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        recentPatients.map(p => (
+                          <tr
+                            key={p.id}
+                            className="border-b border-slate-50 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                          >
+                            <td className="px-6 py-3">
+                              <p className="font-medium text-slate-800 dark:text-slate-200">{p.name}</p>
+                              <p className="text-xs text-slate-400 dark:text-slate-500">
+                                {p.age} {t('dashboard.yrs')} · {p.gender}
+                              </p>
+                            </td>
+                            <td className="px-6 py-3 text-slate-500 dark:text-slate-400 tabular-nums">
+                              {p.admittedAt}
+                            </td>
+                            <td className="px-6 py-3">
+                              <Badge variant={p.bedRequired ? 'danger' : 'success'}>
+                                {p.bedRequired ? t('hospitals.detail.required') : t('hospitals.detail.notNeeded')}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -174,27 +184,33 @@ export function Dashboard() {
             {/* Facilities */}
             <Card>
               <CardHeader>
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">Facilities</h3>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('dashboard.facilities')}</h3>
               </CardHeader>
               <CardBody className="space-y-1 py-3">
-                {recentHospitals.map(h => (
-                  <Link
-                    key={h.id}
-                    to={`/hospitals/${h.id}`}
-                    className="flex items-center justify-between py-2.5 px-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors group"
-                  >
-                    <div>
-                      <p className="font-medium text-slate-800 dark:text-slate-200 text-sm group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{h.name}</p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500">{h.city}</p>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant={h.type === 'CHC' ? 'warning' : 'success'}>{h.type}</Badge>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                        {h.availableBeds}/{h.totalBeds} beds free
-                      </p>
-                    </div>
-                  </Link>
-                ))}
+                {recentHospitals.length === 0 ? (
+                  <div className="py-10 text-center text-slate-400 dark:text-slate-500 text-sm">
+                    {t('dashboard.no_facilities', 'No facilities found for this hospital')}
+                  </div>
+                ) : (
+                  recentHospitals.map(h => (
+                    <Link
+                      key={h.id}
+                      to={`/hospitals/${h.id}`}
+                      className="flex items-center justify-between py-2.5 px-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors group"
+                    >
+                      <div>
+                        <p className="font-medium text-slate-800 dark:text-slate-200 text-sm group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{h.name}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500">{h.city}</p>
+                      </div>
+                      <div className="text-right">
+                        <Badge variant={h.type === 'CHC' ? 'warning' : 'success'}>{h.type}</Badge>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                          {h.availableBeds}/{h.totalBeds} {t('dashboard.beds_free')}
+                        </p>
+                      </div>
+                    </Link>
+                  ))
+                )}
               </CardBody>
             </Card>
           </div>

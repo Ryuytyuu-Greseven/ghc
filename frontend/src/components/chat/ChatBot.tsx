@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useChatSession } from '../../hooks/useChatSession';
+import { useTranslation } from 'react-i18next';
 
 type Mode = 'text' | 'voice';
 type VoiceState = 'connecting' | 'listening' | 'processing' | 'responding' | 'speaking' | 'error';
@@ -37,6 +38,7 @@ const CHAT_PANEL_HEIGHT = 'min(580px, calc(100dvh - 6.5rem))';
 const CHAT_FOOTER_HEIGHT = 'h-[230px]';
 
 function Bubble({ msg }: { msg: Message }) {
+  const { t } = useTranslation();
   const isBot = msg.role === 'bot';
   return (
     <div className={clsx('flex gap-2 animate-fade-in', isBot ? 'flex-row' : 'flex-row-reverse')}>
@@ -54,7 +56,7 @@ function Bubble({ msg }: { msg: Message }) {
               : 'bg-orange-500 text-white font-medium rounded-tr-none shadow-sm',
           )}
         >
-          {msg.content}
+          {msg.content === 'initMessage' ? t('chatbot.initMessage') : msg.content}
         </div>
         <span className="text-[10px] text-slate-400 px-0.5">{msg.time}</span>
       </div>
@@ -79,14 +81,14 @@ function deriveVoiceState(
 }
 
 export function ChatBot() {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<Mode>('text');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'init',
       role: 'bot',
-      content:
-        "Hi! I'm GHC Health Assistant. I can help with bed availability, staff assignments, patient data, and medicine inventory. Type a message or switch to voice mode.",
+      content: 'initMessage',
       time: getTime(),
     },
   ]);
@@ -177,12 +179,12 @@ export function ChatBot() {
   };
 
   const voiceLabel: Record<VoiceState, string> = {
-    connecting: 'Connecting to chat server…',
-    listening: 'Listening — speak naturally',
-    processing: 'Processing your voice…',
-    responding: 'Generating response…',
-    speaking: 'Playing response — tap to stop',
-    error: chat.error ?? 'Connection error',
+    connecting: t('chatbot.connecting'),
+    listening: t('chatbot.listening'),
+    processing: t('chatbot.processing'),
+    responding: t('chatbot.responding'),
+    speaking: t('chatbot.speaking'),
+    error: chat.error ?? t('chatbot.connectionError'),
   };
 
   const showLiveTranscript = mode === 'voice' && chat.transcript && voiceState !== 'speaking';
@@ -193,12 +195,12 @@ export function ChatBot() {
 
   const connectionLabel =
     chat.connectionState === 'connected'
-      ? `${mode === 'voice' ? 'Voice' : 'Text'} · ${chat.sessionId?.slice(0, 8) ?? 'live'}`
+      ? `${mode === 'voice' ? t('chatbot.voice') : t('chatbot.text')} · ${chat.sessionId?.slice(0, 8) ?? 'live'}`
       : chat.connectionState === 'connecting'
-        ? `${mode === 'voice' ? 'Voice' : 'Text'} · Connecting…`
+        ? `${mode === 'voice' ? t('chatbot.voice') : t('chatbot.text')} · ${t('chatbot.connectingDot')}`
         : chat.connectionState === 'error'
-          ? `${mode === 'voice' ? 'Voice' : 'Text'} · Error`
-          : `${mode === 'voice' ? 'Voice' : 'Text'} · Offline`;
+          ? `${mode === 'voice' ? t('chatbot.voice') : t('chatbot.text')} · ${t('chatbot.error')}`
+          : `${mode === 'voice' ? t('chatbot.voice') : t('chatbot.text')} · ${t('chatbot.offline')}`;
 
   const canSendText =
     input.trim().length > 0 &&
@@ -221,7 +223,7 @@ export function ChatBot() {
 
         <button
           onClick={() => (isOpen ? handleClose() : setIsOpen(true))}
-          aria-label={isOpen ? 'Close chat' : 'Open chat'}
+          aria-label={isOpen ? t('common.cancel') : t('common.viewDetails')}
           className={clsx(
             'relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-300',
             isOpen
@@ -255,7 +257,7 @@ export function ChatBot() {
                 />
               </div>
               <div>
-                <p className="text-slate-800 font-semibold text-sm leading-tight">GHC Assistant</p>
+                <p className="text-slate-800 font-semibold text-sm leading-tight">{t('chatbot.chatTitle')}</p>
                 <p
                   className={clsx(
                     'text-xs',
@@ -280,7 +282,7 @@ export function ChatBot() {
                   )}
                 >
                   <MessageSquare size={11} />
-                  Text
+                  {t('chatbot.text')}
                 </button>
                 <button
                   onClick={() => switchMode('voice')}
@@ -292,7 +294,7 @@ export function ChatBot() {
                   )}
                 >
                   <Mic size={11} />
-                  Voice
+                  {t('chatbot.voice')}
                 </button>
               </div>
 
@@ -480,11 +482,11 @@ export function ChatBot() {
 
               <p className="text-[10px] text-slate-400 text-center">
                 {voiceState === 'speaking'
-                  ? 'Tap to stop playback'
+                  ? t('chatbot.tapToStop')
                   : voiceState === 'listening'
-                    ? 'Mic is open — tap to reset conversation'
+                    ? t('chatbot.micIsOpen')
                     : voiceState === 'responding'
-                      ? 'Tap to reset conversation'
+                      ? t('chatbot.tapToReset')
                       : '\u00a0'}
               </p>
             </div>
@@ -504,7 +506,7 @@ export function ChatBot() {
                       sendText();
                     }
                   }}
-                  placeholder="Ask about beds, staff, medicines…"
+                  placeholder={t('chatbot.placeholder')}
                   disabled={chat.connectionState !== 'connected'}
                   className="flex-1 bg-slate-50 text-sm text-slate-800 placeholder-slate-400 border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 />
@@ -520,7 +522,7 @@ export function ChatBot() {
 
               {chat.isProcessing && (
                 <p className="text-[10px] text-orange-500 flex items-center justify-center gap-1">
-                  <Loader2 size={10} className="animate-spin" /> Generating response…
+                  <Loader2 size={10} className="animate-spin" /> {t('chatbot.responding')}
                 </p>
               )}
             </div>
@@ -543,7 +545,7 @@ export function ChatBot() {
                 {connectionLabel}
               </span>
             </div>
-            <span className="text-[10px] text-slate-400">GHC Health AI</span>
+            <span className="text-[10px] text-slate-400">{t('chatbot.healthAI')}</span>
           </div>
         </div>
       )}

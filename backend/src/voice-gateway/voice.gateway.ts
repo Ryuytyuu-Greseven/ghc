@@ -38,10 +38,15 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly sessionService: SessionService) {}
 
   handleConnection(@ConnectedSocket() client: Socket) {
+    const lang = client.handshake.auth?.lang || 'en';
+    const languageCode =
+      lang === 'hi' ? 'hi-IN' : lang === 'te' ? 'te-IN' : lang === 'bn' ? 'bn-IN' : 'en-US';
+
     this.sessionService.create(
       client.id,
       (transcript) => this.onFinalTranscript(client, transcript),
       (text) => client.emit('transcript:partial', { text }),
+      { languageCode },
     );
     client.emit('session:ready', { sessionId: client.id });
     console.log(`[voice] connected: ${client.id} | total: ${this.sessionService.size()}`);
@@ -107,8 +112,9 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // ────────────────────────────────────────────────────────────────────────
 
     const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
+    const lang = client.handshake.auth?.lang || 'en';
 
-    await httpLocalStorage.run({ token }, async () => {
+    await httpLocalStorage.run({ token, lang }, async () => {
       try {
         client.emit('transcript:final', { text: transcript });
 
@@ -123,6 +129,40 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         const domain = supervisorResult.domain;
         session.domain = domain;
+
+        if (domain === 'out_of_scope') {
+          let text = '';
+          if (lang === 'hi') {
+            text = "मैं इस अनुरोध को संसाधित करने में असमर्थ हूँ। यह या तो मेरे दायरे से बाहर है या मुझे आपका अनुरोध समझ नहीं आया। कृपया व्यवस्थापक या संबंधित सदस्य से संपर्क करें।";
+          } else if (lang === 'te') {
+            text = "నేను ఈ అభ్యర్థనను ప్రాసెస్ చేయలేకపోతున్నాను. ఇది నా పరిధికి వెలుపల ఉంది లేదా మీ అభ్యర్థన నాకు అర్థం కాలేదు. దయచేసి నిర్వాహకుడిని లేదా సంబంధిత సభ్యుడిని సంప్రదించండిం";
+          } else if (lang === 'bn') {
+            text = "আমি এই অনুরোধটি প্রক্রিয়া করতে অক্ষম। এটি আমার সুযোগের বাইরে বা আমি আপনার অনুরোধটি বুঝতে পারিনি। দয়া করে প্রশাসক বা সংশ্লিষ্ট সদস্যের সাথে যোগাযোগ করুন।";
+          } else {
+            text = "I am unable to process this request. It is either out of my scope or I did not understand your request. Please contact the administrator or the respective team member.";
+          }
+
+          client.emit('agent:chunk', { text });
+          client.emit('agent:done', { text });
+
+          session.conversationHistory.push(new HumanMessage(transcript));
+          session.conversationHistory.push(new AIMessage(text));
+
+          const ttsOptions = lang === 'hi' ? { languageCode: 'hi-IN', voiceName: 'hi-IN-Neural2-C' } :
+                             lang === 'te' ? { languageCode: 'te-IN', voiceName: 'te-IN-Standard-A' } :
+                             lang === 'bn' ? { languageCode: 'bn-IN', voiceName: 'bn-IN-Standard-A' } :
+                             { languageCode: 'en-US', voiceName: 'en-US-Neural2-J' };
+
+          const audioBuffer = await synthesizeSpeech(text, ttsOptions);
+          if (signal.aborted) return;
+
+          for (let offset = 0; offset < audioBuffer.length; offset += TTS_CHUNK_SIZE) {
+            if (signal.aborted) break;
+            client.emit('audio:response', audioBuffer.subarray(offset, offset + TTS_CHUNK_SIZE));
+          }
+          if (!signal.aborted) client.emit('audio:done', {});
+          return;
+        }
 
         // 2. Build agent input — don't mutate history yet (abort may cancel this)
         const agentMessages = [...session.conversationHistory, new HumanMessage(transcript)];

@@ -25,7 +25,8 @@ function RoleGuard({ allowedRoles, children }: GuardProps) {
   const role = currentUser?.role || 'Admin';
 
   if (!allowedRoles.includes(role)) {
-    return <Navigate to="/" replace />;
+    const redirectPath = role === 'Admin' ? '/' : '/availability';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return <>{children}</>;
@@ -40,7 +41,14 @@ export default function App() {
             <SidebarProvider>
               <Layout>
                 <Routes>
-                  <Route path="/" element={<Dashboard />} />
+                  <Route
+                    path="/"
+                    element={
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Pharmacist', 'Compounder', 'Lab Technician', 'Cashier']}>
+                        <Dashboard />
+                      </RoleGuard>
+                    }
+                  />
                   <Route
                     path="/hospitals"
                     element={
@@ -84,7 +92,7 @@ export default function App() {
                   <Route
                     path="/medicines"
                     element={
-                      <RoleGuard allowedRoles={['Admin', 'Pharmacist', 'Compounder', 'Lab Technician']}>
+                      <RoleGuard allowedRoles={['Admin', 'Pharmacist', 'Compounder', 'Lab Technician', 'Doctor', 'Nurse', 'Receptionist', 'Cashier']}>
                         <MedicineList />
                       </RoleGuard>
                     }

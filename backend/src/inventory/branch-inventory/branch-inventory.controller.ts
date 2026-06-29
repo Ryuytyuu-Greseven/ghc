@@ -37,4 +37,27 @@ export class BranchInventoryController {
   update(@Param('id') id: string, @Body() body: Record<string, any>) {
     return this.service.update(id, body);
   }
+
+  @Get('branch/:branchId/category/:category')
+  async findByBranchAndCategory(
+    @Param('branchId') branchId: string,
+    @Param('category') category: string,
+  ) {
+    return this.service.findByBranchAndCategory(branchId, category);
+  }
+
+  @Put('branch/:branchId/adjust')
+  async adjustStock(
+    @Param('branchId') branchId: string,
+    @Body() body: { itemId: string; quantity: number; batchNo: string; expiryDate?: string },
+  ) {
+    const { itemId, quantity, batchNo, expiryDate } = body;
+    return this.service.adjustStock(
+      branchId,
+      itemId,
+      quantity,
+      batchNo,
+      expiryDate ? new Date(expiryDate) : null,
+    );
+  }
 }

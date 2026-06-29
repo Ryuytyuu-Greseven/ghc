@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HospitalsModule } from './hospitals/hospitals.module';
 import { PatientsModule } from './patients/patients.module';
-import { MedicinesModule } from './medicines/medicines.module';
 import { StaffModule } from './staff/staff.module';
 import { ChatGatewayModule } from './chat-gateway/chat-gateway.module';
 import { AuthModule } from './auth/auth.module';
@@ -22,6 +22,7 @@ config();
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -32,7 +33,6 @@ config();
     CommonModule,
     HospitalsModule,
     PatientsModule,
-    MedicinesModule,
     StaffModule,
     ChatGatewayModule,
     AuthModule,

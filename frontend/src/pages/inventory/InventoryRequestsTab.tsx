@@ -9,6 +9,7 @@ import type { InventoryRequest, RequestStatus } from '../../types';
 import { RequestForm } from './RequestForm';
 import { RequestDetailModal } from './RequestDetailModal';
 import { PaginationControls } from '../../components/ui/PaginationControls';
+import { useTranslation } from 'react-i18next';
 
 const statusVariant: Record<RequestStatus, 'warning' | 'success' | 'danger' | 'purple'> = {
   Pending: 'warning',
@@ -18,8 +19,14 @@ const statusVariant: Record<RequestStatus, 'warning' | 'success' | 'danger' | 'p
 };
 
 export function InventoryRequestsTab() {
+  const { t, i18n } = useTranslation();
   const { requests, requestsPagination, loadingRequests, error, actionError, clearActionError, loadRequests } = useInventory();
-  const { hospitals } = useApp();
+  const { hospitals, currentUser, staff } = useApp();
+
+  const isAdmin = currentUser?.role === 'Admin';
+  const currentStaff = staff.find((s) => s.userId === currentUser?.id || s.username === currentUser?.username);
+  const userHospitalId = currentStaff?.assignedHospitalId;
+  const assignedHospital = hospitals.find((h) => h.id === userHospitalId || h._id === userHospitalId);
 
   const [newReqOpen, setNewReqOpen] = useState(false);
   const [detailRequest, setDetailRequest] = useState<InventoryRequest | null>(null);
@@ -36,6 +43,18 @@ export function InventoryRequestsTab() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  useEffect(() => {
+    if (!isAdmin && assignedHospital && selectedBranchId === 'All') {
+      setSelectedBranchId(assignedHospital.id);
+    }
+  }, [isAdmin, assignedHospital, selectedBranchId]);
+
+  const branchOptions = isAdmin
+    ? hospitals.map((h) => ({ value: h.id, label: h.name }))
+    : assignedHospital
+    ? [{ value: assignedHospital.id, label: assignedHospital.name }]
+    : [];
+
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       setSearch(searchInput);
@@ -45,6 +64,10 @@ export function InventoryRequestsTab() {
 
   // Load requests on state changes
   useEffect(() => {
+    if (!isAdmin && !assignedHospital) {
+      return;
+    }
+
     const params = new URLSearchParams();
     params.append('page', String(page));
     params.append('pageSize', String(pageSize));
@@ -54,7 +77,9 @@ export function InventoryRequestsTab() {
     if (filterStatus !== 'All') {
       params.append('status', filterStatus);
     }
-    if (selectedBranchId !== 'All') {
+    if (!isAdmin && assignedHospital) {
+      params.append('branchId', assignedHospital.id);
+    } else if (selectedBranchId !== 'All') {
       params.append('branchId', selectedBranchId);
     }
     if (fromDate) {
@@ -68,7 +93,7 @@ export function InventoryRequestsTab() {
     }
 
     loadRequests(params.toString());
-  }, [page, pageSize, sortBy, sortOrder, filterStatus, selectedBranchId, fromDate, toDate, search, loadRequests]);
+  }, [page, pageSize, sortBy, sortOrder, filterStatus, selectedBranchId, fromDate, toDate, search, loadRequests, isAdmin, assignedHospital]);
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -102,7 +127,7 @@ export function InventoryRequestsTab() {
               />
               <input
                 type="text"
-                placeholder="Search requests..."
+                placeholder={t('inventory.requests.searchPlaceholder')}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
@@ -119,11 +144,11 @@ export function InventoryRequestsTab() {
               }}
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
-              <option value="All">All Statuses</option>
-              <option value="Pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Partial">Partial</option>
+              <option value="All">{t('inventory.requests.allStatuses')}</option>
+              <option value="Pending">{t('inventory.status.Pending')}</option>
+              <option value="Approved">{t('inventory.status.Approved')}</option>
+              <option value="Rejected">{t('inventory.status.Rejected')}</option>
+              <option value="Partial">{t('inventory.status.Partial')}</option>
             </select>
 
             {/* Branch Select */}
@@ -135,10 +160,10 @@ export function InventoryRequestsTab() {
               }}
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500 max-w-[180px]"
             >
-              <option value="All">All Branches</option>
-              {hospitals.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name}
+              {isAdmin && <option value="All">{t('inventory.branch.allBranches')}</option>}
+              {branchOptions.map((h) => (
+                <option key={h.value} value={h.value}>
+                  {h.label}
                 </option>
               ))}
             </select>
@@ -154,7 +179,7 @@ export function InventoryRequestsTab() {
                 }}
                 className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-2 py-1.5 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
-              <span>to</span>
+              <span>{t('inventory.requests.to')}</span>
               <input
                 type="date"
                 value={toDate}
@@ -167,9 +192,11 @@ export function InventoryRequestsTab() {
             </div>
           </div>
 
-          <Button onClick={() => setNewReqOpen(true)}>
-            <Plus size={15} /> Raise Request
-          </Button>
+          {!isAdmin && (
+            <Button onClick={() => setNewReqOpen(true)}>
+              <Plus size={15} /> {t('inventory.requests.raiseRequest')}
+            </Button>
+          )}
         </div>
 
         {/* Error notification */}
@@ -204,7 +231,7 @@ export function InventoryRequestsTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Req Number
+                        {t('inventory.requests.requestNumber')}
                         {sortBy === 'requestNumber' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -215,7 +242,7 @@ export function InventoryRequestsTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Branch
+                        {t('inventory.requests.branch')}
                         {sortBy === 'branchName' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -226,21 +253,21 @@ export function InventoryRequestsTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Requested By
+                        {t('inventory.requests.requestedBy')}
                         {sortBy === 'requestedBy' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </div>
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">
-                      Items Count
+                      {t('inventory.requests.itemsCount')}
                     </th>
                     <th
                       onClick={() => handleSort('status')}
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Status
+                        {t('inventory.requests.status')}
                         {sortBy === 'status' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -251,7 +278,7 @@ export function InventoryRequestsTab() {
                       className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/80 px-5 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none transition-colors"
                     >
                       <div className="flex items-center gap-1">
-                        Raised Date
+                        {t('inventory.requests.date')}
                         {sortBy === 'createdAt' && (
                           <span className="text-[10px]">{sortOrder === 'asc' ? '▲' : '▼'}</span>
                         )}
@@ -283,13 +310,13 @@ export function InventoryRequestsTab() {
                           {r.requestedBy}
                         </td>
                         <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 hidden md:table-cell font-mono">
-                          {r.items.length} items
+                          {t('inventory.requests.itemsCountText', { count: r.items.length })}
                         </td>
                         <td className="px-5 py-3.5">
-                          <Badge variant={statusVariant[r.status]}>{r.status}</Badge>
+                          <Badge variant={statusVariant[r.status]}>{t(`inventory.status.${r.status}`)}</Badge>
                         </td>
                         <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 text-xs">
-                          {new Date(r.createdAt).toLocaleDateString('en-IN', {
+                          {new Date(r.createdAt).toLocaleDateString(i18n.language, {
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric',
@@ -301,9 +328,9 @@ export function InventoryRequestsTab() {
                           <button
                             onClick={() => setDetailRequest(r)}
                             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition"
-                            title={r.status === 'Pending' ? 'Review & Fulfill' : 'View Details'}
+                            title={r.status === 'Pending' && isAdmin ? t('inventory.requests.reviewFulfill') : t('common.viewDetails')}
                           >
-                            {r.status === 'Pending' ? (
+                            {r.status === 'Pending' && isAdmin ? (
                               <CheckCircle size={15} className="text-emerald-500" />
                             ) : (
                               <Eye size={15} />
@@ -321,8 +348,8 @@ export function InventoryRequestsTab() {
           {requests.length === 0 && !loadingRequests && (
             <div className="text-center py-16 text-slate-400 dark:text-slate-500">
               <ClipboardList size={36} className="mx-auto mb-3 opacity-30" />
-              <p className="font-medium text-slate-500 dark:text-slate-400">No requests found</p>
-              <p className="text-sm mt-1">Try changing filters or raise a new request.</p>
+              <p className="font-medium text-slate-500 dark:text-slate-400">{t('inventory.requests.noRequestsFound')}</p>
+              <p className="text-sm mt-1">{t('inventory.requests.noRequestsFoundDesc')}</p>
             </div>
           )}
 
@@ -340,7 +367,7 @@ export function InventoryRequestsTab() {
         </div>
       </div>
 
-      <Modal open={newReqOpen} onClose={() => setNewReqOpen(false)} title="Raise Stock Request">
+      <Modal open={newReqOpen} onClose={() => setNewReqOpen(false)} title={t('inventory.requests.newRequest')}>
         <RequestForm onClose={() => setNewReqOpen(false)} />
       </Modal>
 
@@ -348,7 +375,7 @@ export function InventoryRequestsTab() {
         <Modal
           open={!!detailRequest}
           onClose={() => setDetailRequest(null)}
-          title={`Request Details: ${detailRequest.requestNumber}`}
+          title={`${t('inventory.requests.requestDetails')}: ${detailRequest.requestNumber}`}
         >
           <RequestDetailModal request={detailRequest} onClose={() => setDetailRequest(null)} />
         </Modal>

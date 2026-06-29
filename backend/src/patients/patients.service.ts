@@ -38,6 +38,10 @@ export class PatientsService {
     });
   }
 
+  async findAllList(filter: object = {}) {
+    return this.patientRepository.findAll({ isActive: true, ...filter });
+  }
+
   async findOne(id: string) {
     const patient = await this.patientRepository.findById(id);
     if (!patient) throw new NotFoundException(`Patient ${id} not found`);

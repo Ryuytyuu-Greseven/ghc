@@ -55,6 +55,8 @@ export interface Staff {
   email?: string;
   role: StaffRole;
   department?: Department;
+  userId?: string;
+  unavailableOnDays?: string[];
   designation?: string;
   joiningDate?: string;
   employmentType?: 'Full Time' | 'Part Time' | 'Visiting';
@@ -80,6 +82,7 @@ export interface Staff {
   pincode?: string;
   assignedHospitalId: string | null;
   isMedicalIncharge?: boolean;
+  unavailableOnDays?: string[];
   createdAt: string;
 }
 

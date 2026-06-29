@@ -26,12 +26,17 @@ export class InventoryMasterRepository {
   }
 
   async search(query: string): Promise<InventoryMasterDocument[]> {
+    // Build fuzzy patterns: exact + all single-char deletions
+    const variants = new Set<string>();
+    variants.add(query);
+    for (let i = 0; i < query.length; i++) {
+      variants.add(query.slice(0, i) + query.slice(i + 1));
+    }
+    const orClauses = [...variants].map((v) => ({
+      itemName: { $regex: new RegExp(v, 'i') },
+    }));
     return this.model
-      .find({
-        $or: [
-          { itemName: { $regex: query, $options: 'i' } },
-        ],
-      })
+      .find({ $or: orClauses })
       .sort({ itemName: 1 })
       .exec();
   }
@@ -40,6 +45,7 @@ export class InventoryMasterRepository {
     const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(options, {
       searchFields: ['itemName'],
       exactFilters: ['category', 'status'],
+      fuzzySearch: true,
       defaultSort: { field: 'itemName', order: 'asc' },
     });
 

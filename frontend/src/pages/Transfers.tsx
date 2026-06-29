@@ -3,8 +3,9 @@ import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useApp, authFetch } from '../context/AppContext';
-import { Users, AlertTriangle, ArrowRight, CheckCircle2, Building, UserCheck, Loader2, Calendar, ClipboardList } from 'lucide-react';
+import { AlertTriangle, ArrowRight, CheckCircle2, Building, UserCheck, Loader2, Calendar, ClipboardList } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useTranslation } from 'react-i18next';
 
 interface CoverageRequest {
   _id: string;
@@ -41,6 +42,7 @@ interface CoverageRequest {
 }
 
 export function Transfers() {
+  const { t } = useTranslation();
   const { staff, hospitals } = useApp();
   const [requests, setRequests] = useState<CoverageRequest[]>([]);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
@@ -95,11 +97,11 @@ export function Transfers() {
         body: JSON.stringify({ replacementStaffId: alternativeStaffId }),
       });
 
-      if (!res.ok) throw new Error('Transfer failed');
+      if (!res.ok) throw new Error(t('transfers.transferFailed'));
 
       const replacement = staff.find(s => s.id === alternativeStaffId);
       setSuccessMsg(
-        `Successfully assigned ${replacement?.name || 'replacement'} to cover ${selectedRequest.vacantHospitalId.name}.`
+        t('transfers.successMsg', { replacement: replacement?.name || t('transfers.replacement'), hospital: selectedRequest.vacantHospitalId.name })
       );
       setAlternativeStaffId('');
       setSelectedRequestId(null);
@@ -126,7 +128,7 @@ export function Transfers() {
   if (isLoading) {
     return (
       <div className="flex flex-col h-full">
-        <Header title="Coverage & Transfers" subtitle="Loading requests..." />
+        <Header title={t('transfers.title')} subtitle={t('transfers.loadingRequests')} />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
         </div>
@@ -137,8 +139,8 @@ export function Transfers() {
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900">
       <Header
-        title="Coverage & Transfers"
-        subtitle="Manage hospital vacancies by transferring alternative staff from the same department."
+        title={t('transfers.title')}
+        subtitle={t('transfers.subtitle')}
       />
 
       <div className="flex bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-2 gap-4">
@@ -157,7 +159,7 @@ export function Transfers() {
                 : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
             )}
           >
-            {tab} Requests ({requests.filter(r => {
+            {t(`transfers.tabs.${tab}`)} ({requests.filter(r => {
               if (tab === 'Pending') return r.status === 'Pending';
               if (tab === 'Approved') return r.status === 'Approved';
               return r.status === 'Completed' || r.status === 'Rejected';
@@ -170,9 +172,9 @@ export function Transfers() {
         <div className="max-w-6xl mx-auto space-y-6">
 
           {successMsg && (
-            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl flex items-start gap-3 text-emerald-800 dark:text-emerald-300 animate-fadeIn">
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-95/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl flex items-start gap-3 text-emerald-800 dark:text-emerald-300 animate-fadeIn">
               <CheckCircle2 className="shrink-0 mt-0.5" size={18} />
-              <p className="text-sm font-medium">{successMsg} Refreshing page...</p>
+              <p className="text-sm font-medium">{successMsg} {t('transfers.refreshing')}</p>
             </div>
           )}
 
@@ -182,7 +184,7 @@ export function Transfers() {
             <div className="lg:col-span-1 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
               <div className="p-4 border-b border-slate-100 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-800/50 rounded-t-xl">
                 <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
-                  Request List
+                  {t('transfers.requestList')}
                 </h3>
               </div>
               
@@ -190,11 +192,11 @@ export function Transfers() {
                 {filteredRequests.length === 0 ? (
                   <div className="text-center py-12 text-slate-400 dark:text-slate-500">
                     <ClipboardList className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p className="text-sm italic">No requests in this tab.</p>
+                    <p className="text-sm italic">{t('transfers.noRequests')}</p>
                   </div>
                 ) : (
                   filteredRequests.map(req => {
-                    const originalHospitalName = req.vacantHospitalId?.name || 'Unknown Branch';
+                    const originalHospitalName = req.vacantHospitalId?.name || t('common.unknown');
                     return (
                       <button
                         key={req._id}
@@ -212,26 +214,26 @@ export function Transfers() {
                       >
                         <div className="flex justify-between items-start gap-2">
                           <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">
-                            {req.staffId?.name || 'Staff Member'}
+                            {req.staffId?.name || t('staff.staffMember')}
                           </span>
                           <Badge variant={req.status === 'Pending' ? 'warning' : req.status === 'Approved' ? 'success' : 'info'} className="text-[10px] py-0.5">
-                            {req.staffId?.department || 'Department'}
+                            {t(`departments.${req.staffId?.department}`) || req.staffId?.department}
                           </Badge>
                         </div>
                         
                         <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
                           <div className="flex items-center gap-1">
                             <Building size={12} />
-                            <span>Vacant Branch: {originalHospitalName}</span>
+                            <span>{t('transfers.vacantBranch')}: {originalHospitalName}</span>
                           </div>
                           <div className="flex items-center gap-1 text-red-500/80 font-medium">
                             <Calendar size={12} />
-                            <span>Dates: {req.startDate} to {req.endDate}</span>
+                            <span>{t('transfers.dates')}: {req.startDate} to {req.endDate}</span>
                           </div>
                           {req.replacementStaffId && (
                             <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
                               <UserCheck size={12} />
-                              <span>Cover: {req.replacementStaffId.name}</span>
+                              <span>{t('transfers.cover')}: {req.replacementStaffId.name}</span>
                             </div>
                           )}
                         </div>
@@ -249,17 +251,17 @@ export function Transfers() {
                   
                   {/* Vacancy Summary Card */}
                   <div className="bg-slate-50 dark:bg-slate-900/40 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 space-y-4">
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Vacant Position Details</h4>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('transfers.vacantPositionDetails')}</h4>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <p className="font-bold text-slate-800 dark:text-slate-100 text-base">
                           {selectedRequest.staffId.name}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          Department: <span className="font-semibold text-slate-700 dark:text-slate-300">{selectedRequest.staffId.department}</span>
+                          {t('transfers.department')}: <span className="font-semibold text-slate-700 dark:text-slate-300">{t(`departments.${selectedRequest.staffId.department}`) || selectedRequest.staffId.department}</span>
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          Role: <span className="font-semibold text-slate-700 dark:text-slate-300">{selectedRequest.staffId.role}</span>
+                          {t('transfers.role')}: <span className="font-semibold text-slate-700 dark:text-slate-300">{t(`roles.${selectedRequest.staffId.role}`) || selectedRequest.staffId.role}</span>
                         </p>
                       </div>
                       
@@ -282,22 +284,22 @@ export function Transfers() {
                   {selectedRequest.status === 'Pending' ? (
                     <div className="space-y-4">
                       <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
-                        Select Alternative Coverage
+                        {t('transfers.selectAlternative')}
                       </h3>
 
                       {alternatives.length === 0 ? (
                         <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-xl flex items-start gap-3 text-amber-800 dark:text-amber-300">
                           <AlertTriangle className="shrink-0 mt-0.5" size={18} />
                           <div className="text-sm">
-                            <p className="font-semibold">No alternative staff available</p>
-                            <p className="mt-0.5">There are no other available {selectedRequest.staffId.role}s in the <strong>{selectedRequest.staffId.department}</strong> department to assign.</p>
+                            <p className="font-semibold">{t('transfers.noAlternatives')}</p>
+                            <p className="mt-0.5">{t('transfers.noAlternativesDesc', { role: t(`roles.${selectedRequest.staffId.role}`) || selectedRequest.staffId.role, department: t(`departments.${selectedRequest.staffId.department}`) || selectedRequest.staffId.department })}</p>
                           </div>
                         </div>
                       ) : (
                         <div className="space-y-4">
                           <div className="space-y-1.5">
                             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                              Choose Replacement Staff Member
+                              {t('transfers.chooseReplacement')}
                             </label>
                             <select
                               required
@@ -305,12 +307,12 @@ export function Transfers() {
                               onChange={(e) => setAlternativeStaffId(e.target.value)}
                               className="w-full p-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-900/30 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
                             >
-                              <option value="">-- Choose Replacement --</option>
+                              <option value="">{t('transfers.chooseReplacementPlaceholder')}</option>
                               {alternatives.map(alt => {
                                 const altHospital = hospitals.find(h => h.id === alt.assignedHospitalId);
                                 return (
                                   <option key={alt.id} value={alt.id}>
-                                    {alt.name} (Current Branch: {altHospital?.name || 'Unassigned'})
+                                    {alt.name} ({t('transfers.currentBranch')}: {altHospital?.name || t('hospitals.detail.unassigned')})
                                   </option>
                                 );
                               })}
@@ -322,10 +324,10 @@ export function Transfers() {
                               <UserCheck className="text-emerald-500 shrink-0" size={20} />
                               <div>
                                 <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                  Confirm Coverage Assign
+                                  {t('transfers.confirmCoverageAssign')}
                                 </p>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                  This will assign the selected coverage member to <strong>{selectedRequest.vacantHospitalId.name}</strong> for the period: {selectedRequest.startDate} to {selectedRequest.endDate}.
+                                  {t('transfers.confirmCoverageDesc', { hospital: selectedRequest.vacantHospitalId.name, start: selectedRequest.startDate, end: selectedRequest.endDate })}
                                 </p>
                               </div>
                             </div>
@@ -341,11 +343,11 @@ export function Transfers() {
                         >
                           {isSubmitting ? (
                             <>
-                              <Loader2 className="animate-spin" size={16} /> Assigning...
+                              <Loader2 className="animate-spin" size={16} /> {t('transfers.assigning')}
                             </>
                           ) : (
                             <>
-                              <UserCheck size={16} /> Assign Coverage
+                              <UserCheck size={16} /> {t('transfers.assignCoverage')}
                             </>
                           )}
                         </Button>
@@ -353,13 +355,13 @@ export function Transfers() {
                     </div>
                   ) : (
                     <div className="bg-slate-50 dark:bg-slate-900/10 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 space-y-3">
-                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Coverage Log Summary</h4>
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('transfers.coverageLogSummary')}</h4>
                       <p className="text-sm text-slate-700 dark:text-slate-300">
-                        Status: <Badge variant={selectedRequest.status === 'Approved' ? 'success' : 'info'}>{selectedRequest.status}</Badge>
+                        {t('transfers.status')}: <Badge variant={selectedRequest.status === 'Approved' ? 'success' : 'info'}>{selectedRequest.status}</Badge>
                       </p>
                       {selectedRequest.replacementStaffId && (
                         <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">
-                          Assigned Coverage Staff: <span className="font-bold text-slate-800 dark:text-slate-100">{selectedRequest.replacementStaffId.name}</span>
+                          {t('transfers.assignedCoverageStaff')}: <span className="font-bold text-slate-800 dark:text-slate-100">{selectedRequest.replacementStaffId.name}</span>
                         </p>
                       )}
                     </div>
@@ -369,8 +371,8 @@ export function Transfers() {
               ) : (
                 <div className="h-full min-h-[350px] flex flex-col items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 border-dashed p-8 text-center text-slate-400 dark:text-slate-500">
                   <Building className="h-12 w-12 mb-3 opacity-30" />
-                  <h4 className="text-base font-bold text-slate-700 dark:text-slate-300">No Coverage Request Selected</h4>
-                  <p className="text-sm mt-1 max-w-sm">Select an unavailability request from the list to assign alternative coverage staff members.</p>
+                  <h4 className="text-base font-bold text-slate-700 dark:text-slate-300">{t('transfers.noRequestSelected')}</h4>
+                  <p className="text-sm mt-1 max-w-sm">{t('transfers.selectFromListDesc')}</p>
                 </div>
               )}
             </div>

@@ -1,4 +1,5 @@
 import { forwardRef, useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SelectHTMLAttributes } from 'react';
 import { clsx } from 'clsx';
 import { ChevronDown, Search } from 'lucide-react';
@@ -13,6 +14,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, options, placeholder, dropdownPlacement = 'auto', className, onChange, onBlur, value, ...props }, ref) => {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [openUpward, setOpenUpward] = useState(false);
@@ -37,7 +39,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 
     // Get current label to display on the button
     const selectedOption = options.find(o => String(o.value) === String(value));
-    const displayLabel = selectedOption ? selectedOption.label : placeholder || 'Select option…';
+    const displayLabel = selectedOption ? selectedOption.label : placeholder || t('common.selectPlaceholder');
 
     const handleSelect = (val: string) => {
       if (onChange) {
@@ -127,7 +129,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               <input
                 type="text"
                 autoFocus
-                placeholder="Search options…"
+                placeholder={t('common.searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full text-xs text-slate-700 dark:text-slate-200 bg-transparent border-none outline-none focus:ring-0 placeholder-slate-400"

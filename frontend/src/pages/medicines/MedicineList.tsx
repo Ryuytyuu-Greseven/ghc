@@ -1,31 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Package, Warehouse, GitBranch, ClipboardList, ArrowLeftRight } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
 import { clsx } from 'clsx';
+import { useTranslation } from 'react-i18next';
+import { useApp } from '../../context/AppContext';
 import { InventoryMasterTab } from '../inventory/InventoryMasterTab';
 import { CentralInventoryTab } from '../inventory/CentralInventoryTab';
 import { BranchInventoryTab } from '../inventory/BranchInventoryTab';
 import { InventoryRequestsTab } from '../inventory/InventoryRequestsTab';
 import { InventoryTransactionsTab } from '../inventory/InventoryTransactionsTab';
 
-const tabs = [
-  { id: 'master', label: 'Inventory Master', icon: Package },
-  { id: 'central', label: 'Central Stock', icon: Warehouse },
-  { id: 'branch', label: 'Branch Stock', icon: GitBranch },
-  { id: 'requests', label: 'Requests', icon: ClipboardList },
-  { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
-] as const;
-
-type Tab = typeof tabs[number]['id'];
-
 export function MedicineList() {
-  const [activeTab, setActiveTab] = useState<Tab>('master');
+  const { t } = useTranslation();
+  const { currentUser } = useApp();
+  const isAdmin = currentUser?.role === 'Admin';
+
+  const allTabs = [
+    { id: 'master', label: t('inventory.tabs.master'), icon: Package },
+    { id: 'central', label: t('inventory.tabs.central'), icon: Warehouse },
+    { id: 'branch', label: t('inventory.tabs.branch'), icon: GitBranch },
+    { id: 'requests', label: t('inventory.tabs.requests'), icon: ClipboardList },
+    { id: 'transactions', label: t('inventory.tabs.transactions'), icon: ArrowLeftRight },
+  ] as const;
+
+  const tabs = isAdmin
+    ? allTabs
+    : allTabs.filter((tab) => tab.id === 'branch' || tab.id === 'requests');
+
+  const [activeTab, setActiveTab] = useState<'master' | 'central' | 'branch' | 'requests' | 'transactions'>(
+    isAdmin ? 'master' : 'branch'
+  );
+
+  useEffect(() => {
+    setActiveTab(isAdmin ? 'master' : 'branch');
+  }, [isAdmin]);
 
   return (
     <div className="flex flex-col h-full">
       <Header
-        title="Medicines & Supplies"
-        subtitle="Manage inventory, stock, requests, and audit trail"
+        title={t('inventory.title')}
+        subtitle={t('inventory.subtitle')}
       />
 
       {/* Tab navigation bar */}

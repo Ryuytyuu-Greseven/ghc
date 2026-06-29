@@ -3,6 +3,7 @@ import { AIMessage, HumanMessage } from '@langchain/core/messages';
 import { voiceAgentGraph } from './voice-agent';
 import { synthesizeSpeech } from '../google/tts.service';
 import { toPlainSpeechText } from './prompts/guardrails.prompt';
+import { httpLocalStorage } from '../common/services/http.service';
 import type {
   ChatEmit,
   ChatSession,
@@ -102,7 +103,20 @@ export class AgentPipelineService {
       session.conversationHistory.push(new AIMessage(plainResponse));
 
       if (options.synthesizeAudio) {
-        const audioBuffer = await synthesizeSpeech(plainResponse);
+        const store = httpLocalStorage.getStore();
+        const lang = store?.lang || 'en';
+        let ttsOptions = {};
+        if (lang === 'hi') {
+          ttsOptions = { languageCode: 'hi-IN', voiceName: 'hi-IN-Neural2-C' };
+        } else if (lang === 'te') {
+          ttsOptions = { languageCode: 'te-IN', voiceName: 'te-IN-Standard-A' };
+        } else if (lang === 'bn') {
+          ttsOptions = { languageCode: 'bn-IN', voiceName: 'bn-IN-Standard-A' };
+        } else {
+          ttsOptions = { languageCode: 'en-US', voiceName: 'en-US-Neural2-J' };
+        }
+
+        const audioBuffer = await synthesizeSpeech(plainResponse, ttsOptions);
         if (signal.aborted) return;
 
         for (
