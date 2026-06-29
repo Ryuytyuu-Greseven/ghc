@@ -45,6 +45,7 @@ export const te = {
       patients: "రోగులు",
       medicines: "మందులు & సామాగ్రి",
       "ai-analytics": "AI ఇన్వెంటరీ విశ్లేషణలు",
+      "critical-alerts": "కీలక హెచ్చరికలు",
       availability: "నా అందుబాటు",
       transfers: "కవరేజ్ & బదిలీలు"
     },
@@ -83,7 +84,7 @@ export const te = {
       facilities: "సదుపాయాలు",
       beds_free: "పడకలు ఖాళీగా ఉన్నాయి",
       intervention: {
-        title: "డిస్ట్రిక్ట్ జోక్యం అలర్ట్‌లు",
+        title: "కీలక హెచ్చరికలు",
         subtitle: "తీవ్రమైన వనరుల కొరత ఎదుర్కొంటున్న ఆరోగ్య కేంద్రాలు",
         severity_high: "అధిక",
         severity_medium: "మధ్యస్థ",
@@ -98,7 +99,12 @@ export const te = {
         justification_staff: "అధిక రోగుల భారం. {{patients}} యాక్టివ్ రోగులు ఉండగా కేవలం {{staff}} సిబ్బంది మాత్రమే కేటాయించబడ్డారు. తక్షణ సిబ్బంది సర్దుబాటు జోక్యం అవసరం.",
         metric_bed: "{{occupancy}}% ఆక్యుపెన్సీ ({{beds}} పడకలు ఖాళీగా ఉన్నాయి)",
         metric_stockout: "{{ratio}}% మందులు అందుబాటులో లేవు",
-        metric_staff: "{{ratio}}:1 రోగి-సిబ్బంది నిష్పత్తి"
+        metric_staff: "{{ratio}}:1 రోగి-సిబ్బంది నిష్పత్తి",
+        banner_title: "{{count}} కీలక హెచ్చరిక(లు) కనుగొనబడ్డాయి",
+        banner_desc: "PHC/CHC లపై తక్షణ పరిపాలనా చర్య అవసరం.",
+        banner_action: "హెచ్చరికలను సమీక్షించండి",
+        no_alerts_title: "అన్నీ సాధారణంగా ఉన్నాయి",
+        no_alerts_desc: "అన్ని ప్రాథమిక మరియు సామాజిక ఆరోగ్య కేంద్రాలు సాధారణ వనరుల పరిమితుల్లోనే పనిచేస్తున్నాయి."
       }
     },
     hospitals: {

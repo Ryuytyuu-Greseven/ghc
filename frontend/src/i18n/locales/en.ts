@@ -45,6 +45,7 @@ export const en = {
       patients: "Patients",
       medicines: "Medicines & Supplies",
       "ai-analytics": "AI Inventory Analytics",
+      "critical-alerts": "Critical Alerts",
       availability: "My Availability",
       transfers: "Coverage & Transfers"
     },
@@ -83,7 +84,7 @@ export const en = {
       facilities: "Facilities",
       beds_free: "beds free",
       intervention: {
-        title: "District Intervention Alerts",
+        title: "Critical Alerts",
         subtitle: "Health centres flagging critical resource bottlenecks",
         severity_high: "High",
         severity_medium: "Medium",
@@ -98,7 +99,12 @@ export const en = {
         justification_staff: "High patient workload with {{patients}} active patients and only {{staff}} assigned staff members. Urgent staffing coverage intervention required.",
         metric_bed: "{{occupancy}}% Occupancy ({{beds}} beds left)",
         metric_stockout: "{{ratio}}% Drugs Out of Stock",
-        metric_staff: "{{ratio}}:1 Patient-to-Staff Ratio"
+        metric_staff: "{{ratio}}:1 Patient-to-Staff Ratio",
+        banner_title: "{{count}} Critical alert(s) detected",
+        banner_desc: "PHCs/CHCs require immediate administrative action.",
+        banner_action: "Review Alerts",
+        no_alerts_title: "All Systems Normal",
+        no_alerts_desc: "All primary and community healthcare facilities are operating within standard resource thresholds."
       }
     },
     hospitals: {

@@ -39,7 +39,7 @@ export function Dashboard() {
         <div className="max-w-screen-2xl mx-auto space-y-6">
 
           {/* District Intervention Alerts */}
-          <DistrictInterventionAlerts />
+          <DistrictInterventionAlerts mode="banner" />
 
           {/* Stat cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

@@ -9,6 +9,7 @@ import {
   Calendar,
   Shuffle,
   Sparkles,
+  AlertOctagon,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
@@ -22,12 +23,13 @@ const allNavItems = [
   { to: '/patients', key: 'patients', icon: UserRound },
   { to: '/medicines', key: 'medicines', icon: Pill },
   { to: '/ai-analytics', key: 'ai-analytics', icon: Sparkles },
+  { to: '/critical-alerts', key: 'critical-alerts', icon: AlertOctagon },
   { to: '/availability', key: 'availability', icon: Calendar },
   { to: '/transfers', key: 'transfers', icon: Shuffle },
 ];
 
 const roleNavItemsMap: Record<string, string[]> = {
-  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/transfers'],
+  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/critical-alerts', '/transfers'],
   Doctor: ['/availability'],
   Nurse: ['/availability'],
   Receptionist: ['/availability'],

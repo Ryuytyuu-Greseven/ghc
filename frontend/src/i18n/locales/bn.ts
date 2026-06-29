@@ -45,6 +45,7 @@ export const bn = {
       patients: "রোগী",
       medicines: "ওষুধ ও চিকিৎসা সরবরাহ",
       "ai-analytics": "এআই ইনভেন্টরি অ্যানালিটিক্স",
+      "critical-alerts": "গুরুতর সতর্কতা",
       availability: "আমার প্রাপ্যতা",
       transfers: "কভারেজ ও স্থানান্তর"
     },
@@ -83,7 +84,7 @@ export const bn = {
       facilities: "সুবিধাসমূহ",
       beds_free: "শয্যা খালি",
       intervention: {
-        title: "জেলা হস্তক্ষেপ সতর্কতা",
+        title: "গুরুতর সতর্কতা",
         subtitle: "গুরুতর সম্পদ সংকটের মুখোমুখি হওয়া স্বাস্থ্য কেন্দ্রসমূহ",
         severity_high: "উচ্চ",
         severity_medium: "মাঝারি",
@@ -98,7 +99,12 @@ export const bn = {
         justification_staff: "অতিরিক্ত রোগীর চাপ। {{patients}} জন সক্রিয় রোগীর বিপরীতে মাত্র {{staff}} জন কর্মী নিযুক্ত রয়েছেন। দ্রুত বিকল্প কর্মী বরাদ্দের প্রয়োজনীয়তা রয়েছে।",
         metric_bed: "{{occupancy}}% শয্যা পূরণ ({{beds}} টি শয্যা খালি)",
         metric_stockout: "{{ratio}}% ওষুধ স্টক আউট",
-        metric_staff: "{{ratio}}:1 রোগী-কর্মী অনুপাত"
+        metric_staff: "{{ratio}}:1 রোগী-কর্মী অনুপাত",
+        banner_title: "{{count}} টি গুরুতর সতর্কতা পাওয়া গেছে",
+        banner_desc: "PHC/CHC সমূহে তাত্ক্ষণিক প্রশাসনিক ব্যবস্থা গ্রহণ করা প্রয়োজন।",
+        banner_action: "সতর্কতা পর্যালোচনা করুন",
+        no_alerts_title: "সবকিছু স্বাভাবিক রয়েছে",
+        no_alerts_desc: "সমস্ত প্রাথমিক এবং কমিউনিটি স্বাস্থ্য কেন্দ্র স্বাভাবিক সম্পদ সীমার মধ্যে কাজ করছে।"
       }
     },
     hospitals: {

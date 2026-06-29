@@ -45,6 +45,7 @@ export const hi = {
       patients: "मरीज",
       medicines: "दवाएं और आपूर्ति",
       "ai-analytics": "एआई इन्वेंटरी एनालिटिक्स",
+      "critical-alerts": "गंभीर अलर्ट",
       availability: "मेरी उपलब्धता",
       transfers: "कवरेज और स्थानांतरण"
     },
@@ -83,7 +84,7 @@ export const hi = {
       facilities: "सुविधाएं",
       beds_free: "बिस्तर खाली",
       intervention: {
-        title: "जिला हस्तक्षेप अलर्ट",
+        title: "गंभीर अलर्ट",
         subtitle: "गंभीर संसाधन संकट का सामना कर रहे स्वास्थ्य केंद्र",
         severity_high: "उच्च",
         severity_medium: "मध्यम",
@@ -98,7 +99,12 @@ export const hi = {
         justification_staff: "अधिक मरीज भार। {{patients}} सक्रिय मरीज होने के बावजूद केवल {{staff}} कर्मचारी आवंटित हैं। तत्काल स्टाफ आवंटन हस्तक्षेप की आवश्यकता है।",
         metric_bed: "{{occupancy}}% अधिभोग ({{beds}} बिस्तर खाली)",
         metric_stockout: "{{ratio}}% दवाएं उपलब्ध नहीं हैं",
-        metric_staff: "{{ratio}}:1 मरीज-कर्मचारी अनुपात"
+        metric_staff: "{{ratio}}:1 मरीज-कर्मचारी अनुपात",
+        banner_title: "{{count}} गंभीर अलर्ट मिले",
+        banner_desc: "PHCs/CHCs को तत्काल प्रशासनिक हस्तक्षेप की आवश्यकता है।",
+        banner_action: "अलर्ट की समीक्षा करें",
+        no_alerts_title: "सभी प्रणालियां सामान्य हैं",
+        no_alerts_desc: "सभी प्राथमिक और सामुदायिक स्वास्थ्य केंद्र मानक सीमा के भीतर चल रहे हैं।"
       }
     },
     hospitals: {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, BedDouble, Pill, Users, ChevronRight } from 'lucide-react';
+import { AlertTriangle, BedDouble, Pill, Users, ChevronRight, AlertOctagon, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authFetch } from '../../context/AppContext';
@@ -24,7 +24,11 @@ interface InterventionAlert {
   };
 }
 
-export function DistrictInterventionAlerts() {
+interface DistrictInterventionAlertsProps {
+  mode?: 'standalone' | 'banner';
+}
+
+export function DistrictInterventionAlerts({ mode = 'banner' }: DistrictInterventionAlertsProps) {
   const { t } = useTranslation();
   const [alerts, setAlerts] = useState<InterventionAlert[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,6 +59,9 @@ export function DistrictInterventionAlerts() {
   }, []);
 
   if (loading) {
+    if (mode === 'banner') {
+      return null; // Don't pop banner during load
+    }
     return (
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm animate-pulse">
         <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-4"></div>
@@ -67,11 +74,53 @@ export function DistrictInterventionAlerts() {
   }
 
   if (alerts.length === 0) {
-    return null; // Don't show anything if there are no alerts to minimize dashboard noise
+    if (mode === 'standalone') {
+      return (
+        <div className="rounded-2xl border border-emerald-100 dark:border-emerald-950 bg-emerald-50/50 dark:bg-emerald-950/10 p-8 text-center max-w-2xl mx-auto mt-8 shadow-sm">
+          <div className="mx-auto w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4">
+            <CheckCircle2 size={24} />
+          </div>
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
+            {t('dashboard.intervention.no_alerts_title', 'All Systems Normal')}
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            {t('dashboard.intervention.no_alerts_desc', 'All primary and community healthcare facilities are operating within standard resource thresholds.')}
+          </p>
+        </div>
+      );
+    }
+    return null; // Don't show banner if empty
+  }
+
+  if (mode === 'banner') {
+    return (
+      <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 rounded-xl px-4 py-3 shadow-sm flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="bg-rose-500/10 p-2 rounded-lg text-rose-600 dark:text-rose-400">
+            <AlertOctagon size={18} className="animate-pulse" />
+          </div>
+          <div>
+            <span className="text-sm font-semibold text-rose-900 dark:text-rose-300">
+              {t('dashboard.intervention.banner_title', '{{count}} Critical alerts detected', { count: alerts.length })}
+            </span>
+            <span className="hidden md:inline text-xs text-rose-700 dark:text-rose-400 ml-2">
+              — {t('dashboard.intervention.banner_desc', 'PHCs/CHCs require immediate administrative action.')}
+            </span>
+          </div>
+        </div>
+        <Link
+          to="/critical-alerts"
+          className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-0.5 whitespace-nowrap"
+        >
+          {t('dashboard.intervention.banner_action', 'Review Alerts')}
+          <ChevronRight size={14} />
+        </Link>
+      </div>
+    );
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl border border-rose-100 dark:border-rose-950/30 p-5 shadow-sm relative overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm relative overflow-hidden">
       {/* Decorative background pulse */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50 dark:bg-rose-950/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none animate-pulse"></div>
 
