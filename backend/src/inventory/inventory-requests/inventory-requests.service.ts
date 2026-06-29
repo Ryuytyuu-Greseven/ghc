@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { InventoryRequestRepository } from '../../repositories/inventory-request.repository';
 import { CentralInventoryRepository } from '../../repositories/central-inventory.repository';
@@ -8,6 +8,7 @@ import { InventoryRequestsHelperService } from './inventory-requests-helper.serv
 import { InventoryMasterRepository } from '../../repositories/inventory-master.repository';
 import { RequestStatus, TransactionType } from '../../common/enums';
 import { buildPaginatedResponse } from '../utils/pagination.util';
+import { StaffRepository } from '../../repositories/staff.repository';
 
 @Injectable()
 export class InventoryRequestsService {
@@ -18,14 +19,35 @@ export class InventoryRequestsService {
     private readonly transactionRepo: InventoryTransactionRepository,
     private readonly masterRepo: InventoryMasterRepository,
     private readonly helper: InventoryRequestsHelperService,
+    private readonly staffRepo: StaffRepository,
   ) {}
 
-  async findAll(query: Record<string, any> = {}) {
+  async findAll(query: Record<string, any> = {}, user?: any) {
+    if (user && user.role !== 'Admin') {
+      const staff = await this.staffRepo.findOne({ userId: new Types.ObjectId(user.userId) });
+      if (staff && staff.hospitalId) {
+        const staffHospitalId = (staff.hospitalId as any)._id
+          ? (staff.hospitalId as any)._id.toString()
+          : staff.hospitalId.toString();
+        query.branchId = staffHospitalId;
+      }
+    }
     const { data, total, page, pageSize } = await this.requestRepo.findPaginated(query);
     return buildPaginatedResponse(data, total, page, pageSize);
   }
 
-  async findByBranch(branchId: string) {
+  async findByBranch(branchId: string, user?: any) {
+    if (user && user.role !== 'Admin') {
+      const staff = await this.staffRepo.findOne({ userId: new Types.ObjectId(user.userId) });
+      if (staff && staff.hospitalId) {
+        const staffHospitalId = (staff.hospitalId as any)._id
+          ? (staff.hospitalId as any)._id.toString()
+          : staff.hospitalId.toString();
+        if (staffHospitalId !== branchId) {
+          throw new ForbiddenException('You can only access requests for your assigned facility.');
+        }
+      }
+    }
     return this.requestRepo.findByBranch(branchId);
   }
 
@@ -35,7 +57,10 @@ export class InventoryRequestsService {
     return req;
   }
 
-  async create(data: Record<string, any>) {
+  async create(data: Record<string, any>, user?: any) {
+    if (user) {
+      this.checkRole(user, 'NotAdmin');
+    }
     const items = data.items || [];
     if (!Array.isArray(items) || items.length === 0) {
       throw new BadRequestException('At least one item must be requested.');
@@ -69,7 +94,10 @@ export class InventoryRequestsService {
     return this.requestRepo.create({ ...data, requestNumber, status: RequestStatus.PENDING });
   }
 
-  async approve(id: string, body: Record<string, any>) {
+  async approve(id: string, body: Record<string, any>, user?: any) {
+    if (user) {
+      this.checkRole(user, 'Admin');
+    }
     const request = await this.requestRepo.findById(id);
     if (!request) throw new NotFoundException(`Request ${id} not found`);
     if (request.status !== RequestStatus.PENDING) {
@@ -117,7 +145,10 @@ export class InventoryRequestsService {
     return this.requestRepo.update(id, { status: newStatus, items: updatedItems, remarks });
   }
 
-  async reject(id: string, body: Record<string, any>) {
+  async reject(id: string, body: Record<string, any>, user?: any) {
+    if (user) {
+      this.checkRole(user, 'Admin');
+    }
     const request = await this.requestRepo.findById(id);
     if (!request) throw new NotFoundException(`Request ${id} not found`);
     if (request.status !== RequestStatus.PENDING) {
@@ -129,10 +160,30 @@ export class InventoryRequestsService {
     });
   }
 
-  async updateStatus(id: string, body: Record<string, any>) {
+  async updateStatus(id: string, body: Record<string, any>, user?: any) {
+    if (user) {
+      this.checkRole(user, 'Admin');
+    }
     const request = await this.requestRepo.findById(id);
     if (!request) throw new NotFoundException(`Request ${id} not found`);
     return this.requestRepo.update(id, { status: body.status, remarks: body.remarks });
+  }
+
+  private checkRole(user: any, allowedRole: 'Admin' | 'NotAdmin') {
+    if (!user || !user.role) {
+      throw new ForbiddenException('Invalid user context');
+    }
+    const isAdmin = user.role === 'Admin';
+
+    if (allowedRole === 'Admin') {
+      if (!isAdmin) {
+        throw new ForbiddenException('Only users with the Admin role can approve or reject inventory requests.');
+      }
+    } else if (allowedRole === 'NotAdmin') {
+      if (isAdmin) {
+        throw new ForbiddenException('Admin users cannot raise inventory requests.');
+      }
+    }
   }
 
   private async deductAndTransferCentralStock(

@@ -28,7 +28,9 @@ interface Props {
 export function RequestDetailModal({ request, onClose }: Props) {
   const { t, i18n } = useTranslation();
   const { approveRequest, rejectRequest } = useInventory();
-  const { hospitals } = useApp();
+  const { hospitals, currentUser } = useApp();
+
+  const isAdmin = currentUser?.role === 'Admin';
   const [submitting, setSubmitting] = useState(false);
 
   const getBranchInfo = (branchId: any) => {
@@ -172,7 +174,7 @@ export function RequestDetailModal({ request, onClose }: Props) {
                       {item.requestedQty}
                     </td>
                     <td className="px-4 py-3">
-                      {isPending ? (
+                      {isPending && isAdmin ? (
                         <input
                           type="number"
                           min="0"
@@ -188,7 +190,7 @@ export function RequestDetailModal({ request, onClose }: Props) {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      {isPending ? (
+                      {isPending && isAdmin ? (
                         <input
                           type="number"
                           min="0"
@@ -216,7 +218,7 @@ export function RequestDetailModal({ request, onClose }: Props) {
         <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1">
           {t('inventory.requests.remarks')}
         </label>
-        {isPending ? (
+        {isPending && isAdmin ? (
           <textarea
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
@@ -239,7 +241,7 @@ export function RequestDetailModal({ request, onClose }: Props) {
       </div>
 
       {/* Action buttons (Pending only) */}
-      {isPending && (
+      {isPending && isAdmin && (
         <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-700">
           <Button
             type="button"

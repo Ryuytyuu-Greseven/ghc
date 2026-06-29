@@ -132,6 +132,7 @@ function mapStaffFromBackend(item: any): Staff {
     dateOfBirth: item.dateOfBirth ? new Date(item.dateOfBirth).toISOString().split('T')[0] : undefined,
     mobileNumber: item.mobileNumber,
     department: item.department,
+    userId: item.userId,
     designation: item.designation,
     joiningDate: item.joiningDate ? new Date(item.joiningDate).toISOString().split('T')[0] : undefined,
     employmentType: item.employmentType,

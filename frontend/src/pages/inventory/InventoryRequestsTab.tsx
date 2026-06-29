@@ -21,7 +21,12 @@ const statusVariant: Record<RequestStatus, 'warning' | 'success' | 'danger' | 'p
 export function InventoryRequestsTab() {
   const { t, i18n } = useTranslation();
   const { requests, requestsPagination, loadingRequests, error, actionError, clearActionError, loadRequests } = useInventory();
-  const { hospitals } = useApp();
+  const { hospitals, currentUser, staff } = useApp();
+
+  const isAdmin = currentUser?.role === 'Admin';
+  const currentStaff = staff.find((s) => s.userId === currentUser?.id || s.username === currentUser?.username);
+  const userHospitalId = currentStaff?.assignedHospitalId;
+  const assignedHospital = hospitals.find((h) => h.id === userHospitalId || h._id === userHospitalId);
 
   const [newReqOpen, setNewReqOpen] = useState(false);
   const [detailRequest, setDetailRequest] = useState<InventoryRequest | null>(null);
@@ -38,6 +43,18 @@ export function InventoryRequestsTab() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  useEffect(() => {
+    if (!isAdmin && assignedHospital && selectedBranchId === 'All') {
+      setSelectedBranchId(assignedHospital.id);
+    }
+  }, [isAdmin, assignedHospital, selectedBranchId]);
+
+  const branchOptions = isAdmin
+    ? hospitals.map((h) => ({ value: h.id, label: h.name }))
+    : assignedHospital
+    ? [{ value: assignedHospital.id, label: assignedHospital.name }]
+    : [];
+
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       setSearch(searchInput);
@@ -47,6 +64,10 @@ export function InventoryRequestsTab() {
 
   // Load requests on state changes
   useEffect(() => {
+    if (!isAdmin && !assignedHospital) {
+      return;
+    }
+
     const params = new URLSearchParams();
     params.append('page', String(page));
     params.append('pageSize', String(pageSize));
@@ -56,7 +77,9 @@ export function InventoryRequestsTab() {
     if (filterStatus !== 'All') {
       params.append('status', filterStatus);
     }
-    if (selectedBranchId !== 'All') {
+    if (!isAdmin && assignedHospital) {
+      params.append('branchId', assignedHospital.id);
+    } else if (selectedBranchId !== 'All') {
       params.append('branchId', selectedBranchId);
     }
     if (fromDate) {
@@ -70,7 +93,7 @@ export function InventoryRequestsTab() {
     }
 
     loadRequests(params.toString());
-  }, [page, pageSize, sortBy, sortOrder, filterStatus, selectedBranchId, fromDate, toDate, search, loadRequests]);
+  }, [page, pageSize, sortBy, sortOrder, filterStatus, selectedBranchId, fromDate, toDate, search, loadRequests, isAdmin, assignedHospital]);
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -137,10 +160,10 @@ export function InventoryRequestsTab() {
               }}
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500 max-w-[180px]"
             >
-              <option value="All">{t('inventory.branch.allBranches')}</option>
-              {hospitals.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name}
+              {isAdmin && <option value="All">{t('inventory.branch.allBranches')}</option>}
+              {branchOptions.map((h) => (
+                <option key={h.value} value={h.value}>
+                  {h.label}
                 </option>
               ))}
             </select>
@@ -169,9 +192,11 @@ export function InventoryRequestsTab() {
             </div>
           </div>
 
-          <Button onClick={() => setNewReqOpen(true)}>
-            <Plus size={15} /> {t('inventory.requests.raiseRequest')}
-          </Button>
+          {!isAdmin && (
+            <Button onClick={() => setNewReqOpen(true)}>
+              <Plus size={15} /> {t('inventory.requests.raiseRequest')}
+            </Button>
+          )}
         </div>
 
         {/* Error notification */}
@@ -303,9 +328,9 @@ export function InventoryRequestsTab() {
                           <button
                             onClick={() => setDetailRequest(r)}
                             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition"
-                            title={r.status === 'Pending' ? t('inventory.requests.reviewFulfill') : t('common.viewDetails')}
+                            title={r.status === 'Pending' && isAdmin ? t('inventory.requests.reviewFulfill') : t('common.viewDetails')}
                           >
-                            {r.status === 'Pending' ? (
+                            {r.status === 'Pending' && isAdmin ? (
                               <CheckCircle size={15} className="text-emerald-500" />
                             ) : (
                               <Eye size={15} />
