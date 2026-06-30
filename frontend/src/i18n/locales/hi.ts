@@ -66,7 +66,8 @@ export const hi = {
       patients: "मरीज",
       medicines: "दवाएं और आपूर्ति",
       availability: "मेरी उपलब्धता",
-      transfers: "कवरेज और स्थानांतरण"
+      transfers: "कवरेज और स्थानांतरण",
+      audits: "ऑडिट लॉग्स"
     },
     roles: {
       Admin: "एडमिन",

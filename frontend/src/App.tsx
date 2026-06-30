@@ -13,6 +13,7 @@ import { PatientDetail } from './pages/patients/PatientDetail';
 import { MedicineList } from './pages/medicines/MedicineList';
 import { Availability } from './pages/Availability';
 import { Transfers } from './pages/Transfers';
+import { Audits } from './pages/Audits';
 
 interface GuardProps {
   allowedRoles: string[];
@@ -110,6 +111,14 @@ export default function App() {
                     element={
                       <RoleGuard allowedRoles={['Admin']}>
                         <Transfers />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/audits"
+                    element={
+                      <RoleGuard allowedRoles={['Admin']}>
+                        <Audits />
                       </RoleGuard>
                     }
                   />

@@ -66,7 +66,8 @@ export const bn = {
       patients: "রোগী",
       medicines: "ওষুধ ও চিকিৎসা সরবরাহ",
       availability: "আমার প্রাপ্যতা",
-      transfers: "কভারেজ ও স্থানান্তর"
+      transfers: "কভারেজ ও স্থানান্তর",
+      audits: "অডিট লগ"
     },
     roles: {
       Admin: "প্রশাসক",

@@ -66,7 +66,8 @@ export const en = {
       patients: "Patients",
       medicines: "Medicines & Supplies",
       availability: "My Availability",
-      transfers: "Coverage & Transfers"
+      transfers: "Coverage & Transfers",
+      audits: "Audit Logs"
     },
     roles: {
       Admin: "Admin",

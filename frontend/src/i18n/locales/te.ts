@@ -66,7 +66,8 @@ export const te = {
       patients: "రోగులు",
       medicines: "మందులు & సామాగ్రి",
       availability: "నా అందుబాటు",
-      transfers: "కవరేజ్ & బదిలీలు"
+      transfers: "కవరేజ్ & బదిలీలు",
+      audits: "ఆడిట్ లాగ్స్"
     },
     roles: {
       Admin: "అడ్మిన్",

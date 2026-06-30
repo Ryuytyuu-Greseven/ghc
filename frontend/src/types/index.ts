@@ -230,15 +230,14 @@ export interface InventoryRequest {
   createdAt: string;
 }
 
-export interface InventoryTransaction {
+export interface AuditLog {
   _id: string;
-  itemId: PopulatedItem;
-  fromLocation: string;
-  toLocation: string;
-  quantity: number;
-  transactionType: TransactionType;
-  requestId: { _id: string; requestNumber: string } | null;
+  module: string;
+  action: string;
+  message: string;
   performedBy: string;
+  performedByRole?: string;
+  metadata?: any;
   createdAt: string;
 }
 
