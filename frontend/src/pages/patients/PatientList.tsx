@@ -10,7 +10,7 @@ import { authFetch, useApp } from '../../context/AppContext';
 import type { PaginationMeta, Patient } from '../../types';
 import { PatientForm } from './PatientForm';
 import { clsx } from 'clsx';
-import { environment } from '../../config/environment';
+import { environment } from '@env/environment';
 import { useTranslation } from 'react-i18next';
 
 const API_BASE = environment.mainBackendUrl;

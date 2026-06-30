@@ -16,14 +16,6 @@ export class PatientsController {
   ) {}
 
   @Post()
-  async createOrSearch(@Req() req: any, @Body() body: CreatePatientDto | SearchPatientsDto = {}) {
-    if (this.isSearchRequest(body)) {
-      return this.search(req, body);
-    }
-    return this.createPatient(req, body as CreatePatientDto);
-  }
-
-  @Post('search')
   async search(@Req() req: any, @Body() body: SearchPatientsDto = {}) {
     const query = await this.applyHospitalScope(req, body);
     return this.patientsService.findAll(query);
@@ -99,9 +91,5 @@ export class PatientsController {
   private async getAssignedHospitalId(req: any) {
     const user = req.user;
     return this.usersService.getAssignedHospitalId(user.userId, user.role);
-  }
-
-  private isSearchRequest(body: CreatePatientDto | SearchPatientsDto) {
-    return !('name' in body) && !('aadhaarNumber' in body);
   }
 }
