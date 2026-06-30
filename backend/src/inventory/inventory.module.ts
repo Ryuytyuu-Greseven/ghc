@@ -30,7 +30,10 @@ import { BranchInventoryHelperService } from './branch-inventory/branch-inventor
 import { InventoryRequestsService } from './inventory-requests/inventory-requests.service';
 import { InventoryRequestsHelperService } from './inventory-requests/inventory-requests-helper.service';
 import { InventoryTransactionsService } from './inventory-transactions/inventory-transactions.service';
+import { InventoryAnalyticsController } from './inventory-analytics/inventory-analytics.controller';
+import { InventoryAnalyticsService } from './inventory-analytics/inventory-analytics.service';
 import { AuthModule } from '../auth/auth.module';
+import { HospitalsModule } from '../hospitals/hospitals.module';
 import { StaffModule } from '../staff/staff.module';
 import { UsersModule } from '../users/users.module';
 import { MedicinesController } from './medicines.controller';
@@ -38,6 +41,7 @@ import { MedicinesController } from './medicines.controller';
 @Module({
   imports: [
     AuthModule,
+    HospitalsModule,
     StaffModule,
     UsersModule,
     MongooseModule.forFeature([
@@ -54,6 +58,7 @@ import { MedicinesController } from './medicines.controller';
     BranchInventoryController,
     InventoryRequestsController,
     InventoryTransactionsController,
+    InventoryAnalyticsController,
     MedicinesController,
   ],
   providers: [
@@ -72,6 +77,7 @@ import { MedicinesController } from './medicines.controller';
     InventoryRequestsHelperService,
     InventoryTransactionRepository,
     InventoryTransactionsService,
+    InventoryAnalyticsService,
   ],
   exports: [
     InventoryMasterRepository,

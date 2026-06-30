@@ -2,6 +2,7 @@ import { createAgent } from 'langchain';
 import { AIMessage } from '@langchain/core/messages';
 import { llmInstance } from '../../google/vertex.config';
 import { inventoryTools } from '../tools/inventory.tools';
+import { inventoryAnalyticsTools } from '../tools/inventory-analytics.tools';
 import { INVENTORY_PROMPT } from '../prompts/inventory.prompt';
 import { withGuardrails } from '../prompts/guardrails.prompt';
 import { AgentState } from '../state';
@@ -10,7 +11,7 @@ import { runInventoryAgent } from '../agents.graph';
 // Used by voice.gateway.ts for live streaming (ReAct loop with all inventory tools)
 export const inventoryAgent = createAgent({
   model: llmInstance,
-  tools: inventoryTools,
+  tools: [...inventoryTools, ...inventoryAnalyticsTools],
   systemPrompt: withGuardrails(INVENTORY_PROMPT),
 });
 

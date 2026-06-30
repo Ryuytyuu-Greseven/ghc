@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Department, UserRole } from 'src/common/enums';
+import { Department, UserRole } from '../common/enums';
 
 export type StaffDocument = Staff & Document;
 
@@ -42,6 +42,7 @@ export class Staff {
 
 
   @Prop({
+    type: String,
     required: true,
     enum: Department,
   })

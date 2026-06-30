@@ -2,6 +2,7 @@ import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Query, Req,
 import { Types } from 'mongoose';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { HospitalsService } from './hospitals.service';
+import { FacilityAlertsService } from './facility-alerts/facility-alerts.service';
 import { UsersService } from '../users/users.service';
 
 @Controller('hospitals')
@@ -9,8 +10,14 @@ import { UsersService } from '../users/users.service';
 export class HospitalsController {
   constructor(
     private readonly hospitalsService: HospitalsService,
-    private readonly usersService: UsersService,
+    private readonly facilityAlertsService: FacilityAlertsService,
+    private readonly usersService: UsersService
   ) { }
+
+  @Get('district/intervention-alerts')
+  getInterventionAlerts() {
+    return this.facilityAlertsService.getInterventionAlerts();
+  }
 
   @Get()
   async getHospitals(@Req() req: any, @Query() query?: Record<string, any>) {

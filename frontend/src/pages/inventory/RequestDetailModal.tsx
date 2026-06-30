@@ -41,6 +41,23 @@ export function RequestDetailModal({ request, onClose }: Props) {
     return hosp ? { name: hosp.name, city: hosp.city } : { name: branchId, city: '' };
   };
   const branchInfo = getBranchInfo(request.branchId);
+
+  const getSourceBranchInfo = () => {
+    if (!request.fromBranchId) return { name: t('inventory.transactions.centralStore'), city: '' };
+    if (typeof request.fromBranchId === 'object' && request.fromBranchId !== null) {
+      const fromBranchObj = request.fromBranchId as any;
+      if (fromBranchObj._id || fromBranchObj.name) {
+        return { name: fromBranchObj.name, city: fromBranchObj.city };
+      }
+    }
+    const branchIdStr = typeof request.fromBranchId === 'string'
+      ? request.fromBranchId
+      : (request.fromBranchId as any)?._id?.toString();
+    const hosp = hospitals.find((h) => h.id === branchIdStr);
+    return hosp ? { name: hosp.name, city: hosp.city } : { name: branchIdStr || '', city: '' };
+  };
+  const sourceBranchInfo = getSourceBranchInfo();
+
   const [remarks, setRemarks] = useState(request.remarks ?? '');
   const [editedItems, setEditedItems] = useState<EditedItem[]>(
     request.items.map((item) => {
@@ -107,6 +124,19 @@ export function RequestDetailModal({ request, onClose }: Props) {
             {t('inventory.requests.status')}
           </p>
           <Badge variant={statusVariant[request.status]}>{t(`inventory.status.${request.status}`)}</Badge>
+        </div>
+        <div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
+            {t('inventory.transactions.fromLocation')}
+          </p>
+          <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+            {sourceBranchInfo.name ?? '—'}
+            {sourceBranchInfo.city && (
+              <span className="text-slate-500 dark:text-slate-400 font-normal ml-1">
+                ({sourceBranchInfo.city})
+              </span>
+            )}
+          </p>
         </div>
         <div>
           <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
