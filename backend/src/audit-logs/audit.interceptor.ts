@@ -21,6 +21,7 @@ export class AuditInterceptor implements NestInterceptor {
     const isInventoryTransactionEndpoint = 
       (url.includes('/inventory-requests') && (url.includes('/approve') || url.includes('/reject'))) ||
       (method === 'POST' && url.split('?')[0] === '/central-inventory') ||
+      url.includes('/inventory-analytics/redistribution/apply') ||
       url.includes('/audit-logs') ||
       url.includes('/auth/logout');
       
