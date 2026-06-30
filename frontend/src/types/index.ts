@@ -56,7 +56,6 @@ export interface Staff {
   role: StaffRole;
   department?: Department;
   userId?: string;
-  unavailableOnDays?: string[];
   designation?: string;
   joiningDate?: string;
   employmentType?: 'Full Time' | 'Part Time' | 'Visiting';
@@ -125,7 +124,7 @@ export interface PatientData {
   problem: string;
   visitDate: string;
   category: string;
-  medicines: string[];
+  medicines: { name: string; quantity: number }[];
   doctor?: string;
   notes?: string;
 }

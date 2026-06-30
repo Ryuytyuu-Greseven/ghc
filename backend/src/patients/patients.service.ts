@@ -4,6 +4,7 @@ import { PatientRepository } from '../repositories/patient.repository';
 import { Patient } from '../schemas/patient.schema';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { SearchPatientsDto } from './dto/search-patients.dto';
 import { HospitalsCommonService } from '../common/services/hospitals.service';
 
 const requiredCreateFields: (keyof CreatePatientDto)[] = [
@@ -29,7 +30,15 @@ export class PatientsService {
     private readonly hospitalsCommonService: HospitalsCommonService,
   ) {}
 
-  async findAll(filter: object = {}) {
+  async findAll(query: SearchPatientsDto = {}) {
+    return this.patientRepository.findPaginated({
+      ...query,
+      page: query.page ?? 1,
+      pageSize: query.pageSize ?? 10,
+    });
+  }
+
+  async findAllList(filter: object = {}) {
     return this.patientRepository.findAll({ isActive: true, ...filter });
   }
 

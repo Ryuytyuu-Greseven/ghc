@@ -329,13 +329,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const [hRes, sRes, pRes, mRes] = await Promise.all([
         authFetch(`${API_BASE}/hospitals`),
         authFetch(`${API_BASE}/staff`),
-        authFetch(`${API_BASE}/patients`),
+        authFetch(`${API_BASE}/patients`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page: 1, pageSize: 1000 }),
+        }),
         authFetch(`${API_BASE}/medicines`),
       ]);
 
       let hData = await hRes.json();
       let sData = await sRes.json();
-      let pData = await pRes.json();
+      const pPayload = await pRes.json();
+      let pData = Array.isArray(pPayload) ? pPayload : pPayload.data ?? [];
       let mData = await mRes.json();
 
       let dbHData = hData;
@@ -390,7 +395,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const newHospital = originalHospital ? hData.find((h: any) => h.name === originalHospital.name) : null;
           const body = mapPatientToBackend({ ...p, hospitalId: newHospital ? newHospital.id : null });
 
-          const res = await authFetch(`${API_BASE}/patients`, {
+          const res = await authFetch(`${API_BASE}/patients/create`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
@@ -531,7 +536,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addPatient = async (p: PatientDraft) => {
     try {
       const body = mapPatientToBackend(p);
-      const res = await authFetch(`${API_BASE}/patients`, {
+      const res = await authFetch(`${API_BASE}/patients/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
