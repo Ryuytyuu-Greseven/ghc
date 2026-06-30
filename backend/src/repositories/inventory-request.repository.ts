@@ -17,6 +17,7 @@ export class InventoryRequestRepository {
     return this.model
       .find(filter)
       .populate('branchId', 'name city')
+      .populate('fromBranchId', 'name city')
       .populate('items.itemId', 'itemName')
       .sort({ createdAt: -1 })
       .exec();
@@ -26,6 +27,7 @@ export class InventoryRequestRepository {
     return this.model
       .findById(id)
       .populate('branchId', 'name city')
+      .populate('fromBranchId', 'name city')
       .populate('items.itemId', 'itemName')
       .exec();
   }
@@ -37,6 +39,7 @@ export class InventoryRequestRepository {
   async findByBranch(branchId: string): Promise<InventoryRequestDocument[]> {
     return this.model
       .find({ branchId })
+      .populate('fromBranchId', 'name city')
       .populate('items.itemId', 'itemName unit')
       .sort({ createdAt: -1 })
       .exec();
@@ -46,6 +49,7 @@ export class InventoryRequestRepository {
     return this.model
       .find({ status: status as any })
       .populate('branchId', 'name city')
+      .populate('fromBranchId', 'name city')
       .sort({ createdAt: -1 })
       .exec();
   }
@@ -68,7 +72,10 @@ export class InventoryRequestRepository {
     id: string,
     data: UpdateQuery<InventoryRequestDocument>,
   ): Promise<InventoryRequestDocument | null> {
-    return this.model.findByIdAndUpdate(id, data, { new: true }).populate('branchId', 'name city').exec();
+    return this.model.findByIdAndUpdate(id, data, { new: true })
+      .populate('branchId', 'name city')
+      .populate('fromBranchId', 'name city')
+      .exec();
   }
 
   async findPaginated(options: any): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
@@ -128,6 +135,7 @@ export class InventoryRequestRepository {
     const rawData = await this.model.aggregate(pipeline).exec();
     const data = await this.model.populate(rawData, [
       { path: 'branchId', select: 'name city' },
+      { path: 'fromBranchId', select: 'name city' },
       { path: 'items.itemId', select: 'itemName' },
     ]);
 

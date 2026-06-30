@@ -223,6 +223,7 @@ export interface InventoryRequest {
   _id: string;
   requestNumber: string;
   branchId: PopulatedBranch;
+  fromBranchId?: PopulatedBranch | null;
   requestedBy: string;
   status: RequestStatus;
   remarks: string;
@@ -254,4 +255,42 @@ export interface PaginationMeta {
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: PaginationMeta;
+}
+
+export interface StockoutWarning {
+  branchId: string;
+  branchName: string;
+  itemId: string;
+  itemName: string;
+  availableQty: number;
+  dailyConsumptionRate: number;
+  daysOfStock: number;
+}
+
+export interface DailyDataPoint {
+  date: string;
+  quantity: number;
+}
+
+export interface DemandForecast {
+  itemId: string;
+  branchId: string;
+  itemName: string;
+  branchName: string;
+  averageDailyConsumption: number;
+  historicalDaily: DailyDataPoint[];
+  forecast7Day: DailyDataPoint[];
+  forecast30Day: DailyDataPoint[];
+  aiSummary: string;
+}
+
+export interface RedistributionRecommendation {
+  itemId: string;
+  itemName: string;
+  fromBranchId: string;
+  fromBranchName: string;
+  toBranchId: string;
+  toBranchName: string;
+  recommendedQuantity: number;
+  justification: string;
 }

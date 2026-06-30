@@ -29,6 +29,9 @@ export class InventoryRequest {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Hospital', required: true })
   branchId: Types.ObjectId;
 
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Hospital', required: false, default: null })
+  fromBranchId?: Types.ObjectId | null;
+
   @Prop({ required: true, trim: true })
   requestedBy: string;
 
