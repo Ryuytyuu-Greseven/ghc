@@ -25,7 +25,7 @@ export function StaffAssign({ staff, onClose }: Props) {
       <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 border border-slate-100 dark:border-slate-700">
         <p className="font-medium text-slate-800 dark:text-slate-100">{staff.name}</p>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          {staff.specialization} · {staff.role}
+          {staff.specialization} · {t(`roles.${staff.role}`)}
         </p>
       </div>
 

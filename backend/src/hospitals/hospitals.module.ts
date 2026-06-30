@@ -16,6 +16,7 @@ import { Staff, StaffSchema } from '../schemas/staff.schema';
 import { StaffRepository } from '../repositories/staff.repository';
 import { Patient, PatientSchema } from '../schemas/patient.schema';
 import { PatientRepository } from '../repositories/patient.repository';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { PatientRepository } from '../repositories/patient.repository';
       { name: Staff.name, schema: StaffSchema },
       { name: Patient.name, schema: PatientSchema },
     ]),
+    UsersModule,
   ],
   controllers: [HospitalsController],
   providers: [

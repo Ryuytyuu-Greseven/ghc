@@ -34,11 +34,16 @@ import { InventoryAnalyticsController } from './inventory-analytics/inventory-an
 import { InventoryAnalyticsService } from './inventory-analytics/inventory-analytics.service';
 import { AuthModule } from '../auth/auth.module';
 import { HospitalsModule } from '../hospitals/hospitals.module';
+import { StaffModule } from '../staff/staff.module';
+import { UsersModule } from '../users/users.module';
+import { MedicinesController } from './medicines.controller';
 
 @Module({
   imports: [
     AuthModule,
     HospitalsModule,
+    StaffModule,
+    UsersModule,
     MongooseModule.forFeature([
       { name: InventoryMaster.name, schema: InventoryMasterSchema },
       { name: CentralInventory.name, schema: CentralInventorySchema },
@@ -54,6 +59,7 @@ import { HospitalsModule } from '../hospitals/hospitals.module';
     InventoryRequestsController,
     InventoryTransactionsController,
     InventoryAnalyticsController,
+    MedicinesController,
   ],
   providers: [
     QueryService,
@@ -77,6 +83,7 @@ import { HospitalsModule } from '../hospitals/hospitals.module';
     InventoryMasterRepository,
     CentralInventoryRepository,
     BranchInventoryRepository,
+    BranchInventoryService,
     InventoryRequestRepository,
     InventoryTransactionRepository,
   ],

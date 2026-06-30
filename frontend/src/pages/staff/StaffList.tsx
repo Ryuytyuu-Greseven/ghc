@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Plus, Users, Pencil, Trash2, UserCheck, UserX, ArrowRightLeft } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
 import { Button } from '../../components/ui/Button';
@@ -10,6 +9,7 @@ import type { Staff, StaffRole } from '../../types';
 import { StaffForm } from './StaffForm';
 import { StaffAssign } from './StaffAssign';
 import { clsx } from 'clsx';
+import { useTranslation } from 'react-i18next';
 
 const roleVariant: Record<StaffRole, 'info' | 'success' | 'warning' | 'purple' | 'default'> = {
   Doctor: 'info',
@@ -49,7 +49,7 @@ export function StaffList() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm(t('staff.removeWarning'))) deleteStaff(id);
+    if (confirm(t('staff.deleteConfirm'))) deleteStaff(id);
   };
 
   return (
@@ -73,7 +73,7 @@ export function StaffList() {
                       : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                   )}
                 >
-                  {t(`staff.${f}`)}
+                  {t(`staff.filters.${f}`)}
                 </button>
               ))}
             </div>
@@ -94,22 +94,22 @@ export function StaffList() {
                 <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      {t('staff.name')}
+                      {t('patients.form.labels.name')}
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      {t('staff.role')}
+                      {t('hospitals.detail.role')}
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell">
-                      {t('staff.specialization')}
+                      {t('hospitals.detail.specialization')}
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       {t('staff.assignedTo')}
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden lg:table-cell">
-                      {t('staff.contact')}
+                      {t('hospitals.detail.contact')}
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      {t('staff.status')}
+                      {t('hospitals.detail.status')}
                     </th>
                     <th className="px-5 py-3 w-24" />
                   </tr>
@@ -138,7 +138,7 @@ export function StaffList() {
                         </td>
                         <td className="px-5 py-3.5">
                           <Badge variant={roleVariant[s.role]}>
-                            {s.role.charAt(0).toUpperCase() + s.role.slice(1)}
+                            {t(`roles.${s.role}`)}
                           </Badge>
                         </td>
                         <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 hidden md:table-cell">
@@ -153,7 +153,7 @@ export function StaffList() {
                           ) : (
                             <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
                               <UserX size={14} className="shrink-0" />
-                              <span className="text-sm">{t('staff.unassigned')}</span>
+                              <span className="text-sm">{t('hospitals.detail.unassigned')}</span>
                             </div>
                           )}
                         </td>
@@ -165,11 +165,11 @@ export function StaffList() {
                             onClick={() => {
                               updateStaff(s.id, { ...s, isActive: !s.isActive });
                             }}
-                            title={t('staff.status')}
+                            title={t('staff.toggleStatus')}
                             className="focus:outline-none hover:opacity-85 transition-opacity"
                           >
                             <Badge variant={s.isActive ? 'success' : 'danger'}>
-                              {s.isActive ? t('staff.active') : t('staff.inactive')}
+                              {s.isActive ? t('common.active') : t('common.inactive')}
                             </Badge>
                           </button>
                         </td>
@@ -185,14 +185,14 @@ export function StaffList() {
                             <button
                               onClick={() => openEdit(s)}
                               className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
-                              title={t('staff.edit')}
+                              title={t('common.edit')}
                             >
                               <Pencil size={14} />
                             </button>
                             <button
                               onClick={() => handleDelete(s.id)}
                               className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition"
-                              title={t('staff.delete')}
+                              title={t('common.delete')}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -208,8 +208,8 @@ export function StaffList() {
             {filtered.length === 0 && (
               <div className="text-center py-16 text-slate-400 dark:text-slate-500">
                 <Users size={36} className="mx-auto mb-3 opacity-30" />
-                <p className="font-medium text-slate-500 dark:text-slate-400">{t('staff.noStaffFound')}</p>
-                <p className="text-sm mt-1">{t('staff.noStaffFoundDesc')}</p>
+                <p className="font-medium text-slate-500 dark:text-slate-400">{t('staff.noStaff')}</p>
+                <p className="text-sm mt-1">{t('staff.noStaffDesc')}</p>
               </div>
             )}
           </div>
@@ -220,7 +220,7 @@ export function StaffList() {
       <Modal
         open={formOpen}
         onClose={() => setFormOpen(false)}
-        title={editing ? t('staff.editStaff') : t('staff.addStaffMember')}
+        title={editing ? t('staff.editStaff') : t('staff.addStaff')}
       >
         <StaffForm initial={editing} onClose={() => setFormOpen(false)} />
       </Modal>

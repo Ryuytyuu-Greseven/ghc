@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Lock, User, AlertCircle, Loader2, ShieldCheck, Languages, ChevronDown } from 'lucide-react';
 import logo from './assets/logo.png';
-import { environment } from './config/environment';
+import { environment } from '@env/environment';
 import { useTranslation } from 'react-i18next';
 
 export default function App() {
@@ -135,6 +135,48 @@ export default function App() {
               }`}
             >
               বাংলা (Bengali)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                i18n.changeLanguage('kn');
+                setLangOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-xs font-medium transition ${
+                currentLang === 'kn'
+                  ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+              }`}
+            >
+              ಕನ್ನಡ (Kannada)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                i18n.changeLanguage('ta');
+                setLangOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-xs font-medium transition ${
+                currentLang === 'ta'
+                  ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+              }`}
+            >
+              தமிழ் (Tamil)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                i18n.changeLanguage('gu');
+                setLangOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-xs font-medium transition ${
+                currentLang === 'gu'
+                  ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+              }`}
+            >
+              ગુજરાતી (Gujarati)
             </button>
           </div>
         )}

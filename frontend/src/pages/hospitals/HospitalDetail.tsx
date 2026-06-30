@@ -100,7 +100,9 @@ export function HospitalDetail() {
     hospitalMedicines,
     getHospitalHistory,
     getBedAllocationHistory,
+    currentUser,
   } = useApp();
+  const isAdmin = currentUser?.role === 'Admin';
   const [editOpen, setEditOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRecords, setHistoryRecords] = useState<Hospital[]>([]);
@@ -245,9 +247,11 @@ export function HospitalDetail() {
               <Button onClick={handleOpenHistory} variant="secondary">
                 <History size={14} /> {t('hospitals.detail.viewHistory')}
               </Button>
-              <Button onClick={() => setEditOpen(true)} variant="secondary">
-                <Pencil size={14} /> {t('hospitals.form.editFacility')}
-              </Button>
+              {isAdmin && (
+                <Button onClick={() => setEditOpen(true)} variant="secondary">
+                  <Pencil size={14} /> {t('hospitals.form.editFacility')}
+                </Button>
+              )}
             </div>
           </div>
 

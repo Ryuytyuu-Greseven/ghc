@@ -31,8 +31,8 @@ export class StaffService {
     private readonly coverageRequestModel: Model<CoverageRequestDocument>,
   ) { }
 
-  async findAll() {
-    const list = await this.staffRepository.findAll();
+  async findAll(filter: object = {}) {
+    const list = await this.staffRepository.findAll(filter);
     return list.map(flattenStaff);
   }
 
@@ -325,6 +325,18 @@ export class StaffService {
           dates.push(current.toISOString().split('T')[0]);
           current.setDate(current.getDate() + 1);
         }
+      }
+    }
+
+    if (status === 'Unavailable' && dates.length > 0) {
+      const existingRequest = await this.coverageRequestModel.findOne({
+        staffId: staff._id,
+        status: { $ne: 'Rejected' },
+        dates: { $in: dates },
+      });
+
+      if (existingRequest) {
+        throw new BadRequestException('A coverage request has already been raised for one or more of these dates');
       }
     }
 

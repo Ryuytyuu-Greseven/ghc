@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { authFetch } from '../context/AppContext';
 import { CheckCircle2, XCircle, Send, Loader2, AlertCircle, Calendar } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useTranslation } from 'react-i18next';
 
 type StatusType = 'Available' | 'Unavailable';
 
@@ -16,7 +16,6 @@ export function Availability() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [currentSchedule, setCurrentSchedule] = useState<string[]>([]);
-  const [dutySchedule, setDutySchedule] = useState<{ date: string; location: string; status: string; type: 'default' | 'coverage' | 'off' }[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -27,12 +26,11 @@ export function Availability() {
     async function fetchAvailability() {
       try {
         const res = await authFetch('http://localhost:3000/staff/me/availability');
-        if (!res.ok) throw new Error('Failed to load availability');
+        if (!res.ok) throw new Error(t('availability.loadError'));
         const data = await res.json();
         setStatus(data.status as StatusType);
         const schedule = data.unavailableOnDays || [];
         setCurrentSchedule(schedule);
-        setDutySchedule(data.schedule || []);
         
         if (schedule.length > 0) {
           setStartDate(schedule[0]);
@@ -45,13 +43,13 @@ export function Availability() {
           }
         }
       } catch (err: any) {
-        setError(err.message || 'Error loading availability status');
+        setError(err.message || t('availability.loadError'));
       } finally {
         setIsLoading(false);
       }
     }
     fetchAvailability();
-  }, []);
+  }, [t]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,18 +60,18 @@ export function Availability() {
     if (status === 'Unavailable') {
       if (periodType === 'single') {
         if (!startDate) {
-          setError(t('availability.errorSelectDate'));
+          setError(t('availability.selectDateError'));
           setIsSaving(false);
           return;
         }
       } else {
         if (!startDate || !endDate) {
-          setError(t('availability.errorSelectRange'));
+          setError(t('availability.selectDatesError'));
           setIsSaving(false);
           return;
         }
         if (startDate > endDate) {
-          setError(t('availability.errorStartAfterEnd'));
+          setError(t('availability.invalidRangeError'));
           setIsSaving(false);
           return;
         }
@@ -96,15 +94,20 @@ export function Availability() {
         },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error(t('availability.errorFailedUpdate'));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const errorMsg = Array.isArray(errorData.message)
+          ? errorData.message.join(', ')
+          : errorData.message;
+        throw new Error(errorMsg || t('availability.updateError'));
+      }
       const data = await res.json();
       
       setCurrentSchedule(data.unavailableOnDays || []);
-      setDutySchedule(data.schedule || []);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 4000);
     } catch (err: any) {
-      setError(err.message || t('availability.errorUpdate'));
+      setError(err.message || t('availability.updateError'));
     } finally {
       setIsSaving(false);
     }
@@ -113,7 +116,7 @@ export function Availability() {
   if (isLoading) {
     return (
       <div className="flex flex-col h-full">
-        <Header title={t('availability.title')} subtitle={t('availability.loadingSubtitle')} />
+        <Header title={t('availability.title')} subtitle={t('availability.manageStatus')} />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
         </div>
@@ -129,16 +132,16 @@ export function Availability() {
         <div className="max-w-3xl mx-auto space-y-6">
 
           {error && (
-            <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl flex items-start gap-3 text-red-800 dark:text-red-300">
+            <div className="p-4 bg-red-50 dark:bg-red-95/20 border border-red-200 dark:border-red-900/30 rounded-xl flex items-start gap-3 text-red-800 dark:text-red-300">
               <AlertCircle className="shrink-0 mt-0.5" size={18} />
               <p className="text-sm font-medium">{error}</p>
             </div>
           )}
 
           {success && (
-            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl flex items-start gap-3 text-emerald-800 dark:text-emerald-300 transition duration-300">
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-95/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl flex items-start gap-3 text-emerald-800 dark:text-emerald-300 transition duration-300">
               <CheckCircle2 className="shrink-0 mt-0.5" size={18} />
-              <p className="text-sm font-medium">{t('availability.successMsg')}</p>
+              <p className="text-sm font-medium">{t('availability.successMessage')}</p>
             </div>
           )}
 
@@ -200,7 +203,7 @@ export function Availability() {
                   </h3>
 
                   {/* Period Type Toggle */}
-                  <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 self-start">
+                  <div className="flex bg-slate-100 dark:bg-slate-95 p-1 rounded-xl border border-slate-200 dark:border-slate-805 self-start">
                     <button
                       type="button"
                       onClick={() => {
@@ -234,7 +237,7 @@ export function Availability() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                      {periodType === 'single' ? t('availability.selectDateLabel') : t('availability.startDateLabel')}
+                      {periodType === 'single' ? t('availability.selectDate') : t('availability.startDate')}
                     </label>
                     <input
                       type="date"
@@ -248,7 +251,7 @@ export function Availability() {
                   {periodType === 'range' && (
                     <div className="space-y-1.5 animate-fadeIn">
                       <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                        {t('availability.endDateLabel')}
+                        {t('availability.endDate')}
                       </label>
                       <input
                         type="date"
@@ -297,73 +300,6 @@ export function Availability() {
             </div>
 
           </form>
-
-          {/* Duty Schedule Dashboard */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-6 animate-fadeIn">
-            <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
-              <div className="bg-primary-50 dark:bg-primary-900/30 p-2 rounded-lg text-primary-500 shrink-0">
-                <Calendar size={20} />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">{t('availability.myDutySchedule')}</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{t('availability.dutyScheduleSubtitle')}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 max-h-[480px] overflow-y-auto pr-1">
-              {dutySchedule.map((item) => {
-                const parseDateLocal = (dateStr: string) => {
-                  const [year, month, day] = dateStr.split('-').map(Number);
-                  return new Date(year, month - 1, day);
-                };
-                const dateObj = parseDateLocal(item.date);
-                return (
-                  <div 
-                    key={item.date} 
-                    className={clsx(
-                      "flex items-center justify-between p-4 rounded-xl border transition-all duration-150",
-                      item.type === 'coverage' 
-                        ? "border-purple-200 dark:border-purple-900/40 bg-purple-500/5 hover:bg-purple-500/10"
-                        : item.type === 'off'
-                        ? "border-red-100 dark:border-red-950/20 bg-red-500/5 hover:bg-red-500/10"
-                        : "border-slate-100 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-700/30"
-                    )}
-                  >
-                    <div className="min-w-0 flex items-center gap-4">
-                      <div className="shrink-0 text-center bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          {dateObj.toLocaleDateString(undefined, { weekday: 'short' })}
-                        </p>
-                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5 leading-none">
-                          {dateObj.toLocaleDateString(undefined, { day: 'numeric' })}
-                        </p>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-medium text-slate-400 dark:text-slate-500">
-                          {dateObj.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
-                        </p>
-                        <p className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate mt-0.5">{item.location}</p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Badge 
-                        variant={
-                          item.type === 'coverage' 
-                            ? 'warning' 
-                            : item.type === 'off'
-                            ? 'danger'
-                            : 'success'
-                        }
-                      >
-                        {item.status}
-                      </Badge>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
 
         </div>
       </div>

@@ -46,7 +46,7 @@ export default function App() {
                   <Route
                     path="/"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Pharmacist', 'Compounder', 'Lab Technician', 'Cashier']}>
                         <Dashboard />
                       </RoleGuard>
                     }
@@ -54,7 +54,7 @@ export default function App() {
                   <Route
                     path="/hospitals"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist']}>
                         <HospitalList />
                       </RoleGuard>
                     }
@@ -62,7 +62,7 @@ export default function App() {
                   <Route
                     path="/hospitals/:id"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist']}>
                         <HospitalDetail />
                       </RoleGuard>
                     }
@@ -78,7 +78,7 @@ export default function App() {
                   <Route
                     path="/patients"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist']}>
                         <PatientList />
                       </RoleGuard>
                     }
@@ -94,7 +94,7 @@ export default function App() {
                   <Route
                     path="/medicines"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Pharmacist', 'Compounder', 'Lab Technician', 'Doctor', 'Nurse', 'Receptionist', 'Cashier']}>
                         <MedicineList />
                       </RoleGuard>
                     }
