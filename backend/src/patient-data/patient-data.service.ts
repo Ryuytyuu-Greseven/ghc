@@ -12,6 +12,12 @@ type BranchInventoryAdjustment = {
   expiryDate?: string | Date | null;
 };
 
+type PatientMedicineInput = {
+  name?: unknown;
+  medicineName?: unknown;
+  quantity?: unknown;
+};
+
 @Injectable()
 export class PatientDataService {
   constructor(
@@ -72,7 +78,9 @@ export class PatientDataService {
     if (data.category !== undefined) patientData.category = String(data.category).trim();
     if (data.medicines !== undefined) {
       patientData.medicines = Array.isArray(data.medicines)
-        ? data.medicines.map((medicine: unknown) => String(medicine).trim()).filter(Boolean)
+        ? data.medicines
+            .map((medicine: unknown) => this.normalizeMedicine(medicine))
+            .filter((medicine): medicine is { name: string; quantity: number } => medicine !== null)
         : [];
     }
     if (data.doctor !== undefined) patientData.doctor = String(data.doctor).trim();
@@ -80,6 +88,28 @@ export class PatientDataService {
     if (data.isActive !== undefined) patientData.isActive = Boolean(data.isActive);
 
     return patientData;
+  }
+
+  private normalizeMedicine(medicine: unknown): { name: string; quantity: number } | null {
+    if (typeof medicine === 'string') {
+      const trimmed = medicine.trim();
+      if (!trimmed) return null;
+
+      const match = trimmed.match(/^(.*?)\s+x\s+(\d+(?:\.\d+)?)$/i);
+      return {
+        name: (match?.[1] ?? trimmed).trim(),
+        quantity: match ? Number(match[2]) : 1,
+      };
+    }
+
+    if (!medicine || typeof medicine !== 'object') return null;
+
+    const item = medicine as PatientMedicineInput;
+    const name = String(item.name ?? item.medicineName ?? '').trim();
+    const quantity = Number(item.quantity ?? 1);
+    if (!name || !Number.isFinite(quantity) || quantity <= 0) return null;
+
+    return { name, quantity };
   }
 
   private async applyBranchInventoryAdjustments(adjustments: unknown) {

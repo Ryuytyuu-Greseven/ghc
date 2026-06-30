@@ -124,7 +124,7 @@ export interface PatientData {
   problem: string;
   visitDate: string;
   category: string;
-  medicines: string[];
+  medicines: { name: string; quantity: number }[];
   doctor?: string;
   notes?: string;
 }

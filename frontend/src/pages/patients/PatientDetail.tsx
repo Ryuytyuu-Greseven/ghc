@@ -39,6 +39,28 @@ type MedicineDraft = {
   notes: string;
 };
 
+function normalizePatientMedicine(medicine: any): { name: string; quantity: number } | null {
+  if (typeof medicine === 'string') {
+    const trimmed = medicine.trim();
+    if (!trimmed) return null;
+    const match = trimmed.match(/^(.*?)\s+x\s+(\d+(?:\.\d+)?)$/i);
+    return {
+      name: (match?.[1] ?? trimmed).trim(),
+      quantity: match ? Number(match[2]) : 1,
+    };
+  }
+
+  const name = String(medicine?.name ?? medicine?.medicineName ?? '').trim();
+  const quantity = Number(medicine?.quantity ?? 1);
+  if (!name || !Number.isFinite(quantity) || quantity <= 0) return null;
+
+  return { name, quantity };
+}
+
+function formatPatientMedicine(medicine: { name: string; quantity: number }) {
+  return `${medicine.name} x ${medicine.quantity}`;
+}
+
 function getCategoryByIdOrValue(category: string) {
   return categoryOptions.find(option => option.id === category)
     ?? categoryOptions.find(option => option.value === category)
@@ -60,7 +82,9 @@ function mapPatientDataFromBackend(item: any): PatientData {
     problem: item.problem ?? '',
     visitDate: item.visitDate ? new Date(item.visitDate).toISOString().split('T')[0] : '',
     category: item.category ? getCategoryId(item.category) : '',
-    medicines: item.medicines ?? [],
+    medicines: (Array.isArray(item.medicines) ? item.medicines : [])
+      .map(normalizePatientMedicine)
+      .filter((medicine: { name: string; quantity: number } | null): medicine is { name: string; quantity: number } => medicine !== null),
     doctor: item.doctor ?? '',
     notes: item.notes ?? '',
   };
@@ -150,6 +174,7 @@ export function PatientDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [medicineVisit, setMedicineVisit] = useState<PatientData | null>(null);
+  const [medicineError, setMedicineError] = useState('');
   const [medicineDrafts, setMedicineDrafts] = useState<
     Record<string, MedicineDraft>
   >({});
@@ -250,7 +275,7 @@ export function PatientDetail() {
   const getMedicineDraft = (visit: PatientData) =>
     medicineDrafts[visit.id] ?? {
       category: getCategoryId(visit.category ?? ''),
-      medicines: visit.medicines ?? [],
+      medicines: [],
       medicineQuantities: {},
       notes: visit.notes ?? '',
     };
@@ -264,6 +289,7 @@ export function PatientDetail() {
 
     try {
       setLoadingMedicines(true);
+      setMedicineError('');
       const res = await authFetch(
         `${API_BASE}/branch-inventory/branch/${encodeURIComponent(patient.hospitalId)}/category/${encodeURIComponent(category.value)}`
       );
@@ -291,7 +317,7 @@ export function PatientDetail() {
       );
     } catch (err) {
       setMedicineOptions([]);
-      setError(err instanceof Error ? err.message : 'Failed to load medicines');
+      setMedicineError(err instanceof Error ? err.message : 'Failed to load medicines');
     } finally {
       setLoadingMedicines(false);
     }
@@ -300,11 +326,12 @@ export function PatientDetail() {
   const openMedicineModal = (visit: PatientData) => {
     const category = getCategoryId(visit.category ?? '');
     setMedicineVisit(visit);
+    setMedicineError('');
     setMedicineDrafts(current => ({
       ...current,
       [visit.id]: current[visit.id] ?? {
         category,
-        medicines: visit.medicines ?? [],
+        medicines: [],
         medicineQuantities: {},
         notes: visit.notes ?? '',
       },
@@ -333,6 +360,7 @@ export function PatientDetail() {
     const isSelected = current.medicines.includes(medicine);
     const remainingQuantities = { ...current.medicineQuantities };
     delete remainingQuantities[medicine];
+    setMedicineError('');
 
     setMedicineDraft(visitId, {
       medicines: isSelected
@@ -346,6 +374,7 @@ export function PatientDetail() {
 
   const setMedicineQuantity = (visitId: string, medicine: string, quantity: number) => {
     const current = medicineDrafts[visitId] ?? { category: '', medicines: [], medicineQuantities: {}, notes: '' };
+    setMedicineError('');
     setMedicineDraft(visitId, {
       medicineQuantities: {
         ...current.medicineQuantities,
@@ -356,7 +385,7 @@ export function PatientDetail() {
 
   const saveMedicineDetails = async (visit: PatientData) => {
     const draft = getMedicineDraft(visit);
-    setError('');
+    setMedicineError('');
     const selectedOptions = draft.medicines
       .map(value => medicineOptions.find(option => option.value === value))
       .filter((option): option is MedicineOption => option !== undefined);
@@ -364,18 +393,18 @@ export function PatientDetail() {
     for (const option of selectedOptions) {
       const quantity = Number(draft.medicineQuantities[option.value] ?? 0);
       if (!Number.isFinite(quantity) || quantity <= 0) {
-        setError(`Quantity is required for ${option.label}`);
+        setMedicineError(`Quantity is required for ${option.label}`);
         return;
       }
       if (quantity > option.availableQty) {
-        setError(`Only ${option.availableQty} available for ${option.label}`);
+        setMedicineError(`Only ${option.availableQty} available for ${option.label}`);
         return;
       }
     }
 
     const medicineSummaries = selectedOptions.map(option => {
       const quantity = Number(draft.medicineQuantities[option.value] ?? 0);
-      return `${option.label} x ${quantity}`;
+      return { name: option.label, quantity };
     });
     const branchInventoryAdjustments = patient?.hospitalId
       ? selectedOptions.map(option => ({
@@ -393,7 +422,7 @@ export function PatientDetail() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           category: draft.category,
-          medicines: medicineSummaries.length > 0 ? medicineSummaries : draft.medicines,
+          medicines: medicineSummaries.length > 0 ? medicineSummaries : visit.medicines,
           notes: draft.notes,
           branchInventoryAdjustments,
         }),
@@ -409,11 +438,12 @@ export function PatientDetail() {
       });
       setMedicineVisit(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('patients.detail.saveMedicineError'));
+      setMedicineError(err instanceof Error ? err.message : t('patients.detail.saveMedicineError'));
     }
   };
 
   const handleMedicineCategoryChange = (visitId: string, category: string) => {
+    setMedicineError('');
     setMedicineDraft(visitId, {
       category,
       medicines: [],
@@ -567,7 +597,7 @@ export function PatientDetail() {
                                           {visit.category ? t(`inventory.categories.${getCategoryLabel(visit.category)}`) : t('patients.detail.medicinePending')}
                                         </p>
                                         <p className="text-slate-500 dark:text-slate-400">
-                                          {visit.medicines.length > 0 ? visit.medicines.join(', ') : t('patients.detail.clickToAdd')}
+                                          {visit.medicines.length > 0 ? visit.medicines.map(formatPatientMedicine).join(', ') : t('patients.detail.clickToAdd')}
                                         </p>
                                       </div>
                                     </div>
@@ -646,7 +676,10 @@ export function PatientDetail() {
 
       <Modal
         open={!!medicineVisit}
-        onClose={() => setMedicineVisit(null)}
+        onClose={() => {
+          setMedicineVisit(null);
+          setMedicineError('');
+        }}
         title={medicineVisit ? t('patients.detail.medicineDetailsWithProblem', { problem: medicineVisit.problem }) : t('patients.detail.medicineDetails')}
         size="md"
       >
@@ -662,6 +695,12 @@ export function PatientDetail() {
                 {medicineVisit.problem}
               </p>
             </div>
+
+            {medicineError && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+                {medicineError}
+              </div>
+            )}
 
             <Select
               label={t('patients.detail.medicineCategory')}
@@ -740,7 +779,14 @@ export function PatientDetail() {
             />
 
             <div className="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="secondary" onClick={() => setMedicineVisit(null)}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setMedicineVisit(null);
+                  setMedicineError('');
+                }}
+              >
                 {t('common.cancel')}
               </Button>
               <Button type="button" onClick={() => saveMedicineDetails(medicineVisit)}>
