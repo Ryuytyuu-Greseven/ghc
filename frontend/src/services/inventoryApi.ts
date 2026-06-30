@@ -5,6 +5,9 @@ import type {
   InventoryRequest,
   AuditLog,
   PaginatedResponse,
+  StockoutWarning,
+  DemandForecast,
+  RedistributionRecommendation,
 } from '../types';
 import { authFetch } from '../context/AppContext';
 
@@ -80,4 +83,13 @@ export const inventoryApi = {
   },
   getItemTransactions: (itemId: string) =>
     get<AuditLog[]>(`/audit-logs?module=inventory&itemId=${itemId}`),
+
+  // Inventory Analytics
+  getStockoutWarnings: () => get<StockoutWarning[]>('/inventory-analytics/stockout-warnings'),
+  getDemandForecast: (itemId: string, branchId: string) =>
+    get<DemandForecast>(`/inventory-analytics/forecast/${itemId}/${branchId}`),
+  getRedistributionRecommendations: () =>
+    get<RedistributionRecommendation[]>('/inventory-analytics/redistribution-recommendations'),
+  applyRedistribution: (data: object) =>
+    post<InventoryRequest>('/inventory-analytics/redistribution/apply', data),
 };

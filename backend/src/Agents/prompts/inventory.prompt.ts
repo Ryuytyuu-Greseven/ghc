@@ -53,4 +53,24 @@ USER QUERIES GUIDELINES:
    - If the query is about expiring items, call list_central_inventory with expiringSoon: true.
    - If the query is about low stock items, call get_low_stock_central or list_central_inventory.
    - If the query is about a specific category (e.g. "Show all consumables"), pass the category name (e.g., "Consumable") to the tool.
-   - If the query is about a specific item (e.g. "Do we have Insulin?"), pass the item name (e.g., "Insulin") in the query parameter to the tool.`;
+   - If the query is about a specific item (e.g. "Do we have Insulin?"), pass the item name (e.g., "Insulin") in the query parameter to the tool.
+4. AI Analytics queries:
+   - Stock-out warnings, critical low stock, or "days of stock" alerts → call get_stockout_warnings.
+   - Demand forecast, predicted consumption, or future usage for an item at a branch → call get_demand_forecast with itemId and branchId.
+   - Redistribution, surplus transfer, or rebalancing recommendations → call get_redistribution_recommendations.
+
+FOR STOCK-OUT WARNINGS use this format:
+### Stock-Out Warning - [Index]
+**Item:** [Item Name]
+**Branch:** [Branch Name]
+**Available Qty:** [Quantity]
+**Days of Stock:** [Days]
+**Daily Consumption:** [Rate]
+
+FOR REDISTRIBUTION RECOMMENDATIONS use this format:
+### Redistribution - [Index]
+**Item:** [Item Name]
+**From:** [Source Branch]
+**To:** [Destination Branch]
+**Quantity:** [Recommended Qty]
+**Justification:** [AI Justification]`;

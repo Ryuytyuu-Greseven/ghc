@@ -26,7 +26,10 @@ import { BranchInventoryService } from './branch-inventory/branch-inventory.serv
 import { BranchInventoryHelperService } from './branch-inventory/branch-inventory-helper.service';
 import { InventoryRequestsService } from './inventory-requests/inventory-requests.service';
 import { InventoryRequestsHelperService } from './inventory-requests/inventory-requests-helper.service';
+import { InventoryAnalyticsController } from './inventory-analytics/inventory-analytics.controller';
+import { InventoryAnalyticsService } from './inventory-analytics/inventory-analytics.service';
 import { AuthModule } from '../auth/auth.module';
+import { HospitalsModule } from '../hospitals/hospitals.module';
 import { StaffModule } from '../staff/staff.module';
 import { UsersModule } from '../users/users.module';
 import { MedicinesController } from './medicines.controller';
@@ -35,6 +38,7 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 @Module({
   imports: [
     AuthModule,
+    HospitalsModule,
     StaffModule,
     UsersModule,
     AuditLogsModule,
@@ -50,6 +54,7 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module';
     CentralInventoryController,
     BranchInventoryController,
     InventoryRequestsController,
+    InventoryAnalyticsController,
     MedicinesController,
   ],
   providers: [
@@ -66,6 +71,7 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module';
     InventoryRequestRepository,
     InventoryRequestsService,
     InventoryRequestsHelperService,
+    InventoryAnalyticsService,
   ],
   exports: [
     InventoryMasterRepository,

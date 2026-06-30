@@ -65,6 +65,8 @@ export const te = {
       staff: "సిబ్బంది",
       patients: "రోగులు",
       medicines: "మందులు & సామాగ్రి",
+      "ai-analytics": "AI ఇన్వెంటరీ విశ్లేషణలు",
+      "critical-alerts": "కీలక హెచ్చరికలు",
       availability: "నా అందుబాటు",
       transfers: "కవరేజ్ & బదిలీలు",
       audits: "ఆడిట్ లాగ్స్"
@@ -105,7 +107,30 @@ export const te = {
       facilities: "సదుపాయాలు",
       beds_free: "పడకలు ఖాళీగా ఉన్నాయి",
       unassigned: "కేటాయించని",
-      requiringBeds: "పడకలు అవసరమైనవి"
+      requiringBeds: "పడకలు అవసరమైనవి",
+      intervention: {
+        title: "కీలక హెచ్చరికలు",
+        subtitle: "తీవ్రమైన వనరుల కొరత ఎదుర్కొంటున్న ఆరోగ్య కేంద్రాలు",
+        severity_high: "అధిక",
+        severity_medium: "మధ్యస్థ",
+        bed_shortage: "బెడ్ కొరత",
+        severe_stockout: "తీవ్రమైన స్టాక్ కొరత",
+        staff_crunch: "సిబ్బంది కొరత",
+        action_transfer: "AI బదిలీని ప్రారంభించు",
+        action_staff: "సిబ్బందిని సర్దుబాటు చేయి",
+        action_view_hospital: "సదుపాయాలను నిర్వహించు",
+        justification_bed: "క్లిష్టమైన బెడ్ సామర్థ్య పరిమితి చేరింది. ఆక్యుపెన్సీ {{occupancy}}% వద్ద ఉంది మరియు కేవలం {{beds}} పడకలు మాత్రమే మిగిలి ఉన్నాయి.",
+        justification_stockout: "నిఘాలో ఉన్న మొత్తం {{total}} ఔషధాలలో {{outOfStock}} మందులు పూర్తిగా అందుబాటులో లేవు. వెంటనే వాటిని తిరిగి నింపడం లేదా బదిలీ చేయడం అవసరం.",
+        justification_staff: "అధిక రోగుల భారం. {{patients}} యాక్టివ్ రోగులు ఉండగా కేవలం {{staff}} సిబ్బంది మాత్రమే కేటాయించబడ్డారు. తక్షణ సిబ్బంది సర్దుబాటు జోక్యం అవసరం.",
+        metric_bed: "{{occupancy}}% ఆక్యుపెన్సీ ({{beds}} పడకలు ఖాళీగా ఉన్నాయి)",
+        metric_stockout: "{{ratio}}% మందులు అందుబాటులో లేవు",
+        metric_staff: "{{ratio}}:1 రోగి-సిబ్బంది నిష్పత్తి",
+        banner_title: "{{count}} కీలక హెచ్చరిక(లు) కనుగొనబడ్డాయి",
+        banner_desc: "PHC/CHC లపై తక్షణ పరిపాలనా చర్య అవసరం.",
+        banner_action: "హెచ్చరికలను సమీక్షించండి",
+        no_alerts_title: "అన్నీ సాధారణంగా ఉన్నాయి",
+        no_alerts_desc: "అన్ని ప్రాథమిక మరియు సామాజిక ఆరోగ్య కేంద్రాలు సాధారణ వనరుల పరిమితుల్లోనే పనిచేస్తున్నాయి."
+      }
     },
     hospitals: {
       title: "ఆసుపత్రులు & క్లినిక్‌లు",
@@ -258,7 +283,8 @@ export const te = {
         central: "సెంట్రల్ స్టాక్",
         branch: "బ్రాంచ్ స్టాక్",
         requests: "అభ్యర్థనలు",
-        transactions: "లావాదేవీలు"
+        transactions: "లావాదేవీలు",
+        analytics: "AI విశ్లేషణలు"
       },
       master: {
         title: "ఇన్వెంటరీ మాస్టర్",
@@ -369,6 +395,42 @@ export const te = {
           Expiry: "గడువు ముగియడం",
           Adjustment: "సర్దుబాటు"
         }
+      },
+      analytics: {
+        title: "AI ఇన్వెంటరీ అనలిటిక్స్",
+        subtitle: "ముందస్తు స్టాక్-అవుట్ హెచ్చరికలు, డిमाండ్ అంచనాలు మరియు స్మార్ట్ వనరుల పునఃపంపిణీ",
+        criticalAlerts: "ముఖ్యమైన అలర్ట్‌లు",
+        criticalAlertsDesc: "7 రోజుల కంటే తక్కువ స్టాక్ ఉన్న వస్తువులు",
+        noWarnings: "ఎటువంటి కీలక స్టాక్-అవుట్ హెచ్చరికలు లేవు",
+        noWarningsDesc: "అన్ని పర్యవేక్షించబడే శాఖల వస్తువులలో తగినంత రోజుల స్టాక్ ఉంది.",
+        daysOfStock: "స్టాక్ ఉన్న రోజులు",
+        dailyConsumption: "దినసరి వినియోగం",
+        demandForecast: "డిమాండ్ అంచనా",
+        demandForecastDesc: "గత వినియోగాన్ని AI-అంచనా డిమాండ్‌తో పోల్చండి",
+        selectBranch: "శాఖను ఎంచుకోండి",
+        selectItem: "వస్తువును ఎంచుకోండి",
+        chooseBranch: "ఒక శాఖను ఎంచుకోండి...",
+        chooseItem: "ఒక వస్తువును ఎంచుకోండి...",
+        loadForecast: "అంచనాను లోడ్ చేయి",
+        loadingForecast: "అంచనా లోడ్ అవుతోంది...",
+        historicDemand: "గత వినియోగం (30 రోజులు)",
+        projectedDemand: "AI అంచనా (7 రోజులు)",
+        aiSummary: "AI సారాంశం",
+        redistribution: "స్మార్ట్ పునఃపంపిణీ",
+        redistributionDesc: "నిజ-సమయ స్టాక్ మరియు అంచనాల ఆధారంగా సిఫార్సు చేయబడిన ఒక శాఖ నుండి మరొక శాఖకు బదిలీలు",
+        refreshRecommendations: "రీఫ్రెష్",
+        applyTransfer: "బదిలీని వర్తింపజేయి",
+        applyingTransfer: "వర్తింపజేస్తోంది...",
+        applySuccess: "బదిలీ అభ్యర్థన విజయవంతంగా సృష్టించబడింది",
+        noRecommendations: "ఎటువంటి పునఃపంపిణీ సిఫార్సులు లేవు",
+        noRecommendationsDesc: "ప్రస్తుత అంచనాల ప్రకారం అన్ని శాఖలలో స్టాక్ స్థాయిలు సమతుల్యంగా ఉన్నాయి.",
+        fromFacility: "పంపే కేంద్రం",
+        toFacility: "స్వీకరించే కేంద్రం",
+        quantity: "పరిమాణం",
+        justification: "కారణం",
+        item: "వస్తువు",
+        branch: "శాఖ",
+        availableQty: "అందుబాటులో ఉన్న పరిమాణం"
       },
       fields: {
         itemName: "ఐటమ్ పేరు",

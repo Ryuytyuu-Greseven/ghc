@@ -11,6 +11,8 @@ import { StaffList } from './pages/staff/StaffList';
 import { PatientList } from './pages/patients/PatientList';
 import { PatientDetail } from './pages/patients/PatientDetail';
 import { MedicineList } from './pages/medicines/MedicineList';
+import { AIInventoryAnalytics } from './pages/inventory/AIInventoryAnalytics';
+import { CriticalAlertsPage } from './pages/alerts/CriticalAlertsPage';
 import { Availability } from './pages/Availability';
 import { Transfers } from './pages/Transfers';
 import { Audits } from './pages/Audits';
@@ -95,6 +97,22 @@ export default function App() {
                     element={
                       <RoleGuard allowedRoles={['Admin', 'Pharmacist', 'Compounder', 'Lab Technician', 'Doctor', 'Nurse', 'Receptionist', 'Cashier']}>
                         <MedicineList />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/ai-analytics"
+                    element={
+                      <RoleGuard allowedRoles={['Admin']}>
+                        <AIInventoryAnalytics />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/critical-alerts"
+                    element={
+                      <RoleGuard allowedRoles={['Admin']}>
+                        <CriticalAlertsPage />
                       </RoleGuard>
                     }
                   />
