@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { io, type Socket } from 'socket.io-client';
+import { environment } from '@env/environment';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? environment.mainBackendUrl;
 
 export type ChatConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
 export type ChatMode = 'text' | 'voice';

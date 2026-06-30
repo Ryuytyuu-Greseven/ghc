@@ -3,6 +3,7 @@ import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useApp, authFetch } from '../context/AppContext';
+import { environment } from '@env/environment';
 import { AlertTriangle, ArrowRight, CheckCircle2, Building, UserCheck, Loader2, Calendar, ClipboardList } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
@@ -54,7 +55,7 @@ export function Transfers() {
 
   const fetchRequests = async () => {
     try {
-      const res = await authFetch('http://localhost:3000/staff/coverage-requests');
+      const res = await authFetch(`${environment.mainBackendUrl}/staff/coverage-requests`);
       if (res.ok) {
         const data = await res.json();
         setRequests(data);
@@ -91,7 +92,7 @@ export function Transfers() {
     setSuccessMsg(null);
 
     try {
-      const res = await authFetch(`http://localhost:3000/staff/coverage-requests/${selectedRequest._id}/transfer`, {
+      const res = await authFetch(`${environment.mainBackendUrl}/staff/coverage-requests/${selectedRequest._id}/transfer`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ replacementStaffId: alternativeStaffId }),
