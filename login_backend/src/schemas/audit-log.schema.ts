@@ -22,6 +22,9 @@ export class AuditLog {
 
   @Prop({ type: MongooseSchema.Types.Mixed, default: null })
   metadata?: any;
+
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export const AuditLogSchema = SchemaFactory.createForClass(AuditLog);

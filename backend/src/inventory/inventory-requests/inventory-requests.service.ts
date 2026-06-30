@@ -336,15 +336,21 @@ export class InventoryRequestsService {
         batch.expiryDate,
       );
 
-      // Create transaction record
+      // Create transaction record as an audit log
       await this.transactionRepo.create({
-        itemId: new Types.ObjectId(itemId),
-        fromLocation: fromBranchId,
-        toLocation: toBranchId,
-        quantity: deduct,
-        transactionType: TransactionType.TRANSFER,
-        requestId,
+        module: 'inventory',
+        action: 'TRANSFER',
+        message: `Transferred ${deduct} units of medicine stock from branch "${fromBranchId}" to branch "${toBranchId}".`,
         performedBy,
+        performedByRole: 'Admin',
+        metadata: {
+          itemId,
+          quantity: deduct,
+          fromLocation: fromBranchId,
+          toLocation: toBranchId,
+          transactionType: TransactionType.TRANSFER,
+          requestId,
+        }
       });
 
       remaining -= deduct;
