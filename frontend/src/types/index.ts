@@ -56,7 +56,6 @@ export interface Staff {
   role: StaffRole;
   department?: Department;
   userId?: string;
-  unavailableOnDays?: string[];
   designation?: string;
   joiningDate?: string;
   employmentType?: 'Full Time' | 'Part Time' | 'Visiting';

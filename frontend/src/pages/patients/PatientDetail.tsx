@@ -23,11 +23,6 @@ const categoryOptions = [
   { id: '-6', value: 'Other', label: 'Other' },
 ];
 
-const categorySelectOptions = categoryOptions.map(category => ({
-  value: category.id,
-  label: category.label,
-}));
-
 function getCategoryByIdOrValue(category: string) {
   return categoryOptions.find(option => option.id === category)
     ?? categoryOptions.find(option => option.value === category)
@@ -53,11 +48,6 @@ function mapPatientDataFromBackend(item: any): PatientData {
     doctor: item.doctor ?? '',
     notes: item.notes ?? '',
   };
-}
-
-function getVisitOrdinal(index: number) {
-  const labels = ['First', 'Second', 'Third', 'Fourth', 'Fifth'];
-  return labels[index] ?? `${index + 1}th`;
 }
 
 function PatientDetailSkeleton() {

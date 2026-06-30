@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Put, Param, Body, UseGuards, Req, ForbiddenException, Query } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { SearchPatientsDto } from './dto/search-patients.dto';
 import { UsersService } from '../users/users.service';
 
 @Controller('patients')
@@ -14,12 +15,17 @@ export class PatientsController {
     private readonly usersService: UsersService,
   ) {}
 
+  @Post()
+  async search(@Req() req: any, @Body() body: SearchPatientsDto = {}) {
+    const query = await this.applyHospitalScope(req, body);
+    return this.patientsService.findAll(query);
+  }
+
   @Get()
   async findAll(@Req() req: any) {
-    const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.getAssignedHospitalId(req);
     const filter = hospitalId ? { hospitalId: new Types.ObjectId(hospitalId) } : {};
-    return this.patientsService.findAll(filter);
+    return this.patientsService.findAllList(filter);
   }
 
   @Get('by-hospital/:hospitalId')
@@ -43,8 +49,12 @@ export class PatientsController {
     return patient;
   }
 
-  @Post()
+  @Post('create')
   async create(@Req() req: any, @Body() body: CreatePatientDto) {
+    return this.createPatient(req, body);
+  }
+
+  private async createPatient(req: any, body: CreatePatientDto) {
     const user = req.user;
     if (user.role === 'Admin') {
       throw new ForbiddenException('Administrators are not allowed to add patients');
@@ -71,5 +81,15 @@ export class PatientsController {
       body.hospitalId = hospitalId;
     }
     return this.patientsService.update(id, body);
+  }
+
+  private async applyHospitalScope(req: any, query: SearchPatientsDto) {
+    const hospitalId = await this.getAssignedHospitalId(req);
+    return hospitalId ? { ...query, hospitalId } : query;
+  }
+
+  private async getAssignedHospitalId(req: any) {
+    const user = req.user;
+    return this.usersService.getAssignedHospitalId(user.userId, user.role);
   }
 }
