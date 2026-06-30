@@ -77,6 +77,7 @@ import { MedicinesController } from './medicines.controller';
     InventoryMasterRepository,
     CentralInventoryRepository,
     BranchInventoryRepository,
+    BranchInventoryService,
     InventoryRequestRepository,
     InventoryTransactionRepository,
   ],
