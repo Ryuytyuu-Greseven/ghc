@@ -15,6 +15,7 @@ import { AIInventoryAnalytics } from './pages/inventory/AIInventoryAnalytics';
 import { CriticalAlertsPage } from './pages/alerts/CriticalAlertsPage';
 import { Availability } from './pages/Availability';
 import { Transfers } from './pages/Transfers';
+import { Audits } from './pages/Audits';
 
 interface GuardProps {
   allowedRoles: string[];
@@ -128,6 +129,14 @@ export default function App() {
                     element={
                       <RoleGuard allowedRoles={['Admin']}>
                         <Transfers />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/audits"
+                    element={
+                      <RoleGuard allowedRoles={['Admin']}>
+                        <Audits />
                       </RoleGuard>
                     }
                   />

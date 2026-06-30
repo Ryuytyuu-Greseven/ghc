@@ -3,7 +3,7 @@ import type {
   CentralInventoryEntry,
   BranchInventoryEntry,
   InventoryRequest,
-  InventoryTransaction,
+  AuditLog,
   PaginatedResponse,
   StockoutWarning,
   DemandForecast,
@@ -73,10 +73,16 @@ export const inventoryApi = {
     put<InventoryRequest>(`/inventory-requests/${id}/reject`, data),
 
   // Inventory Transactions
-  getTransactions: (params = '') =>
-    get<PaginatedResponse<InventoryTransaction>>(`/inventory-transactions${params ? '?' + params : ''}`),
+  getTransactions: (params = '') => {
+    const queryParts = [];
+    if (params) {
+      queryParts.push(params);
+    }
+    queryParts.push('module=inventory');
+    return get<PaginatedResponse<AuditLog>>(`/audit-logs?${queryParts.join('&')}`);
+  },
   getItemTransactions: (itemId: string) =>
-    get<InventoryTransaction[]>(`/inventory-transactions/item/${itemId}`),
+    get<AuditLog[]>(`/audit-logs?module=inventory&itemId=${itemId}`),
 
   // Inventory Analytics
   getStockoutWarnings: () => get<StockoutWarning[]>('/inventory-analytics/stockout-warnings'),

@@ -5,6 +5,7 @@ import { NotificationsPanel } from '../ui/NotificationsPanel';
 import { useSidebar } from '../../context/SidebarContext';
 import { environment } from '@env/environment';
 import { useTranslation } from 'react-i18next';
+import { authFetch } from '../../context/AppContext';
 
 interface HeaderProps {
   title: string;
@@ -170,7 +171,12 @@ export function Header({ title, subtitle }: HeaderProps) {
 
         {/* Logout */}
         <button
-          onClick={() => {
+          onClick={async () => {
+            try {
+              await authFetch(`${environment.mainBackendUrl}/auth/logout`, { method: 'POST' });
+            } catch (err) {
+              console.error('Failed to log out from backend:', err);
+            }
             localStorage.removeItem('ghc_auth_token');
             window.location.replace(environment.loginFrontendUrl);
           }}

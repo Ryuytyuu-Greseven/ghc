@@ -68,7 +68,8 @@ export const bn = {
       "ai-analytics": "এআই ইনভেন্টরি অ্যানালিটিক্স",
       "critical-alerts": "গুরুতর সতর্কতা",
       availability: "আমার প্রাপ্যতা",
-      transfers: "কভারেজ ও স্থানান্তর"
+      transfers: "কভারেজ ও স্থানান্তর",
+      audits: "অডিট লগ"
     },
     roles: {
       Admin: "প্রশাসক",

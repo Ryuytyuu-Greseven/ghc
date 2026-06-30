@@ -8,6 +8,7 @@ import {
   X,
   Calendar,
   Shuffle,
+  ClipboardList,
   Sparkles,
   AlertOctagon,
 } from 'lucide-react';
@@ -26,10 +27,11 @@ const allNavItems = [
   { to: '/critical-alerts', key: 'critical-alerts', icon: AlertOctagon },
   { to: '/availability', key: 'availability', icon: Calendar },
   { to: '/transfers', key: 'transfers', icon: Shuffle },
+  { to: '/audits', key: 'audits', icon: ClipboardList },
 ];
 
 const roleNavItemsMap: Record<string, string[]> = {
-  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines','/ai-analytics', '/critical-alerts', '/transfers'],
+  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/critical-alerts', '/transfers', '/audits'],
   Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability'],
   Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability'],
   Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability'],

@@ -68,7 +68,8 @@ export const en = {
       "ai-analytics": "AI Inventory Analytics",
       "critical-alerts": "Critical Alerts",
       availability: "My Availability",
-      transfers: "Coverage & Transfers"
+      transfers: "Coverage & Transfers",
+      audits: "Audit Logs"
     },
     roles: {
       Admin: "Admin",

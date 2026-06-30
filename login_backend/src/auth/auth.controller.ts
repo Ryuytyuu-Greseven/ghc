@@ -1,9 +1,16 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { AuthService } from './auth.service';
+import { AuditLog } from '../schemas/audit-log.schema';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    @InjectModel(AuditLog.name)
+    private readonly auditLogModel: Model<AuditLog>,
+  ) {}
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -18,8 +25,24 @@ export class AuthController {
     }
     const user = await this.authService.validateUser(cleanUsername, password);
     if (!user) {
+      await this.auditLogModel.create({
+        module: 'auth',
+        action: 'LOGIN_FAILURE',
+        message: `Failed login attempt for user "${cleanUsername}".`,
+        performedBy: cleanUsername,
+        performedByRole: 'Guest',
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    await this.auditLogModel.create({
+      module: 'auth',
+      action: 'LOGIN',
+      message: `User "${user.username}" logged in successfully.`,
+      performedBy: user.username,
+      performedByRole: user.role,
+    });
+
     return this.authService.login(user);
   }
 }

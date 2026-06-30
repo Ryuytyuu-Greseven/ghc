@@ -68,7 +68,8 @@ export const hi = {
       "ai-analytics": "एआई इन्वेंटरी एनालिटिक्स",
       "critical-alerts": "गंभीर अलर्ट",
       availability: "मेरी उपलब्धता",
-      transfers: "कवरेज और स्थानांतरण"
+      transfers: "कवरेज और स्थानांतरण",
+      audits: "ऑडिट लॉग्स"
     },
     roles: {
       Admin: "एडमिन",
