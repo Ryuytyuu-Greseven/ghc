@@ -16,7 +16,13 @@ import {
   createInventoryRequest,
   listInventoryRequests,
 } from '../tools/inventory.tools';
-import { extractBranchId, extractCategory, extractRequestStatus, extractSearchQuery, llmClassify } from './helper.node';
+import {
+  extractBranchId,
+  extractCategory,
+  extractRequestStatus,
+  extractSearchQuery,
+  llmClassify,
+} from './helper.node';
 import { appInstance } from '../../main';
 import { HospitalsService } from '../../hospitals/hospitals.service';
 
@@ -36,10 +42,19 @@ export async function inventoryNode(state: typeof AgentState.State) {
 }
 
 // ── Node: classify query intent ───────────────────────────────────────────────
-export async function inventoryClassifyIntent(state: typeof InventoryState.State) {
+export async function inventoryClassifyIntent(
+  state: typeof InventoryState.State,
+) {
   const intent = await llmClassify(
     state.query,
-    ['list_inventory', 'check_stock', 'check_expiring', 'audit', 'list_requests', 'raise_requests'],
+    [
+      'list_inventory',
+      'check_stock',
+      'check_expiring',
+      'audit',
+      'list_requests',
+      'raise_requests',
+    ],
     `You are an inventory query classifier for a hospital management system. This entire agent flow depends on this routing node.
       ## Classify the doctor's request into exactly one from the below available options:
         - list_inventory   → doctor wants to list/see/browse inventory items or current stock levels or individual stock details of an item.
@@ -57,7 +72,7 @@ export async function inventoryClassifyIntent(state: typeof InventoryState.State
 }
 
 export async function inventoryListAll(state: typeof InventoryState.State) {
-  console.log('ENtered the node:', inventoryListAll)
+  console.log('ENtered the node:', inventoryListAll);
   const branchId = await extractBranchId(state.query);
   const category = extractCategory(state.query);
   const searchQ = await extractSearchQuery(state.query);
@@ -65,34 +80,48 @@ export async function inventoryListAll(state: typeof InventoryState.State) {
   let data: any[];
   if (branchId) {
     console.log('Hey, We are in branchId', branchId);
-    const raw = await listBranchStock.invoke({ branchId, query: searchQ, category });
+    const raw = await listBranchStock.invoke({
+      branchId,
+      query: searchQ,
+      category,
+    });
     const parsed = JSON.parse(raw);
     data = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
   } else {
     console.log('Hey, We are in else of branchId', branchId);
-    const raw = await listCentralInventory.invoke({ pageSize: 100, query: searchQ, category });
+    const raw = await listCentralInventory.invoke({
+      pageSize: 100,
+      query: searchQ,
+      category,
+    });
     const parsed = JSON.parse(raw);
     data = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
   }
 
-  const dataPrompt = INVENTORY_PROMPT.replace('{inventoryData}', JSON.stringify(data));
+  const dataPrompt = INVENTORY_PROMPT.replace(
+    '{inventoryData}',
+    JSON.stringify(data),
+  );
   const agent = createAgent({
     model: llmInstance,
     tools: [],
     systemPrompt: withGuardrails(dataPrompt),
-  })
+  });
 
   const llmResponse = await agent.invoke({
     messages: state.messages,
   });
 
-  const response = llmResponse.messages[llmResponse.messages.length - 1].content;
+  const response =
+    llmResponse.messages[llmResponse.messages.length - 1].content;
   console.log('LLM Response', response);
   return { inventoryList: data, searchQuery: searchQ, nodeResponse: response };
 }
 
 // ── Node: list inventory requests ──────────────────────────────────────────
-export async function inventoryListRequests(state: typeof InventoryState.State) {
+export async function inventoryListRequests(
+  state: typeof InventoryState.State,
+) {
   const branchId = await extractBranchId(state.query);
   const status = extractRequestStatus(state.query);
   const raw = await listInventoryRequests.invoke({ status, branchId });
@@ -110,7 +139,11 @@ export async function inventoryCheckStock(state: typeof InventoryState.State) {
 
   let allLow: any[] = [];
   if (branchId) {
-    const raw = await listBranchStock.invoke({ branchId, query: searchQ, category });
+    const raw = await listBranchStock.invoke({
+      branchId,
+      query: searchQ,
+      category,
+    });
     const parsed = JSON.parse(raw);
     const items = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
     allLow = items.filter((i: any) => i.availableQty <= 50);
@@ -119,7 +152,9 @@ export async function inventoryCheckStock(state: typeof InventoryState.State) {
     allLow = JSON.parse(raw);
     if (category || searchQ) {
       allLow = allLow.filter((i: any) => {
-        const nameMatch = !searchQ || i.itemId?.itemName?.toLowerCase().includes(searchQ.toLowerCase());
+        const nameMatch =
+          !searchQ ||
+          i.itemId?.itemName?.toLowerCase().includes(searchQ.toLowerCase());
         const catMatch = !category || i.itemId?.category === category;
         return nameMatch && catMatch;
       });
@@ -131,19 +166,27 @@ export async function inventoryCheckStock(state: typeof InventoryState.State) {
 }
 
 // ── Node: check expiring items (within 90 days) ───────────────────────────────
-export async function inventoryCheckExpiring(state: typeof InventoryState.State) {
+export async function inventoryCheckExpiring(
+  state: typeof InventoryState.State,
+) {
   const branchId = await extractBranchId(state.query);
   const category = extractCategory(state.query);
   const searchQ = await extractSearchQuery(state.query);
 
   let items: any[] = [];
   if (branchId) {
-    const raw = await listBranchStock.invoke({ branchId, query: searchQ, category });
+    const raw = await listBranchStock.invoke({
+      branchId,
+      query: searchQ,
+      category,
+    });
     const parsed = JSON.parse(raw);
     const allItems = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
     const now = Date.now();
     const cutoff = now + 90 * 86_400_000;
-    items = allItems.filter((i: any) => i.expiryDate && new Date(i.expiryDate).getTime() <= cutoff);
+    items = allItems.filter(
+      (i: any) => i.expiryDate && new Date(i.expiryDate).getTime() <= cutoff,
+    );
   } else {
     const raw = await listCentralInventory.invoke({
       expiringSoon: true,
@@ -164,13 +207,14 @@ export async function inventoryCheckExpiring(state: typeof InventoryState.State)
   return { expiringItems, searchQuery: searchQ };
 }
 
-
 // ── Node: auto-raise service requests for branches needing stock ──────────────
 // For each branch hospital:
 //   - Fetch branch's current stock levels
 //   - Items that are low at branch and available at central → create transfer request
 //   - Expiring items with central availability → push to branches before expiry
-export async function inventoryRaiseRequests(state: typeof InventoryState.State) {
+export async function inventoryRaiseRequests(
+  state: typeof InventoryState.State,
+) {
   const hasIssues =
     state.outOfStockItems.length > 0 ||
     state.lowStockItems.length > 0 ||
@@ -275,15 +319,18 @@ export function inventorySummarize(state: typeof InventoryState.State) {
     state.serviceRequests.slice(0, 10).forEach((r: any, idx: number) => {
       const branchName = r.branchId?.name || r.branchId || 'Unknown Branch';
       const itemLines = (r.items ?? [])
-        .map((i: any, n: number) => `**Item ${n + 1}:** ${i.itemId?.itemName ?? 'Item'} — Qty: ${i.requestedQty}`)
+        .map(
+          (i: any, n: number) =>
+            `**Item ${n + 1}:** ${i.itemId?.itemName ?? 'Item'} — Qty: ${i.requestedQty}`,
+        )
         .join('\n');
       cards.push(
         `### Request - ${idx + 1}\n` +
-        `**Branch:** ${branchName}\n` +
-        `**Status:** ${r.status || 'N/A'}\n` +
-        `**Requested By:** ${r.requestedBy || 'N/A'}\n` +
-        (itemLines ? `${itemLines}\n` : '') +
-        `**Remarks:** ${r.remarks || 'N/A'}`,
+          `**Branch:** ${branchName}\n` +
+          `**Status:** ${r.status || 'N/A'}\n` +
+          `**Requested By:** ${r.requestedBy || 'N/A'}\n` +
+          (itemLines ? `${itemLines}\n` : '') +
+          `**Remarks:** ${r.remarks || 'N/A'}`,
       );
     });
     const finalResponse = cards.join('\n\n');
@@ -297,14 +344,16 @@ export function inventorySummarize(state: typeof InventoryState.State) {
       const category = i.itemId?.category || i.category || 'N/A';
       const qty = i.availableQty ?? 0;
       const batch = i.batchNo || 'N/A';
-      const expiry = i.expiryDate ? new Date(i.expiryDate).toLocaleDateString() : 'N/A';
+      const expiry = i.expiryDate
+        ? new Date(i.expiryDate).toLocaleDateString()
+        : 'N/A';
       cards.push(
         `### Inventory Item - ${index + 1}\n` +
-        `**Name:** ${name}\n` +
-        `**Category:** ${category}\n` +
-        `**Available Qty:** ${qty}\n` +
-        `**Batch No:** ${batch}\n` +
-        `**Expiry Date:** ${expiry}`,
+          `**Name:** ${name}\n` +
+          `**Category:** ${category}\n` +
+          `**Available Qty:** ${qty}\n` +
+          `**Batch No:** ${batch}\n` +
+          `**Expiry Date:** ${expiry}`,
       );
     });
   }
@@ -315,9 +364,9 @@ export function inventorySummarize(state: typeof InventoryState.State) {
     state.outOfStockItems.forEach((i: any, index: number) => {
       cards.push(
         `### Out of Stock Item - ${index + 1}\n` +
-        `**Name:** ${i.itemId?.itemName || 'Unknown'}\n` +
-        `**Category:** ${i.itemId?.category || 'N/A'}\n` +
-        `**Available Qty:** 0`,
+          `**Name:** ${i.itemId?.itemName || 'Unknown'}\n` +
+          `**Category:** ${i.itemId?.category || 'N/A'}\n` +
+          `**Available Qty:** 0`,
       );
     });
   }
@@ -327,8 +376,8 @@ export function inventorySummarize(state: typeof InventoryState.State) {
     state.lowStockItems.forEach((i: any, index: number) => {
       cards.push(
         `### Low Stock Item - ${index + 1}\n` +
-        `**Name:** ${i.itemId?.itemName || 'Unknown'}\n` +
-        `**Available Qty:** ${i.availableQty}`,
+          `**Name:** ${i.itemId?.itemName || 'Unknown'}\n` +
+          `**Available Qty:** ${i.availableQty}`,
       );
     });
   }
@@ -338,9 +387,9 @@ export function inventorySummarize(state: typeof InventoryState.State) {
     state.expiringItems.forEach((i: any, index: number) => {
       cards.push(
         `### Expiring Item - ${index + 1}\n` +
-        `**Name:** ${i.itemId?.itemName || 'Unknown'}\n` +
-        `**Expiry Date:** ${i.expiryDate ? new Date(i.expiryDate).toLocaleDateString() : 'N/A'}\n` +
-        `**Days Until Expiry:** ${i.daysUntilExpiry}`,
+          `**Name:** ${i.itemId?.itemName || 'Unknown'}\n` +
+          `**Expiry Date:** ${i.expiryDate ? new Date(i.expiryDate).toLocaleDateString() : 'N/A'}\n` +
+          `**Days Until Expiry:** ${i.daysUntilExpiry}`,
       );
     });
   }
@@ -348,15 +397,22 @@ export function inventorySummarize(state: typeof InventoryState.State) {
   // ── Service Requests Footer ───────────────────────────────────────────────
   if (state.serviceRequests.length > 0) {
     const reqSummary = state.serviceRequests
-      .map((r: any) => `${r.branch ?? 'branch'} #${r.requestNumber ?? r._id ?? 'N/A'}`)
+      .map(
+        (r: any) =>
+          `${r.branch ?? 'branch'} #${r.requestNumber ?? r._id ?? 'N/A'}`,
+      )
       .join(', ');
-    cards.push(`### Transfer Requests Raised\n**Count:** ${state.serviceRequests.length}\n**Branches:** ${reqSummary}`);
+    cards.push(
+      `### Transfer Requests Raised\n**Count:** ${state.serviceRequests.length}\n**Branches:** ${reqSummary}`,
+    );
   } else if (
     state.lowStockItems.length > 0 ||
     state.outOfStockItems.length > 0 ||
     state.expiringItems.length > 0
   ) {
-    cards.push('No branch transfer requests raised — branches had sufficient stock.');
+    cards.push(
+      'No branch transfer requests raised — branches had sufficient stock.',
+    );
   }
 
   // ── Fallback if nothing to show ───────────────────────────────────────────
