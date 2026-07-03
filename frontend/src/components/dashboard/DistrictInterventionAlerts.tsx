@@ -3,7 +3,7 @@ import { AlertTriangle, BedDouble, Pill, Users, ChevronRight, AlertOctagon, Chec
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authFetch } from '../../context/AppContext';
-import { environment } from '../../config/environment';
+import { environment } from '@env/environment';
 
 interface InterventionAlert {
   branchId: string;

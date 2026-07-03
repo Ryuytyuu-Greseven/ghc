@@ -107,6 +107,12 @@ export function AIInventoryAnalyticsTab() {
   const [selectedBranchId, setSelectedBranchId] = useState('');
   const [selectedItemId, setSelectedItemId] = useState('');
 
+  useEffect(() => {
+    if (hospitals.length === 1 && !selectedBranchId) {
+      setSelectedBranchId(hospitals[0]._id ?? '');
+    }
+  }, [hospitals, selectedBranchId]);
+
   const loadWarnings = useCallback(async () => {
     setLoadingWarnings(true);
     try {

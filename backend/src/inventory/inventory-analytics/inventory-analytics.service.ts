@@ -61,8 +61,28 @@ export class InventoryAnalyticsService {
     private readonly hospitalRepo: HospitalRepository,
   ) {}
 
-  async getLowStockWarnings(): Promise<StockoutWarning[]> {
-    const branchStock = await this.branchRepo.findAll({});
+  async verifyBranchAccess(assignedHospitalId: string, branchId: string): Promise<boolean> {
+    const hospital = await this.hospitalRepo.findById(branchId);
+    if (!hospital) return false;
+    return hospital.hospitalId === assignedHospitalId || hospital._id.toString() === assignedHospitalId;
+  }
+
+  async getLowStockWarnings(hospitalId?: string): Promise<StockoutWarning[]> {
+    let targetBranchIds: string[] | null = null;
+    if (hospitalId) {
+      const activeHospitals = await this.hospitalRepo.findAll({
+        $or: [
+          { hospitalId: hospitalId },
+          { _id: new Types.ObjectId(hospitalId) }
+        ]
+      });
+      targetBranchIds = activeHospitals.map(h => h._id.toString());
+    }
+
+    const filter = targetBranchIds
+      ? { branchId: { $in: targetBranchIds.map(id => new Types.ObjectId(id)) } }
+      : {};
+    const branchStock = await this.branchRepo.findAll(filter);
     const aggregated = this.aggregateBranchStock(branchStock);
     const warnings: StockoutWarning[] = [];
 
@@ -122,7 +142,7 @@ export class InventoryAnalyticsService {
     };
   }
 
-  async getRedistributionRecommendations(): Promise<RedistributionRecommendation[]> {
+  async getRedistributionRecommendations(hospitalId?: string): Promise<RedistributionRecommendation[]> {
     const branchStock = await this.branchRepo.findAll({});
     const aggregated = this.aggregateBranchStock(branchStock);
     const hospitalNames = await this.buildHospitalNameMap(aggregated.map((e) => e.branchId));
@@ -211,7 +231,23 @@ export class InventoryAnalyticsService {
       }
     }
 
-    return recommendations;
+    let targetBranchIds: string[] | null = null;
+    if (hospitalId) {
+      const activeHospitals = await this.hospitalRepo.findAll({
+        $or: [
+          { hospitalId: hospitalId },
+          { _id: new Types.ObjectId(hospitalId) }
+        ]
+      });
+      targetBranchIds = activeHospitals.map(h => h._id.toString());
+    }
+
+    const filteredRecommendations = recommendations.filter(rec => {
+      if (!targetBranchIds) return true;
+      return targetBranchIds.includes(rec.fromBranchId) || targetBranchIds.includes(rec.toBranchId);
+    });
+
+    return filteredRecommendations;
   }
 
   async applyRecommendation(

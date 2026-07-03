@@ -103,7 +103,7 @@ export default function App() {
                   <Route
                     path="/ai-analytics"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Pharmacist', 'Compounder', 'Lab Technician', 'Cashier']}>
                         <AIInventoryAnalytics />
                       </RoleGuard>
                     }
