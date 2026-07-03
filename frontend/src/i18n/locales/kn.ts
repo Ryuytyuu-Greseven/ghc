@@ -66,7 +66,8 @@ export const kn = {
       patients: "ರೋಗಿಗಳು",
       medicines: "ಔಷಧಿಗಳು ಮತ್ತು ಸರಬರಾಜು",
       availability: "ನನ್ನ ಲಭ್ಯತೆ",
-      transfers: "ಕರ್ತವ್ಯ ವರ್ಗಾವಣೆಗಳು"
+      transfers: "ಕರ್ತವ್ಯ ವರ್ಗಾವಣೆಗಳು",
+      audits: "ಆಡಿಟ್ ಲಾಗ್ಗಳು"
     },
     roles: {
       Admin: "ಅಡ್ಮಿನ್",

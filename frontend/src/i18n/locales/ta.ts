@@ -66,7 +66,8 @@ export const ta = {
       patients: "நோயாளிகள்",
       medicines: "மருந்துகள் & பொருட்கள்",
       availability: "என் இருப்பு நிலை",
-      transfers: "பணிப் பரிமாற்றங்கள்"
+      transfers: "பணிப் பரிமாற்றங்கள்",
+      audits: "தணிக்கை பதிவுகள்"
     },
     roles: {
       Admin: "நிர்வாகி",

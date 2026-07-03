@@ -68,7 +68,8 @@ export const te = {
       "ai-analytics": "AI ఇన్వెంటరీ విశ్లేషణలు",
       "critical-alerts": "కీలక హెచ్చరికలు",
       availability: "నా అందుబాటు",
-      transfers: "కవరేజ్ & బదిలీలు"
+      transfers: "కవరేజ్ & బదిలీలు",
+      audits: "ఆడిట్ లాగ్స్"
     },
     roles: {
       Admin: "అడ్మిన్",

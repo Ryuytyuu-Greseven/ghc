@@ -66,7 +66,8 @@ export const gu = {
     "patients": "દર્દીઓ",
     "medicines": "દવાઓ અને સપ્લાય",
     "availability": "મારી ઉપલબ્ધતા",
-    "transfers": "કવરેજ અને ટ્રાન્સફર"
+    "transfers": "કવરેજ અને ટ્રાન્સફર",
+    "audits": "ઑડિટ લૉગ્સ"
   },
   "roles": {
     "Admin": "એડમિન",

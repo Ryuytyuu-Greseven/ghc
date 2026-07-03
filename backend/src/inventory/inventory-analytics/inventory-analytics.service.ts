@@ -2,7 +2,7 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { Types } from 'mongoose';
 import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 import { BranchInventoryRepository } from '../../repositories/branch-inventory.repository';
-import { InventoryTransactionRepository } from '../../repositories/inventory-transaction.repository';
+import { AuditLogRepository } from '../../repositories/audit-log.repository';
 import { InventoryRequestRepository } from '../../repositories/inventory-request.repository';
 import { InventoryMasterRepository } from '../../repositories/inventory-master.repository';
 import { HospitalRepository } from '../../repositories/hospital.repository';
@@ -55,7 +55,7 @@ export interface RedistributionRecommendation {
 export class InventoryAnalyticsService {
   constructor(
     private readonly branchRepo: BranchInventoryRepository,
-    private readonly transactionRepo: InventoryTransactionRepository,
+    private readonly transactionRepo: AuditLogRepository,
     private readonly requestRepo: InventoryRequestRepository,
     private readonly masterRepo: InventoryMasterRepository,
     private readonly hospitalRepo: HospitalRepository,
@@ -290,18 +290,25 @@ export class InventoryAnalyticsService {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - ANALYSIS_WINDOW_DAYS);
 
-    const transactions = await this.transactionRepo.findByItem(itemId);
+    const transactions = await this.transactionRepo.findAll({
+      module: 'inventory',
+      'metadata.itemId': itemId.toString(),
+    });
     const consumptionTx = transactions.filter((tx) => {
-      const from = tx.fromLocation?.toString();
+      const metadata = tx.metadata || {};
+      const from = metadata.fromLocation?.toString();
       const branchMatch = from === branchId;
       const isConsumption =
-        tx.transactionType === TransactionType.ISSUE ||
-        (tx.transactionType === TransactionType.TRANSFER && from !== 'Central');
-      const createdAt = (tx as any).createdAt ? new Date((tx as any).createdAt) : null;
+        metadata.transactionType === TransactionType.ISSUE ||
+        (metadata.transactionType === TransactionType.TRANSFER && from !== 'Central');
+      const createdAt = tx.createdAt ? new Date(tx.createdAt) : null;
       return branchMatch && isConsumption && createdAt && createdAt >= cutoff;
     });
 
-    const totalQty = consumptionTx.reduce((sum, tx) => sum + tx.quantity, 0);
+    const totalQty = consumptionTx.reduce((sum, tx) => {
+      const metadata = tx.metadata || {};
+      return sum + (metadata.quantity || 0);
+    }, 0);
     if (totalQty > 0) {
       return totalQty / ANALYSIS_WINDOW_DAYS;
     }
@@ -322,7 +329,10 @@ export class InventoryAnalyticsService {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - ANALYSIS_WINDOW_DAYS);
 
-    const transactions = await this.transactionRepo.findByItem(itemId);
+    const transactions = await this.transactionRepo.findAll({
+      module: 'inventory',
+      'metadata.itemId': itemId.toString(),
+    });
     const dailyMap = new Map<string, number>();
 
     for (let i = ANALYSIS_WINDOW_DAYS - 1; i >= 0; i--) {
@@ -332,17 +342,19 @@ export class InventoryAnalyticsService {
     }
 
     for (const tx of transactions) {
-      const from = tx.fromLocation?.toString();
+      const metadata = tx.metadata || {};
+      const from = metadata.fromLocation?.toString();
       const isConsumption =
         from === branchId &&
-        (tx.transactionType === TransactionType.ISSUE ||
-          (tx.transactionType === TransactionType.TRANSFER && from !== 'Central'));
-      const createdAt = (tx as any).createdAt ? new Date((tx as any).createdAt) : null;
+        (metadata.transactionType === TransactionType.ISSUE ||
+          (metadata.transactionType === TransactionType.TRANSFER && from !== 'Central'));
+      const createdAt = tx.createdAt ? new Date(tx.createdAt) : null;
       if (!isConsumption || !createdAt || createdAt < cutoff) continue;
 
       const key = createdAt.toISOString().slice(0, 10);
       if (dailyMap.has(key)) {
-        dailyMap.set(key, (dailyMap.get(key) ?? 0) + tx.quantity);
+        const qty = metadata.quantity || 0;
+        dailyMap.set(key, (dailyMap.get(key) ?? 0) + qty);
       }
     }
 
