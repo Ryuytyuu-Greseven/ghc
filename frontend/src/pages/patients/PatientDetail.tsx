@@ -12,7 +12,6 @@ import { Modal } from '../../components/ui/Modal';
 import { authFetch, useApp } from '../../context/AppContext';
 import { environment } from '@env/environment';
 import type { PatientData } from '../../types';
-import { environment } from '@env/environment';
 
 const API_BASE = environment.mainBackendUrl;
 
@@ -411,12 +410,12 @@ export function PatientDetail() {
     });
     const branchInventoryAdjustments = patient?.hospitalId
       ? selectedOptions.map(option => ({
-          branchId: patient.hospitalId,
-          itemId: option.itemId,
-          quantity: Number(draft.medicineQuantities[option.value] ?? 0),
-          batchNo: option.batchNo,
-          expiryDate: option.expiryDate ?? undefined,
-        }))
+        branchId: patient.hospitalId,
+        itemId: option.itemId,
+        quantity: Number(draft.medicineQuantities[option.value] ?? 0),
+        batchNo: option.batchNo,
+        expiryDate: option.expiryDate ?? undefined,
+      }))
       : [];
 
     try {
@@ -529,154 +528,154 @@ export function PatientDetail() {
               <ArrowLeft size={16} /> {t('patients.detail.backToPatients')}
             </Link>
 
-          <div className={`grid grid-cols-1 ${canManageVisits ? 'xl:grid-cols-[1fr_360px]' : ''} gap-5`}>
-            <div className="space-y-5">
-              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
-                <div className="flex items-start justify-between gap-4 flex-wrap">
-                  <div>
-                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{patient.name}</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {patient.age} {t('dashboard.yrs')} · {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)} · {patient.bloodGroup}
-                    </p>
+            <div className={`grid grid-cols-1 ${canManageVisits ? 'xl:grid-cols-[1fr_360px]' : ''} gap-5`}>
+              <div className="space-y-5">
+                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                      <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{patient.name}</h2>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {patient.age} {t('dashboard.yrs')} · {patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)} · {patient.bloodGroup}
+                      </p>
+                    </div>
+                    <Badge variant={patient.bedRequired ? 'danger' : 'success'}>
+                      {patient.bedRequired ? t('patients.bedAllocated') : t('patients.noBedNeeded')}
+                    </Badge>
                   </div>
-                  <Badge variant={patient.bedRequired ? 'danger' : 'success'}>
-                    {patient.bedRequired ? t('patients.bedAllocated') : t('patients.noBedNeeded')}
-                  </Badge>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 text-sm">
+                    <div>
+                      <p className="text-slate-400">{t('patients.phoneLabel')}</p>
+                      <p className="font-medium text-slate-700 dark:text-slate-200">{patient.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">{t('patients.aadhaarLabel')}</p>
+                      <p className="font-medium text-slate-700 dark:text-slate-200">{patient.aadhaarNumber}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">{t('patients.admitted')}</p>
+                      <p className="font-medium text-slate-700 dark:text-slate-200">{patient.admittedAt}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 text-sm">
-                  <div>
-                    <p className="text-slate-400">{t('patients.phoneLabel')}</p>
-                    <p className="font-medium text-slate-700 dark:text-slate-200">{patient.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-400">{t('patients.aadhaarLabel')}</p>
-                    <p className="font-medium text-slate-700 dark:text-slate-200">{patient.aadhaarNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-400">{t('patients.admitted')}</p>
-                    <p className="font-medium text-slate-700 dark:text-slate-200">{patient.admittedAt}</p>
-                  </div>
-                </div>
-              </div>
 
-              {error && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
-                  {error}
-                </div>
-              )}
+                {error && (
+                  <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
+                    {error}
+                  </div>
+                )}
 
-              <div className="space-y-4">
-                {loading ? (
-                  <VisitHistorySkeleton />
-                ) : groupedHistory.length > 0 ? (
-                  groupedHistory.map((group, index) => {
-                    return (
-                      <section
-                        key={group.problem}
-                        className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"
-                      >
-                        <div className="p-5 border-b border-slate-100 dark:border-slate-700">
-                          <h3 className="font-semibold text-slate-800 dark:text-slate-100">
-                            {t('patients.detail.visitHeading', { count: index + 1, problem: group.problem })}
-                          </h3>
-                        </div>
-                        <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                          {group.visits.length > 0 ? (
-                            group.visits.map(visit => {
-                              return (
-                                <div key={visit.id} className="p-5 space-y-4">
-                                  <button
-                                    type="button"
-                                    onClick={() => canManageVisits && openMedicineModal(visit)}
-                                    className={`w-full text-left space-y-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${canManageVisits ? 'cursor-pointer' : 'cursor-default'}`}
-                                    disabled={!canManageVisits}
-                                  >
-                                    <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                                      <CalendarDays size={15} />
-                                      <span className="tabular-nums">{visit.visitDate}</span>
-                                      {visit.doctor && <span>· {visit.doctor}</span>}
-                                    </div>
-                                    <div className="flex items-start gap-2 text-sm">
-                                      <Pill size={15} className="text-primary-500 mt-0.5" />
-                                      <div>
-                                        <p className="font-medium text-slate-700 dark:text-slate-200">
-                                          {visit.category ? t(`inventory.categories.${getCategoryLabel(visit.category)}`) : t('patients.detail.medicinePending')}
-                                        </p>
-                                        <p className="text-slate-500 dark:text-slate-400">
-                                          {visit.medicines.length > 0 ? visit.medicines.map(formatPatientMedicine).join(', ') : t('patients.detail.clickToAdd')}
-                                        </p>
+                <div className="space-y-4">
+                  {loading ? (
+                    <VisitHistorySkeleton />
+                  ) : groupedHistory.length > 0 ? (
+                    groupedHistory.map((group, index) => {
+                      return (
+                        <section
+                          key={group.problem}
+                          className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"
+                        >
+                          <div className="p-5 border-b border-slate-100 dark:border-slate-700">
+                            <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                              {t('patients.detail.visitHeading', { count: index + 1, problem: group.problem })}
+                            </h3>
+                          </div>
+                          <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                            {group.visits.length > 0 ? (
+                              group.visits.map(visit => {
+                                return (
+                                  <div key={visit.id} className="p-5 space-y-4">
+                                    <button
+                                      type="button"
+                                      onClick={() => canManageVisits && openMedicineModal(visit)}
+                                      className={`w-full text-left space-y-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${canManageVisits ? 'cursor-pointer' : 'cursor-default'}`}
+                                      disabled={!canManageVisits}
+                                    >
+                                      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                                        <CalendarDays size={15} />
+                                        <span className="tabular-nums">{visit.visitDate}</span>
+                                        {visit.doctor && <span>· {visit.doctor}</span>}
                                       </div>
-                                    </div>
-                                    {visit.notes && (
-                                      <p className="text-sm text-slate-500 dark:text-slate-400">{visit.notes}</p>
-                                    )}
-                                  </button>
-                                </div>
-                              );
-                            })
-                          ) : (
-                            <div className="p-5 text-sm text-slate-400">{t('patients.detail.noVisitsForDate')}</div>
-                          )}
-                        </div>
-                      </section>
-                    );
-                  })
-                ) : (
-                  <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 text-center text-slate-400">
-                    {t('patients.detail.noHistory')}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {canManageVisits && (
-              <form
-                onSubmit={handleSubmit}
-                className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 h-fit space-y-4"
-              >
-                <div>
-                  <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('patients.detail.addVisit')}</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">{t('patients.detail.recordVisitDesc')}</p>
+                                      <div className="flex items-start gap-2 text-sm">
+                                        <Pill size={15} className="text-primary-500 mt-0.5" />
+                                        <div>
+                                          <p className="font-medium text-slate-700 dark:text-slate-200">
+                                            {visit.category ? t(`inventory.categories.${getCategoryLabel(visit.category)}`) : t('patients.detail.medicinePending')}
+                                          </p>
+                                          <p className="text-slate-500 dark:text-slate-400">
+                                            {visit.medicines.length > 0 ? visit.medicines.map(formatPatientMedicine).join(', ') : t('patients.detail.clickToAdd')}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      {visit.notes && (
+                                        <p className="text-sm text-slate-500 dark:text-slate-400">{visit.notes}</p>
+                                      )}
+                                    </button>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <div className="p-5 text-sm text-slate-400">{t('patients.detail.noVisitsForDate')}</div>
+                            )}
+                          </div>
+                        </section>
+                      );
+                    })
+                  ) : (
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 text-center text-slate-400">
+                      {t('patients.detail.noHistory')}
+                    </div>
+                  )}
                 </div>
-                <Input
-                  label={t('patients.detail.problemLabel')}
-                  required
-                  value={form.problem}
-                  onChange={event => setForm(current => ({ ...current, problem: event.target.value }))}
-                  onBlur={() => setVisitTouched(true)}
-                  error={visitTouched && !form.problem.trim() ? t('patients.detail.problemRequired') : undefined}
-                  placeholder={t('patients.detail.problemPlaceholder')}
-                />
-                <Input
-                  label={t('patients.detail.visitDateLabel')}
-                  type="date"
-                  required
-                  value={form.visitDate}
-                  onChange={event => setForm(current => ({ ...current, visitDate: event.target.value }))}
-                  onBlur={() => setVisitTouched(true)}
-                  error={visitTouched && !form.visitDate ? t('patients.detail.visitDateRequired') : undefined}
-                />
-                <Select
-                  label={t('patients.detail.doctorLabel')}
-                  required
-                  value={form.doctor}
-                  onChange={event => setForm(current => ({ ...current, doctor: event.target.value }))}
-                  onBlur={() => setVisitTouched(true)}
-                  error={visitTouched && !form.doctor.trim() ? t('patients.detail.doctorRequired') : undefined}
-                  options={doctorOptions}
-                  placeholder={loadingDoctors ? t('patients.detail.loadingDoctors') : t('patients.detail.selectDoctor')}
-                  dropdownPlacement="up"
-                />
-                {!loadingDoctors && form.visitDate && doctorOptions.length === 0 && (
-                  <p className="text-xs text-slate-400">{t('patients.detail.noDoctors')}</p>
-                )}
-                <Button type="submit" className="w-full justify-center">
-                  <Plus size={15} /> {t('patients.detail.saveVisit')}
-                </Button>
-              </form>
-            )}
+              </div>
+
+              {canManageVisits && (
+                <form
+                  onSubmit={handleSubmit}
+                  className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 h-fit space-y-4"
+                >
+                  <div>
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('patients.detail.addVisit')}</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{t('patients.detail.recordVisitDesc')}</p>
+                  </div>
+                  <Input
+                    label={t('patients.detail.problemLabel')}
+                    required
+                    value={form.problem}
+                    onChange={event => setForm(current => ({ ...current, problem: event.target.value }))}
+                    onBlur={() => setVisitTouched(true)}
+                    error={visitTouched && !form.problem.trim() ? t('patients.detail.problemRequired') : undefined}
+                    placeholder={t('patients.detail.problemPlaceholder')}
+                  />
+                  <Input
+                    label={t('patients.detail.visitDateLabel')}
+                    type="date"
+                    required
+                    value={form.visitDate}
+                    onChange={event => setForm(current => ({ ...current, visitDate: event.target.value }))}
+                    onBlur={() => setVisitTouched(true)}
+                    error={visitTouched && !form.visitDate ? t('patients.detail.visitDateRequired') : undefined}
+                  />
+                  <Select
+                    label={t('patients.detail.doctorLabel')}
+                    required
+                    value={form.doctor}
+                    onChange={event => setForm(current => ({ ...current, doctor: event.target.value }))}
+                    onBlur={() => setVisitTouched(true)}
+                    error={visitTouched && !form.doctor.trim() ? t('patients.detail.doctorRequired') : undefined}
+                    options={doctorOptions}
+                    placeholder={loadingDoctors ? t('patients.detail.loadingDoctors') : t('patients.detail.selectDoctor')}
+                    dropdownPlacement="up"
+                  />
+                  {!loadingDoctors && form.visitDate && doctorOptions.length === 0 && (
+                    <p className="text-xs text-slate-400">{t('patients.detail.noDoctors')}</p>
+                  )}
+                  <Button type="submit" className="w-full justify-center">
+                    <Plus size={15} /> {t('patients.detail.saveVisit')}
+                  </Button>
+                </form>
+              )}
+            </div>
           </div>
-        </div>
         </div>
       </div>
 
@@ -727,11 +726,10 @@ export function PatientDetail() {
                       key={option.value}
                       type="button"
                       onClick={() => toggleMedicine(medicineVisit.id, option.value)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                        medicineDraft.medicines.includes(option.value)
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${medicineDraft.medicines.includes(option.value)
                           ? 'bg-primary-600 text-white border-primary-600'
                           : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300'
-                      }`}
+                        }`}
                     >
                       {option.label} · {option.availableQty} available
                     </button>

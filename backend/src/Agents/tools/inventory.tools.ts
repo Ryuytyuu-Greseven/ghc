@@ -114,6 +114,7 @@ export const listCentralInventory = tool(
       q: query,
       category: normalizeCategory(category),
     });
+    console.log('Central Inventory Details', result);
     return JSON.stringify(result);
   },
   {
@@ -182,7 +183,7 @@ export const listBranchStock = tool(
         if (matched) {
           resolvedBranchId = matched._id.toString();
         }
-      } catch {}
+      } catch { }
     }
 
     const result = await service.findByBranch(resolvedBranchId, {
@@ -237,7 +238,7 @@ export const listInventoryRequests = tool(
         if (matched) {
           resolvedBranchId = matched._id.toString();
         }
-      } catch {}
+      } catch { }
     }
 
     const result = await service.findAll({ status, branchId: resolvedBranchId });

@@ -11,7 +11,7 @@ export class CentralInventoryRepository {
     @InjectModel(CentralInventory.name)
     private readonly model: Model<CentralInventoryDocument>,
     private readonly queryService: QueryService,
-  ) {}
+  ) { }
 
   async findAll(filter: object = {}): Promise<CentralInventoryDocument[]> {
     return this.model.find(filter).populate('itemId').sort({ 'itemId.itemName': 1 }).exec();
@@ -63,8 +63,10 @@ export class CentralInventoryRepository {
     }
 
     const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
-      searchFields: ['item.itemName'],
-      exactFilters: ['item.category', 'item.status', 'batchNo'],
+      // searchFields: ['item.itemName'],
+      // exactFilters: ['item.category', 'item.status', 'batchNo'],
+      searchFields: [],
+      exactFilters: [],
       fuzzySearch: true,
       sortMapping: {
         itemName: 'item.itemName',
@@ -103,6 +105,7 @@ export class CentralInventoryRepository {
 
     // Count query
     const countPipeline = [...pipeline, { $count: 'total' }];
+    console.log('Pipelines: ', JSON.stringify(pipeline));
     const countResult = await this.model.aggregate(countPipeline).exec();
     const total = countResult[0]?.total ?? 0;
 
@@ -123,6 +126,8 @@ export class CentralInventoryRepository {
       },
     });
 
+    const deta = await this.model.aggregate(pipeline).exec();
+    console.log('furst query', deta);
     const [data, statsResult, lowStockCount, expiringCount] = await Promise.all([
       this.model.aggregate(pipeline).exec(),
       this.model.aggregate([
