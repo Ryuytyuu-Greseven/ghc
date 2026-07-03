@@ -142,7 +142,7 @@ export const staffTools = [
 export const findAbsenceStaff = tool(
   () => {
     // call the function to find the absence staff members
-    // update to state 
+    // update to state
     // state.staffAbsence = [...staffAbsence];
     return JSON.stringify({ message: 'Found Few Staff Members Absent' });
   },
@@ -158,7 +158,7 @@ export const findAbsenceStaff = tool(
 export const findAvailableStaff = tool(
   () => {
     // call the function to find the available staff members
-    // update to state 
+    // update to state
     // state.staffAvailable = [...staffAvailable];
     return JSON.stringify({ message: 'Found Few Staff Members Available' });
   },

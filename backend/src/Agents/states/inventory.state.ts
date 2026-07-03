@@ -7,7 +7,10 @@ export const InventoryState = Annotation.Root({
     default: () => [],
   }),
   query: Annotation<string>({ reducer: (_, b) => b, default: () => '' }),
-  searchQuery: Annotation<string | undefined>({ reducer: (_, b) => b, default: () => undefined }),
+  searchQuery: Annotation<string | undefined>({
+    reducer: (_, b) => b,
+    default: () => undefined,
+  }),
   intent: Annotation<string>({ reducer: (_, b) => b, default: () => '' }),
   inventoryList: Annotation<any[]>({ reducer: (_, b) => b, default: () => [] }),
   lowStockItems: Annotation<any[]>({ reducer: (_, b) => b, default: () => [] }),
