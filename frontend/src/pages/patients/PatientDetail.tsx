@@ -12,6 +12,7 @@ import { Modal } from '../../components/ui/Modal';
 import { authFetch, useApp } from '../../context/AppContext';
 import { environment } from '@env/environment';
 import type { PatientData } from '../../types';
+import { environment } from '@env/environment';
 
 const API_BASE = environment.mainBackendUrl;
 
@@ -228,9 +229,10 @@ export function PatientDetail() {
         const options = (Array.isArray(data) ? data : [])
           .map((doctor: any) => {
             const label = doctor.doctorName ?? doctor.displayName ?? doctor.name ?? '';
-            return { value: label, label };
+            const userId = doctor.userId ?? '';
+            return { value: userId, label };
           })
-          .filter(option => option.value);
+          .filter(option => option.value && option.label);
 
         setDoctorOptions(options);
         setForm(current => (
@@ -464,6 +466,8 @@ export function PatientDetail() {
       return;
     }
 
+    const selectedDoctor = doctorOptions.find(option => option.value === form.doctor);
+
     try {
       const res = await authFetch(`${API_BASE}/patient-data`, {
         method: 'POST',
@@ -472,7 +476,8 @@ export function PatientDetail() {
           patientId: id,
           problem: form.problem,
           visitDate: form.visitDate,
-          doctor: form.doctor,
+          doctor: selectedDoctor?.label ?? form.doctor,
+          doctorUserId: form.doctor,
         }),
       });
 

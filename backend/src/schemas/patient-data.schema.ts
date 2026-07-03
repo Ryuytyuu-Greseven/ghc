@@ -36,6 +36,9 @@ export class PatientData {
   @Prop({ required: true, trim: true })
   doctor: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  doctorUserId?: Types.ObjectId;
+
   @Prop({ trim: true })
   notes?: string;
 
