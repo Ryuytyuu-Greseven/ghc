@@ -15,6 +15,7 @@ import { InventoryModule } from './inventory/inventory.module';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import { PatientDataModule } from './patient-data/patient-data.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { config } from 'dotenv';
 config();
 
@@ -39,6 +40,7 @@ config();
     InventoryModule,
     UsersModule,
     PatientDataModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

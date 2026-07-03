@@ -1,64 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Bell, AlertTriangle, Info, CheckCircle, X, Check } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
+import type { AppNotification, NotificationCategory } from '../../types';
+import { notificationApi } from '../../services/notificationApi';
 
-type NotifType = 'warning' | 'info' | 'success';
-
-interface Notification {
-  id: string;
-  type: NotifType;
-  title: string;
-  body: string;
-  time: string;
-  read: boolean;
-}
-
-const INITIAL: Notification[] = [
-  {
-    id: '1',
-    type: 'warning',
-    title: 'Bed capacity alert',
-    body: 'GHC City Hospital is at 85% capacity. Consider load balancing.',
-    time: '10m ago',
-    read: false,
-  },
-  {
-    id: '2',
-    type: 'info',
-    title: 'New staff assigned',
-    body: 'Dr. Priya Sharma has been assigned to Metro Clinic.',
-    time: '1h ago',
-    read: false,
-  },
-  {
-    id: '3',
-    type: 'warning',
-    title: 'Low medicine stock',
-    body: 'A medicine item is running critically low across 3 facilities.',
-    time: '3h ago',
-    read: false,
-  },
-  {
-    id: '4',
-    type: 'success',
-    title: 'Patient discharged',
-    body: 'Rajesh Kumar was successfully discharged from GHC Central Hospital.',
-    time: '5h ago',
-    read: true,
-  },
-  {
-    id: '5',
-    type: 'info',
-    title: 'Weekly report ready',
-    body: 'The weekly occupancy and inventory report is available for download.',
-    time: '1d ago',
-    read: true,
-  },
-];
+type PanelNotification = AppNotification & { time: string };
 
 const typeConfig: Record<
-  NotifType,
+  NotificationCategory,
   { icon: typeof AlertTriangle; iconClass: string; bgClass: string }
 > = {
   warning: {
@@ -78,20 +28,84 @@ const typeConfig: Record<
   },
 };
 
+function formatRelativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 export function NotificationsPanel() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [notifs, setNotifs] = useState<Notification[]>(INITIAL);
+  const [notifs, setNotifs] = useState<PanelNotification[]>([]);
+  const [loading, setLoading] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifs.filter(n => !n.read).length;
 
-  const markAllRead = () => setNotifs(n => n.map(x => ({ ...x, read: true })));
-  const dismiss = (id: string) => setNotifs(n => n.filter(x => x.id !== id));
-  const markRead = (id: string) =>
-    setNotifs(n => n.map(x => (x.id === id ? { ...x, read: true } : x)));
+  const loadNotifications = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await notificationApi.list();
+      setNotifs(
+        data.map(item => ({
+          ...item,
+          time: formatRelativeTime(item.createdAt),
+        })),
+      );
+    } catch {
+      // keep existing list on failure
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  // Close on outside click
+  useEffect(() => {
+    void loadNotifications();
+  }, [loadNotifications]);
+
+  useEffect(() => {
+    if (open) void loadNotifications();
+  }, [open, loadNotifications]);
+
+  const markAllRead = async () => {
+    setNotifs(n => n.map(x => ({ ...x, read: true })));
+    try {
+      await notificationApi.markAllRead();
+    } catch {
+      void loadNotifications();
+    }
+  };
+
+  const dismiss = async (id: string) => {
+    setNotifs(n => n.filter(x => x.id !== id));
+    try {
+      await notificationApi.dismiss(id);
+    } catch {
+      void loadNotifications();
+    }
+  };
+
+  const markRead = async (id: string) => {
+    setNotifs(n => n.map(x => (x.id === id ? { ...x, read: true } : x)));
+    try {
+      await notificationApi.markRead(id);
+    } catch {
+      void loadNotifications();
+    }
+  };
+
+  const clearAll = async () => {
+    const ids = notifs.map(n => n.id);
+    setNotifs([]);
+    await Promise.allSettled(ids.map(id => notificationApi.dismiss(id)));
+  };
+
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -103,7 +117,6 @@ export function NotificationsPanel() {
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  // Close on Escape
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
@@ -113,7 +126,6 @@ export function NotificationsPanel() {
 
   return (
     <div className="relative" ref={panelRef}>
-      {/* Bell button */}
       <button
         onClick={() => setOpen(o => !o)}
         className={clsx(
@@ -132,10 +144,8 @@ export function NotificationsPanel() {
         )}
       </button>
 
-      {/* Dropdown panel */}
       {open && (
         <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl dark:shadow-black/30 z-50 overflow-hidden">
-          {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
@@ -149,7 +159,7 @@ export function NotificationsPanel() {
             </div>
             {unreadCount > 0 && (
               <button
-                onClick={markAllRead}
+                onClick={() => void markAllRead()}
                 className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center gap-1 transition-colors"
               >
                 <Check size={12} /> {t('common.markAllRead')}
@@ -157,20 +167,23 @@ export function NotificationsPanel() {
             )}
           </div>
 
-          {/* List */}
           <div className="max-h-[340px] overflow-y-auto divide-y divide-slate-50 dark:divide-slate-700/50">
-            {notifs.length === 0 ? (
+            {loading && notifs.length === 0 ? (
+              <div className="py-10 text-center text-slate-400 dark:text-slate-500">
+                <p className="text-sm">Loading...</p>
+              </div>
+            ) : notifs.length === 0 ? (
               <div className="py-10 text-center text-slate-400 dark:text-slate-500">
                 <Bell size={24} className="mx-auto mb-2 opacity-30" />
                 <p className="text-sm">{t('common.allCaughtUp')}</p>
               </div>
             ) : (
               notifs.map(n => {
-                const { icon: Icon, iconClass, bgClass } = typeConfig[n.type];
+                const { icon: Icon, iconClass, bgClass } = typeConfig[n.category];
                 return (
                   <div
                     key={n.id}
-                    onClick={() => markRead(n.id)}
+                    onClick={() => void markRead(n.id)}
                     className={clsx(
                       'flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors group',
                       !n.read && 'bg-primary-50/40 dark:bg-primary-900/10'
@@ -192,7 +205,7 @@ export function NotificationsPanel() {
                           {n.title}
                         </p>
                         <button
-                          onClick={e => { e.stopPropagation(); dismiss(n.id); }}
+                          onClick={e => { e.stopPropagation(); void dismiss(n.id); }}
                           className="shrink-0 p-0.5 rounded text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 opacity-0 group-hover:opacity-100 transition"
                           title={t('common.dismiss')}
                         >
@@ -215,11 +228,10 @@ export function NotificationsPanel() {
             )}
           </div>
 
-          {/* Footer */}
           {notifs.length > 0 && (
             <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
               <button
-                onClick={() => setNotifs([])}
+                onClick={() => void clearAll()}
                 className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
               >
                 {t('common.clearAllNotifications')}

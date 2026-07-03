@@ -3,6 +3,10 @@ import { Types } from 'mongoose';
 import { PatientDataRepository } from '../repositories/patient-data.repository';
 import { PatientData } from '../schemas/patient-data.schema';
 import { BranchInventoryService } from '../inventory/branch-inventory/branch-inventory.service';
+import { PatientRepository } from '../repositories/patient.repository';
+import { StaffRepository } from '../repositories/staff.repository';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification-types';
 
 type BranchInventoryAdjustment = {
   branchId: string;
@@ -23,6 +27,9 @@ export class PatientDataService {
   constructor(
     private readonly patientDataRepository: PatientDataRepository,
     private readonly branchInventoryService: BranchInventoryService,
+    private readonly patientRepository: PatientRepository,
+    private readonly staffRepository: StaffRepository,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findByPatient(patientId: string) {
@@ -35,7 +42,9 @@ export class PatientDataService {
 
   async create(data: Record<string, any>) {
     const patientData = this.preparePatientData(data);
-    return this.patientDataRepository.create(patientData);
+    const created = await this.patientDataRepository.create(patientData);
+    await this.notifyDoctorAssignment(created, data);
+    return created;
   }
 
   async update(id: string, data: Record<string, any>) {
@@ -46,6 +55,7 @@ export class PatientDataService {
     await this.applyBranchInventoryAdjustments(data.branchInventoryAdjustments);
     const updated = await this.patientDataRepository.update(id, patientData);
     if (!updated) throw new NotFoundException(`PatientData ${id} not found`);
+    await this.notifyMedicinesAssigned(existing, updated, data);
     return updated;
   }
 
@@ -53,6 +63,60 @@ export class PatientDataService {
     const record = await this.patientDataRepository.delete(id);
     if (!record) throw new NotFoundException(`PatientData ${id} not found`);
     return { id, removed: true };
+  }
+
+
+  private async notifyDoctorAssignment(visit: any, data: Record<string, any>) {
+    const doctorUserId = data.doctorUserId ? String(data.doctorUserId).trim() : '';
+    if (!doctorUserId || !Types.ObjectId.isValid(doctorUserId)) return;
+
+    const patient = await this.patientRepository.findById(visit.patientId.toString());
+    if (!patient) return;
+
+    const staff = await this.staffRepository.findOne({ userId: new Types.ObjectId(doctorUserId) });
+    const doctorEmail = staff?.email?.trim() || undefined;
+
+    void this.notificationsService.dispatch(NotificationType.PATIENT_ASSIGNED_TO_DOCTOR, {
+      patient,
+      visit,
+      doctorUserId,
+      doctorName: String(data.doctor ?? visit.doctor ?? 'your doctor'),
+      doctorEmail,
+    });
+  }
+
+  private async notifyMedicinesAssigned(
+    existing: { medicines?: { name: string; quantity: number }[] },
+    visit: any,
+    data: Record<string, any>,
+  ) {
+    if (data.medicines === undefined) return;
+
+    const medicines = Array.isArray(visit.medicines) ? visit.medicines : [];
+    if (medicines.length === 0) return;
+    if (!this.medicinesChanged(existing.medicines ?? [], medicines)) return;
+
+    const patient = await this.patientRepository.findById(visit.patientId.toString());
+    if (!patient) return;
+
+    void this.notificationsService.dispatch(NotificationType.PATIENT_MEDICINES_ASSIGNED, {
+      patient,
+      visit,
+      medicines,
+    });
+  }
+
+  private medicinesChanged(
+    before: { name: string; quantity: number }[],
+    after: { name: string; quantity: number }[],
+  ): boolean {
+    const serialize = (list: { name: string; quantity: number }[]) =>
+      JSON.stringify(
+        [...list]
+          .map(m => ({ name: m.name, quantity: m.quantity }))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      );
+    return serialize(before) !== serialize(after);
   }
 
   private preparePatientData(data: Record<string, any>, partial = false): Partial<PatientData> {
@@ -84,6 +148,12 @@ export class PatientDataService {
         : [];
     }
     if (data.doctor !== undefined) patientData.doctor = String(data.doctor).trim();
+    if (data.doctorUserId !== undefined && data.doctorUserId !== null && String(data.doctorUserId).trim() !== '') {
+      if (!Types.ObjectId.isValid(String(data.doctorUserId))) {
+        throw new BadRequestException('doctorUserId is invalid');
+      }
+      patientData.doctorUserId = new Types.ObjectId(String(data.doctorUserId));
+    }
     if (data.notes !== undefined) patientData.notes = String(data.notes).trim();
     if (data.isActive !== undefined) patientData.isActive = Boolean(data.isActive);
 
