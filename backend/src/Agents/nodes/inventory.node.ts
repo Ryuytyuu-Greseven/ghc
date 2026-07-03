@@ -18,7 +18,7 @@ export const inventoryAgent = createAgent({
 // Used by voice-agent.ts graph — runs the full multi-step inventoryAgentGraph
 export async function inventoryNode(state: typeof AgentState.State) {
   console.log('Inventory Node State', state);
-  const firstMessage = state.messages[0];
+  const firstMessage = state.messages[state.messages.length - 1];
   const query =
     typeof firstMessage?.content === 'string'
       ? firstMessage.content

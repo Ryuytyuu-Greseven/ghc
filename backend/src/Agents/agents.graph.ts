@@ -20,6 +20,8 @@ import {
 
 const BASE = process.env.API_BASE_URL ?? 'http://localhost:3000';
 import { httpClient } from '../common/services/http.service';
+import { createAgent } from 'langchain';
+import { INVENTORY_PROMPT } from './prompts/inventory.prompt';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -85,7 +87,7 @@ async function inventoryClassifyIntent(state: typeof InventoryState.State) {
     ['list_inventory', 'check_stock', 'check_expiring', 'audit', 'list_requests', 'raise_requests'],
     `You are an inventory query classifier for a hospital management system. This entire agent flow depends on this routing node.
       ## Classify the doctor's request into exactly one from the below available options:
-        - list_inventory   → doctor wants to list/see/browse inventory items or current stock levels.
+        - list_inventory   → doctor wants to list/see/browse inventory items or current stock levels or individual stock details of an item.
         - check_stock   → doctor wants to know what items are out of stock or critically low.
         - check_expiring → doctor wants to know which items are expiring soon or about to expire
         - audit   → doctor wants a complete check covering stock levels, expiry, and auto-raised replenishment requests
@@ -190,7 +192,21 @@ async function inventoryListAll(state: typeof InventoryState.State) {
     const parsed = JSON.parse(raw);
     data = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
   }
-  return { inventoryList: data, searchQuery: searchQ };
+
+  const dataPrompt = INVENTORY_PROMPT.replace('{inventoryData}', JSON.stringify(data));
+  const agent = createAgent({
+    model: llmInstance,
+    tools: [],
+    systemPrompt: withGuardrails(dataPrompt),
+  })
+
+  const llmResponse = await agent.invoke({
+    messages: state.messages,
+  });
+
+  const response = llmResponse.messages[llmResponse.messages.length - 1].content;
+  console.log('LLM Response', response);
+  return { inventoryList: data, searchQuery: searchQ, nodeResponse: response };
 }
 
 // Helper to extract status from query (Pending, Approved, Rejected, Partial)
@@ -215,6 +231,7 @@ async function inventoryListRequests(state: typeof InventoryState.State) {
 
 // ── Node: check stock levels (low + out-of-stock) ────────────────────────────
 async function inventoryCheckStock(state: typeof InventoryState.State) {
+  console.log('Landed in check stock');
   const branchId = await extractBranchId(state.query);
   const category = extractCategory(state.query);
   const searchQ = await extractSearchQuery(state.query);
@@ -502,7 +519,7 @@ export const inventoryAgentGraph = new StateGraph(InventoryState)
     list_requests: 'list_requests',
     check_stock: 'check_stock',
   })
-  .addEdge('list_inventory', 'summarize')
+  .addEdge('list_inventory', END)
   .addEdge('list_requests', 'summarize')
   .addEdge('check_stock', 'check_expiring')
   .addEdge('check_expiring', 'raise_requests')

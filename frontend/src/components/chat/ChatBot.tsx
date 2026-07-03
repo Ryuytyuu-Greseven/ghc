@@ -4,6 +4,8 @@ import {
   X,
   Mic,
   MicOff,
+  Volume2,
+  VolumeX,
   Send,
   Square,
   Sparkles,
@@ -477,6 +479,20 @@ export function ChatBot() {
                     <Loader2 size={22} className="animate-spin text-orange-300" />
                   )}
                   {voiceState === 'error' && <WifiOff size={22} />}
+                </button>
+
+                {/* Audio Mute toggle */}
+                <button
+                  onClick={chat.toggleAudioMute}
+                  aria-label={chat.isAudioMuted ? 'Unmute audio' : 'Mute audio'}
+                  className={clsx(
+                    'w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 border-2 shadow-sm',
+                    chat.isAudioMuted
+                      ? 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200'
+                      : 'bg-emerald-50 text-emerald-600 border-emerald-400 hover:bg-emerald-100',
+                  )}
+                >
+                  {chat.isAudioMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
                 </button>
               </div>
 

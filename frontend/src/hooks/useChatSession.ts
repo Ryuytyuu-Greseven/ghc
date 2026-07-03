@@ -37,10 +37,12 @@ export function useChatSession({
   const [lastAgentResponse, setLastAgentResponse] = useState<string | null>(null);
 
   const [isMuted, setIsMuted] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
   const modeRef = useRef(mode);
   const muteRef = useRef(false);
+  const audioMuteRef = useRef(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -237,6 +239,15 @@ export function useChatSession({
     });
   }, [restartRecorder]);
 
+  const toggleAudioMute = useCallback(() => {
+    const next = !audioMuteRef.current;
+    audioMuteRef.current = next;
+    setIsAudioMuted(next);
+    if (next) {
+      stopAudio();
+    }
+  }, [stopAudio]);
+
   useEffect(() => {
     if (!enabled) {
       endSession();
@@ -303,6 +314,7 @@ export function useChatSession({
       if (chunks.length === 0) return;
 
       pendingChunksRef.current = [];
+      if (audioMuteRef.current) return;
 
       const totalLength = chunks.reduce((sum, c) => sum + c.byteLength, 0);
       const merged = new Uint8Array(totalLength);
@@ -387,6 +399,8 @@ export function useChatSession({
     resetSession,
     resumeAudioContext,
     toggleMute,
+    isAudioMuted,
+    toggleAudioMute,
     endSession,
   };
 }

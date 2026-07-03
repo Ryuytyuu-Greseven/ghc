@@ -6,8 +6,9 @@ import { Modal } from '../components/ui/Modal';
 import { useTranslation } from 'react-i18next';
 import { authFetch } from '../context/AppContext';
 import type { AuditLog, PaginatedResponse, PaginationMeta } from '../types';
+import { environment } from '@env/environment';
 
-const BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:3000';
+const BASE = environment.mainBackendUrl;
 
 const typeVariant: Record<
   string,
