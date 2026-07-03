@@ -3,6 +3,7 @@ import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { authFetch } from '../context/AppContext';
+import { environment } from '@env/environment';
 import { CheckCircle2, XCircle, Send, Loader2, AlertCircle, Calendar } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +26,7 @@ export function Availability() {
   useEffect(() => {
     async function fetchAvailability() {
       try {
-        const res = await authFetch('http://localhost:3000/staff/me/availability');
+        const res = await authFetch(`${environment.mainBackendUrl}/staff/me/availability`);
         if (!res.ok) throw new Error(t('availability.loadError'));
         const data = await res.json();
         setStatus(data.status as StatusType);
@@ -87,7 +88,7 @@ export function Availability() {
             endDate: periodType === 'single' ? startDate : endDate
           };
 
-      const res = await authFetch('http://localhost:3000/staff/me/availability', {
+      const res = await authFetch(`${environment.mainBackendUrl}/staff/me/availability`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
