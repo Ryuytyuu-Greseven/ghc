@@ -242,6 +242,20 @@ export interface AuditLog {
   createdAt: string;
 }
 
+
+export type NotificationCategory = 'info' | 'success' | 'warning';
+
+export interface AppNotification {
+  id: string;
+  type: string;
+  category: NotificationCategory;
+  title: string;
+  body: string;
+  read: boolean;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
 export interface PaginationMeta {
   page: number;
   pageSize: number;
