@@ -37,6 +37,7 @@ export class QueryService {
     // 1. Search (OR group over multiple fields)
     const searchVal = options.search || options.q;
     if (searchVal && config.searchFields && config.searchFields.length > 0) {
+      console.log('searchVal', searchVal);
       if (config.fuzzySearch) {
         // Build fuzzy patterns: original term + all single-char deletions.
         // This tolerates a 1-character difference between the query and the

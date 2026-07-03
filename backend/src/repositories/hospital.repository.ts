@@ -60,7 +60,7 @@ export class HospitalRepository {
     return this.hospitalModel.countDocuments(mergedFilter).exec();
   }
 
-  async findPaginated(options: any): Promise<{ data: HospitalDocument[]; total: number; page: number; pageSize: number }> {
+  async findPaginated(options: any, extraFilter: any = {}): Promise<{ data: HospitalDocument[]; total: number; page: number; pageSize: number }> {
     const queryOptions = { ...options };
 
     const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
@@ -69,7 +69,7 @@ export class HospitalRepository {
       defaultSort: { field: 'createdAt', order: 'desc' },
     });
 
-    const finalFilter = { isCurrent: { $ne: false }, isActive: { $ne: false }, ...filter };
+    const finalFilter = { isCurrent: { $ne: false }, isActive: { $ne: false }, ...filter, ...extraFilter };
 
     const total = await this.hospitalModel.countDocuments(finalFilter).exec();
     const data = await this.hospitalModel.find(finalFilter)

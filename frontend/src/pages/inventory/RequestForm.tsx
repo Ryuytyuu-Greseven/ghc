@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
@@ -18,23 +18,43 @@ interface Props {
 
 export function RequestForm({ onClose }: Props) {
   const { t } = useTranslation();
-  const { hospitals, staff } = useApp();
+  const { hospitals, staff, currentUser } = useApp();
   const { masters, centralStock, createRequest } = useInventory();
   const [submitting, setSubmitting] = useState(false);
+
+  const isAdmin = currentUser?.role === 'Admin';
+  const currentStaff = staff.find((s) => s.userId === currentUser?.id || s.username === currentUser?.username);
+  const userHospitalId = currentStaff?.assignedHospitalId;
+  const assignedHospital = hospitals.find((h) => h.id === userHospitalId || h._id === userHospitalId);
 
   const [branchId, setBranchId] = useState('');
   const [requestedBy, setRequestedBy] = useState('');
   const [items, setItems] = useState<RequestItemRow[]>([{ itemId: '', requestedQty: '' }]);
 
-  const branchOptions = hospitals.map((h) => ({ value: h.id, label: h.name }));
+  useEffect(() => {
+    if (!isAdmin && assignedHospital && !branchId) {
+      setBranchId(assignedHospital.id);
+    }
+  }, [isAdmin, assignedHospital, branchId]);
+
+  useEffect(() => {
+    if (currentStaff && !requestedBy) {
+      setRequestedBy(currentStaff.name);
+    }
+  }, [currentStaff, requestedBy]);
+
+  const branchOptions = isAdmin
+    ? hospitals.map((h) => ({ value: h.id, label: h.name }))
+    : assignedHospital
+    ? [{ value: assignedHospital.id, label: assignedHospital.name }]
+    : [];
   const activeItemOptions = masters
     .filter((m) => m.status === 'Active')
     .map((m) => ({ value: m._id, label: m.itemName }));
 
-  const staffOptions = staff.map((s) => ({
-    value: s.name,
-    label: `${s.name} (${t(`roles.${s.role}`) ?? s.role})`,
-  }));
+  const staffOptions = currentStaff
+    ? [{ value: currentStaff.name, label: `${currentStaff.name} (${t(`roles.${currentStaff.role}`) ?? currentStaff.role})` }]
+    : [];
 
   const getCentralStockQty = (itemId: string) => {
     return centralStock

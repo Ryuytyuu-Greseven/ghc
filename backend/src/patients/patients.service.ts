@@ -4,7 +4,11 @@ import { PatientRepository } from '../repositories/patient.repository';
 import { Patient } from '../schemas/patient.schema';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { SearchPatientsDto } from './dto/search-patients.dto';
 import { HospitalsCommonService } from '../common/services/hospitals.service';
+import { HospitalRepository } from '../repositories/hospital.repository';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification-types';
 
 const requiredCreateFields: (keyof CreatePatientDto)[] = [
   'name',
@@ -27,10 +31,20 @@ export class PatientsService {
   constructor(
     private readonly patientRepository: PatientRepository,
     private readonly hospitalsCommonService: HospitalsCommonService,
+    private readonly hospitalRepository: HospitalRepository,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
-  async findAll() {
-    return this.patientRepository.findAll({ isActive: true });
+  async findAll(query: SearchPatientsDto = {}) {
+    return this.patientRepository.findPaginated({
+      ...query,
+      page: query.page ?? 1,
+      pageSize: query.pageSize ?? 10,
+    });
+  }
+
+  async findAllList(filter: object = {}) {
+    return this.patientRepository.findAll({ isActive: true, ...filter });
   }
 
   async findOne(id: string) {
@@ -56,6 +70,14 @@ export class PatientsService {
         throw err;
       }
     }
+
+    const hospital = patient.hospitalId
+      ? await this.hospitalRepository.findById(patient.hospitalId)
+      : null;
+    void this.notificationsService.dispatch(NotificationType.PATIENT_ONBOARDED, {
+      patient: createdPatient,
+      hospitalName: hospital?.name,
+    });
 
     return createdPatient;
   }

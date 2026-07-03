@@ -3,6 +3,11 @@ import { Document, Types } from 'mongoose';
 
 export type PatientDataDocument = PatientData & Document;
 
+export class PatientMedicine {
+  name: string;
+  quantity: number;
+}
+
 @Schema({ timestamps: true, collection: 'patientData' })
 export class PatientData {
   @Prop({ type: Types.ObjectId, ref: 'Patient', required: true })
@@ -17,11 +22,22 @@ export class PatientData {
   @Prop({ trim: true, default: '' })
   category: string;
 
-  @Prop({ type: [String], default: [] })
-  medicines: string[];
+  @Prop({
+    type: [
+      {
+        name: { type: String, required: true, trim: true },
+        quantity: { type: Number, required: true, min: 1 },
+      },
+    ],
+    default: [],
+  })
+  medicines: PatientMedicine[];
 
   @Prop({ required: true, trim: true })
   doctor: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  doctorUserId?: Types.ObjectId;
 
   @Prop({ trim: true })
   notes?: string;

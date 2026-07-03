@@ -5,6 +5,7 @@ import { NotificationsPanel } from '../ui/NotificationsPanel';
 import { useSidebar } from '../../context/SidebarContext';
 import { environment } from '@env/environment';
 import { useTranslation } from 'react-i18next';
+import { authFetch } from '../../context/AppContext';
 
 interface HeaderProps {
   title: string;
@@ -122,6 +123,45 @@ export function Header({ title, subtitle }: HeaderProps) {
               >
                 বাংলা (Bengali)
               </button>
+              <button
+                onClick={() => {
+                  i18n.changeLanguage('kn');
+                  setLangOpen(false);
+                }}
+                className={`w-full text-left px-3 py-1.5 text-xs font-medium transition ${
+                  currentLang === 'kn'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                }`}
+              >
+                ಕನ್ನಡ (Kannada)
+              </button>
+              <button
+                onClick={() => {
+                  i18n.changeLanguage('ta');
+                  setLangOpen(false);
+                }}
+                className={`w-full text-left px-3 py-1.5 text-xs font-medium transition ${
+                  currentLang === 'ta'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                }`}
+              >
+                தமிழ் (Tamil)
+              </button>
+              <button
+                onClick={() => {
+                  i18n.changeLanguage('gu');
+                  setLangOpen(false);
+                }}
+                className={`w-full text-left px-3 py-1.5 text-xs font-medium transition ${
+                  currentLang === 'gu'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                }`}
+              >
+                ગુજરાતી (Gujarati)
+              </button>
             </div>
           )}
         </div>
@@ -131,7 +171,12 @@ export function Header({ title, subtitle }: HeaderProps) {
 
         {/* Logout */}
         <button
-          onClick={() => {
+          onClick={async () => {
+            try {
+              await authFetch(`${environment.mainBackendUrl}/auth/logout`, { method: 'POST' });
+            } catch (err) {
+              console.error('Failed to log out from backend:', err);
+            }
             localStorage.removeItem('ghc_auth_token');
             window.location.replace(environment.loginFrontendUrl);
           }}

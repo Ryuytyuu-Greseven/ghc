@@ -7,19 +7,16 @@ import { InventoryMaster, InventoryMasterSchema } from '../schemas/inventory-mas
 import { CentralInventory, CentralInventorySchema } from '../schemas/central-inventory.schema';
 import { BranchInventory, BranchInventorySchema } from '../schemas/branch-inventory.schema';
 import { InventoryRequest, InventoryRequestSchema } from '../schemas/inventory-request.schema';
-import { InventoryTransaction, InventoryTransactionSchema } from '../schemas/inventory-transaction.schema';
 
 import { InventoryMasterController } from './inventory-master/inventory-master.controller';
 import { CentralInventoryController } from './central-inventory/central-inventory.controller';
 import { BranchInventoryController } from './branch-inventory/branch-inventory.controller';
 import { InventoryRequestsController } from './inventory-requests/inventory-requests.controller';
-import { InventoryTransactionsController } from './inventory-transactions/inventory-transactions.controller';
 
 import { InventoryMasterRepository } from '../repositories/inventory-master.repository';
 import { CentralInventoryRepository } from '../repositories/central-inventory.repository';
 import { BranchInventoryRepository } from '../repositories/branch-inventory.repository';
 import { InventoryRequestRepository } from '../repositories/inventory-request.repository';
-import { InventoryTransactionRepository } from '../repositories/inventory-transaction.repository';
 
 import { InventoryMasterService } from './inventory-master/inventory-master.service';
 import { InventoryMasterHelperService } from './inventory-master/inventory-master-helper.service';
@@ -29,18 +26,27 @@ import { BranchInventoryService } from './branch-inventory/branch-inventory.serv
 import { BranchInventoryHelperService } from './branch-inventory/branch-inventory-helper.service';
 import { InventoryRequestsService } from './inventory-requests/inventory-requests.service';
 import { InventoryRequestsHelperService } from './inventory-requests/inventory-requests-helper.service';
-import { InventoryTransactionsService } from './inventory-transactions/inventory-transactions.service';
+import { InventoryAnalyticsController } from './inventory-analytics/inventory-analytics.controller';
+import { InventoryAnalyticsService } from './inventory-analytics/inventory-analytics.service';
 import { AuthModule } from '../auth/auth.module';
+import { HospitalsModule } from '../hospitals/hospitals.module';
+import { StaffModule } from '../staff/staff.module';
+import { UsersModule } from '../users/users.module';
+import { MedicinesController } from './medicines.controller';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 
 @Module({
   imports: [
     AuthModule,
+    HospitalsModule,
+    StaffModule,
+    UsersModule,
+    AuditLogsModule,
     MongooseModule.forFeature([
       { name: InventoryMaster.name, schema: InventoryMasterSchema },
       { name: CentralInventory.name, schema: CentralInventorySchema },
       { name: BranchInventory.name, schema: BranchInventorySchema },
       { name: InventoryRequest.name, schema: InventoryRequestSchema },
-      { name: InventoryTransaction.name, schema: InventoryTransactionSchema },
     ]),
   ],
   controllers: [
@@ -48,7 +54,8 @@ import { AuthModule } from '../auth/auth.module';
     CentralInventoryController,
     BranchInventoryController,
     InventoryRequestsController,
-    InventoryTransactionsController,
+    InventoryAnalyticsController,
+    MedicinesController,
   ],
   providers: [
     QueryService,
@@ -64,15 +71,14 @@ import { AuthModule } from '../auth/auth.module';
     InventoryRequestRepository,
     InventoryRequestsService,
     InventoryRequestsHelperService,
-    InventoryTransactionRepository,
-    InventoryTransactionsService,
+    InventoryAnalyticsService,
   ],
   exports: [
     InventoryMasterRepository,
     CentralInventoryRepository,
     BranchInventoryRepository,
+    BranchInventoryService,
     InventoryRequestRepository,
-    InventoryTransactionRepository,
   ],
 })
 export class InventoryModule implements OnModuleInit {
@@ -131,32 +137,6 @@ export class InventoryModule implements OnModuleInit {
         if (needsUpdate) {
           await db.collection('inventoryrequests').updateOne(
             { _id: req._id },
-            { $set: updateObj }
-          );
-        }
-      }
-
-      // Migrate string itemId/requestId in inventory transactions
-      const transactionsList = await db.collection('inventorytransactions').find({
-        $or: [
-          { itemId: { $type: 'string' } },
-          { requestId: { $type: 'string' } }
-        ]
-      }).toArray();
-      for (const tx of transactionsList) {
-        let needsUpdate = false;
-        const updateObj: any = {};
-        if (typeof tx.itemId === 'string' && tx.itemId.length === 24) {
-          updateObj.itemId = new Types.ObjectId(tx.itemId);
-          needsUpdate = true;
-        }
-        if (typeof tx.requestId === 'string' && tx.requestId.length === 24) {
-          updateObj.requestId = new Types.ObjectId(tx.requestId);
-          needsUpdate = true;
-        }
-        if (needsUpdate) {
-          await db.collection('inventorytransactions').updateOne(
-            { _id: tx._id },
             { $set: updateObj }
           );
         }

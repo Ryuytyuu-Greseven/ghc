@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HospitalsModule } from './hospitals/hospitals.module';
 import { PatientsModule } from './patients/patients.module';
-import { MedicinesModule } from './medicines/medicines.module';
 import { StaffModule } from './staff/staff.module';
 import { ChatGatewayModule } from './chat-gateway/chat-gateway.module';
 import { AuthModule } from './auth/auth.module';
@@ -16,6 +15,9 @@ import { InventoryModule } from './inventory/inventory.module';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import { PatientDataModule } from './patient-data/patient-data.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { AuditInterceptor } from './audit-logs/audit.interceptor';
 import { config } from 'dotenv';
 config();
 
@@ -34,13 +36,14 @@ config();
     CommonModule,
     HospitalsModule,
     PatientsModule,
-    MedicinesModule,
     StaffModule,
     ChatGatewayModule,
     AuthModule,
     InventoryModule,
     UsersModule,
     PatientDataModule,
+    NotificationsModule,
+    AuditLogsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -49,6 +52,11 @@ config();
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditInterceptor,
+    },
   ],
 })
 export class AppModule { }
+

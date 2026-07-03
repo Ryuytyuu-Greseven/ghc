@@ -8,6 +8,9 @@ import {
   X,
   Calendar,
   Shuffle,
+  ClipboardList,
+  Sparkles,
+  AlertOctagon,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
@@ -20,19 +23,22 @@ const allNavItems = [
   { to: '/staff', key: 'staff', icon: Users },
   { to: '/patients', key: 'patients', icon: UserRound },
   { to: '/medicines', key: 'medicines', icon: Pill },
+  { to: '/ai-analytics', key: 'ai-analytics', icon: Sparkles },
+  { to: '/critical-alerts', key: 'critical-alerts', icon: AlertOctagon },
   { to: '/availability', key: 'availability', icon: Calendar },
   { to: '/transfers', key: 'transfers', icon: Shuffle },
+  { to: '/audits', key: 'audits', icon: ClipboardList },
 ];
 
 const roleNavItemsMap: Record<string, string[]> = {
-  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/transfers'],
-  Doctor: ['/availability'],
-  Nurse: ['/availability'],
-  Receptionist: ['/availability'],
-  Pharmacist: ['/availability'],
-  Compounder: ['/availability'],
-  'Lab Technician': ['/availability'],
-  Cashier: ['/availability'],
+  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/critical-alerts', '/transfers', '/audits'],
+  Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics'],
+  Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics'],
+  Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics'],
+  Pharmacist: ['/', '/medicines', '/availability', '/ai-analytics'],
+  Compounder: ['/', '/medicines', '/availability', '/ai-analytics'],
+  'Lab Technician': ['/', '/medicines', '/availability', '/ai-analytics'],
+  Cashier: ['/', '/medicines', '/availability', '/ai-analytics'],
 };
 
 export function Sidebar() {
@@ -59,8 +65,8 @@ export function Sidebar() {
         <div className="flex items-center gap-3 min-w-0">
           <img src="/logo.png" alt="GHC Logo" className="h-10 w-10 rounded-xl shrink-0 object-contain" />
           <div className="min-w-0">
-            <p className="text-slate-800 dark:text-white font-bold text-sm leading-tight truncate">GHC Health</p>
-            <p className="text-slate-500 dark:text-slate-400 text-xs truncate">Care Management</p>
+            <p className="text-slate-800 dark:text-white font-bold text-sm leading-tight truncate">{t('common.appName')}</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs truncate">{t('common.appSubtitle')}</p>
           </div>
         </div>
         {/* Close button — mobile/tablet only */}
@@ -112,7 +118,7 @@ export function Sidebar() {
           {currentUser?.username ? currentUser.username.substring(0, 2).toUpperCase() : 'U'}
         </div>
         <div className="min-w-0">
-          <p className="text-slate-800 dark:text-white text-xs font-medium truncate">{currentUser?.username || 'User'}</p>
+          <p className="text-slate-800 dark:text-white text-xs font-medium truncate">{currentUser?.username || t('common.user')}</p>
           <p className="text-slate-500 dark:text-slate-400 text-xs truncate">
             {currentUser?.role ? t(`roles.${currentUser.role}`) : t('roles.Staff')}
           </p>

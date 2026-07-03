@@ -1,13 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { InventoryRequestRepository } from '../../repositories/inventory-request.repository';
 import { CentralInventoryRepository } from '../../repositories/central-inventory.repository';
 import { BranchInventoryRepository } from '../../repositories/branch-inventory.repository';
-import { InventoryTransactionRepository } from '../../repositories/inventory-transaction.repository';
+import { AuditLogRepository } from '../../repositories/audit-log.repository';
 import { InventoryRequestsHelperService } from './inventory-requests-helper.service';
 import { InventoryMasterRepository } from '../../repositories/inventory-master.repository';
 import { RequestStatus, TransactionType } from '../../common/enums';
 import { buildPaginatedResponse } from '../utils/pagination.util';
+import { StaffRepository } from '../../repositories/staff.repository';
 
 @Injectable()
 export class InventoryRequestsService {
@@ -15,17 +16,38 @@ export class InventoryRequestsService {
     private readonly requestRepo: InventoryRequestRepository,
     private readonly centralRepo: CentralInventoryRepository,
     private readonly branchRepo: BranchInventoryRepository,
-    private readonly transactionRepo: InventoryTransactionRepository,
+    private readonly transactionRepo: AuditLogRepository,
     private readonly masterRepo: InventoryMasterRepository,
     private readonly helper: InventoryRequestsHelperService,
+    private readonly staffRepo: StaffRepository,
   ) {}
 
-  async findAll(query: Record<string, any> = {}) {
+  async findAll(query: Record<string, any> = {}, user?: any) {
+    if (user && user.role !== 'Admin') {
+      const staff = await this.staffRepo.findOne({ userId: new Types.ObjectId(user.userId) });
+      if (staff && staff.hospitalId) {
+        const staffHospitalId = (staff.hospitalId as any)._id
+          ? (staff.hospitalId as any)._id.toString()
+          : staff.hospitalId.toString();
+        query.branchId = staffHospitalId;
+      }
+    }
     const { data, total, page, pageSize } = await this.requestRepo.findPaginated(query);
     return buildPaginatedResponse(data, total, page, pageSize);
   }
 
-  async findByBranch(branchId: string) {
+  async findByBranch(branchId: string, user?: any) {
+    if (user && user.role !== 'Admin') {
+      const staff = await this.staffRepo.findOne({ userId: new Types.ObjectId(user.userId) });
+      if (staff && staff.hospitalId) {
+        const staffHospitalId = (staff.hospitalId as any)._id
+          ? (staff.hospitalId as any)._id.toString()
+          : staff.hospitalId.toString();
+        if (staffHospitalId !== branchId) {
+          throw new ForbiddenException('You can only access requests for your assigned facility.');
+        }
+      }
+    }
     return this.requestRepo.findByBranch(branchId);
   }
 
@@ -35,7 +57,10 @@ export class InventoryRequestsService {
     return req;
   }
 
-  async create(data: Record<string, any>) {
+  async create(data: Record<string, any>, user?: any) {
+    if (user) {
+      this.checkRole(user, 'NotAdmin');
+    }
     const items = data.items || [];
     if (!Array.isArray(items) || items.length === 0) {
       throw new BadRequestException('At least one item must be requested.');
@@ -69,7 +94,10 @@ export class InventoryRequestsService {
     return this.requestRepo.create({ ...data, requestNumber, status: RequestStatus.PENDING });
   }
 
-  async approve(id: string, body: Record<string, any>) {
+  async approve(id: string, body: Record<string, any>, user?: any) {
+    if (user) {
+      this.checkRole(user, 'Admin');
+    }
     const request = await this.requestRepo.findById(id);
     if (!request) throw new NotFoundException(`Request ${id} not found`);
     if (request.status !== RequestStatus.PENDING) {
@@ -99,40 +127,109 @@ export class InventoryRequestsService {
       ? (request.branchId as any)._id.toString()
       : request.branchId.toString();
 
+    const fromBranchIdStr = request.fromBranchId
+      ? ((request.fromBranchId as any)._id ?? request.fromBranchId).toString()
+      : null;
+
     for (const item of updatedItems) {
       if (item.issuedQty <= 0) continue;
-      await this.deductAndTransferCentralStock(
-        item.itemId.toString(),
-        item.issuedQty,
-        branchIdStr,
-        request._id as Types.ObjectId,
-        performedBy,
-      );
+      if (fromBranchIdStr) {
+        await this.deductAndTransferBranchStock(
+          fromBranchIdStr,
+          branchIdStr,
+          item.itemId.toString(),
+          item.issuedQty,
+          request._id as Types.ObjectId,
+          performedBy,
+        );
+      } else {
+        await this.deductAndTransferCentralStock(
+          item.itemId.toString(),
+          item.issuedQty,
+          branchIdStr,
+          request._id as Types.ObjectId,
+          performedBy,
+        );
+      }
     }
 
     const newStatus = this.helper.determineStatus(
       updatedItems.map((i) => ({ requestedQty: i.requestedQty, approvedQty: i.approvedQty })),
     );
 
-    return this.requestRepo.update(id, { status: newStatus, items: updatedItems, remarks });
+    const updatedRequest = await this.requestRepo.update(id, { status: newStatus, items: updatedItems, remarks });
+    
+    await this.transactionRepo.create({
+      module: 'inventory',
+      action: 'UPDATE',
+      message: `Inventory request #${request.requestNumber} was approved (status: ${newStatus}) by ${performedBy}.`,
+      performedBy,
+      performedByRole: 'Admin',
+      metadata: {
+        requestId: request._id,
+        status: newStatus,
+        remarks,
+      }
+    });
+
+    return updatedRequest;
   }
 
-  async reject(id: string, body: Record<string, any>) {
+  async reject(id: string, body: Record<string, any>, user?: any) {
+    if (user) {
+      this.checkRole(user, 'Admin');
+    }
     const request = await this.requestRepo.findById(id);
     if (!request) throw new NotFoundException(`Request ${id} not found`);
     if (request.status !== RequestStatus.PENDING) {
       throw new BadRequestException('Only Pending requests can be rejected');
     }
-    return this.requestRepo.update(id, {
+    const updatedRequest = await this.requestRepo.update(id, {
       status: RequestStatus.REJECTED,
       remarks: body.remarks ?? '',
     });
+    
+    const performedBy = body.performedBy ?? 'System';
+    await this.transactionRepo.create({
+      module: 'inventory',
+      action: 'UPDATE',
+      message: `Inventory request #${request.requestNumber} was rejected by ${performedBy}.`,
+      performedBy,
+      performedByRole: 'Admin',
+      metadata: {
+        requestId: request._id,
+        status: RequestStatus.REJECTED,
+        remarks: body.remarks,
+      }
+    });
+
+    return updatedRequest;
   }
 
-  async updateStatus(id: string, body: Record<string, any>) {
+  async updateStatus(id: string, body: Record<string, any>, user?: any) {
+    if (user) {
+      this.checkRole(user, 'Admin');
+    }
     const request = await this.requestRepo.findById(id);
     if (!request) throw new NotFoundException(`Request ${id} not found`);
     return this.requestRepo.update(id, { status: body.status, remarks: body.remarks });
+  }
+
+  private checkRole(user: any, allowedRole: 'Admin' | 'NotAdmin') {
+    if (!user || !user.role) {
+      throw new ForbiddenException('Invalid user context');
+    }
+    const isAdmin = user.role === 'Admin';
+
+    if (allowedRole === 'Admin') {
+      if (!isAdmin) {
+        throw new ForbiddenException('Only users with the Admin role can approve or reject inventory requests.');
+      }
+    } else if (allowedRole === 'NotAdmin') {
+      if (isAdmin) {
+        throw new ForbiddenException('Admin users cannot raise inventory requests.');
+      }
+    }
   }
 
   private async deductAndTransferCentralStock(
@@ -176,15 +273,84 @@ export class InventoryRequestsService {
         batch.expiryDate,
       );
 
-      // Create transaction record
+      // Create transaction record as an audit log
       await this.transactionRepo.create({
-        itemId: new Types.ObjectId(itemId),
-        fromLocation: 'Central',
-        toLocation: branchId,
-        quantity: deduct,
-        transactionType: TransactionType.TRANSFER,
-        requestId,
+        module: 'inventory',
+        action: 'TRANSFER',
+        message: `Transferred ${deduct} units of medicine stock from Central Store to branch "${branchId}".`,
         performedBy,
+        performedByRole: 'Admin',
+        metadata: {
+          itemId,
+          quantity: deduct,
+          fromLocation: 'Central',
+          toLocation: branchId,
+          transactionType: TransactionType.TRANSFER,
+          requestId,
+        }
+      });
+
+      remaining -= deduct;
+    }
+  }
+
+  private async deductAndTransferBranchStock(
+    fromBranchId: string,
+    toBranchId: string,
+    itemId: string,
+    qty: number,
+    requestId: Types.ObjectId,
+    performedBy: string,
+  ): Promise<void> {
+    const batches = await this.branchRepo.findByBranchAndItem(fromBranchId, itemId);
+    // FIFO: oldest expiry date first, nulls last
+    batches.sort((a, b) => {
+      const aTime = a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity;
+      const bTime = b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity;
+      return aTime - bTime;
+    });
+
+    const totalAvailable = batches.reduce((s, b) => s + b.availableQty, 0);
+    if (totalAvailable < qty) {
+      throw new BadRequestException(
+        `Insufficient stock at source branch. Available: ${totalAvailable}, Required: ${qty}`,
+      );
+    }
+
+    let remaining = qty;
+    for (const batch of batches) {
+      if (remaining <= 0) break;
+      const deduct = Math.min(batch.availableQty, remaining);
+      
+      // Deduct from source branch
+      await this.branchRepo.update(batch._id.toString(), {
+        $inc: { availableQty: -deduct },
+      });
+
+      // Add to destination branch
+      await this.branchRepo.upsertBranchStock(
+        toBranchId,
+        itemId,
+        deduct,
+        batch.batchNo,
+        batch.expiryDate,
+      );
+
+      // Create transaction record as an audit log
+      await this.transactionRepo.create({
+        module: 'inventory',
+        action: 'TRANSFER',
+        message: `Transferred ${deduct} units of medicine stock from branch "${fromBranchId}" to branch "${toBranchId}".`,
+        performedBy,
+        performedByRole: 'Admin',
+        metadata: {
+          itemId,
+          quantity: deduct,
+          fromLocation: fromBranchId,
+          toLocation: toBranchId,
+          transactionType: TransactionType.TRANSFER,
+          requestId,
+        }
       });
 
       remaining -= deduct;

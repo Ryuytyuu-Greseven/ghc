@@ -11,8 +11,11 @@ import { StaffList } from './pages/staff/StaffList';
 import { PatientList } from './pages/patients/PatientList';
 import { PatientDetail } from './pages/patients/PatientDetail';
 import { MedicineList } from './pages/medicines/MedicineList';
+import { AIInventoryAnalytics } from './pages/inventory/AIInventoryAnalytics';
+import { CriticalAlertsPage } from './pages/alerts/CriticalAlertsPage';
 import { Availability } from './pages/Availability';
 import { Transfers } from './pages/Transfers';
+import { Audits } from './pages/Audits';
 
 interface GuardProps {
   allowedRoles: string[];
@@ -44,7 +47,7 @@ export default function App() {
                   <Route
                     path="/"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Pharmacist', 'Compounder', 'Lab Technician', 'Cashier']}>
                         <Dashboard />
                       </RoleGuard>
                     }
@@ -52,7 +55,7 @@ export default function App() {
                   <Route
                     path="/hospitals"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist']}>
                         <HospitalList />
                       </RoleGuard>
                     }
@@ -60,7 +63,7 @@ export default function App() {
                   <Route
                     path="/hospitals/:id"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist']}>
                         <HospitalDetail />
                       </RoleGuard>
                     }
@@ -76,7 +79,7 @@ export default function App() {
                   <Route
                     path="/patients"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist']}>
                         <PatientList />
                       </RoleGuard>
                     }
@@ -92,8 +95,24 @@ export default function App() {
                   <Route
                     path="/medicines"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Pharmacist', 'Compounder', 'Lab Technician', 'Doctor', 'Nurse', 'Receptionist', 'Cashier']}>
                         <MedicineList />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/ai-analytics"
+                    element={
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Pharmacist', 'Compounder', 'Lab Technician', 'Cashier']}>
+                        <AIInventoryAnalytics />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/critical-alerts"
+                    element={
+                      <RoleGuard allowedRoles={['Admin']}>
+                        <CriticalAlertsPage />
                       </RoleGuard>
                     }
                   />
@@ -110,6 +129,14 @@ export default function App() {
                     element={
                       <RoleGuard allowedRoles={['Admin']}>
                         <Transfers />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/audits"
+                    element={
+                      <RoleGuard allowedRoles={['Admin']}>
+                        <Audits />
                       </RoleGuard>
                     }
                   />

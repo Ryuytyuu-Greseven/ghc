@@ -27,7 +27,7 @@ async function apiFetch(path: string, init?: RequestInit) {
   const method = init?.method ?? 'GET';
   const headers = init?.headers as any;
   const data = init?.body ? JSON.parse(init.body as string) : undefined;
-  
+
   const res = await httpClient.request({
     url: path,
     method,
@@ -82,18 +82,20 @@ async function llmClassify(
 async function inventoryClassifyIntent(state: typeof InventoryState.State) {
   const intent = await llmClassify(
     state.query,
-    ['list', 'check_stock', 'check_expiring', 'audit', 'requests'],
-    `You are an inventory query classifier for a hospital management system.
-Classify the doctor's request into exactly one of these options:
-- list          → doctor wants to see/browse inventory items or current stock levels
-- check_stock   → doctor wants to know what items are out of stock or critically low
-- check_expiring → doctor wants to know which items are expiring soon or about to expire
-- audit         → doctor wants a complete check covering stock levels, expiry, and auto-raised replenishment requests
-- requests      → doctor wants to see transfer requests, pending requests, approved requests, request counts, or request details
-
-Reply with ONE word only — one of: list, check_stock, check_expiring, audit, requests`,
+    ['list_inventory', 'check_stock', 'check_expiring', 'audit', 'list_requests', 'raise_requests'],
+    `You are an inventory query classifier for a hospital management system. This entire agent flow depends on this routing node.
+      ## Classify the doctor's request into exactly one from the below available options:
+        - list_inventory   → doctor wants to list/see/browse inventory items or current stock levels.
+        - check_stock   → doctor wants to know what items are out of stock or critically low.
+        - check_expiring → doctor wants to know which items are expiring soon or about to expire
+        - audit   → doctor wants a complete check covering stock levels, expiry, and auto-raised replenishment requests
+        - list_requests   → doctor wants to see transfer requests, pending requests, approved requests, request counts, or request details
+        - raise_requests   → doctor wants to raise a service request from a branch to main department fro refilling the stock of inventory items.
+      Reply with ONE word only — one of: list_inventory, check_stock, check_expiring, audit, list_requests, raise_requests.
+`,
   );
   console.log('intent', intent);
+  state.intent = intent;
   return { intent };
 }
 
@@ -111,7 +113,7 @@ export async function extractBranchId(query: string): Promise<string | undefined
         return branch._id.toString();
       }
     }
-  } catch {}
+  } catch { }
   return undefined;
 }
 
@@ -124,8 +126,8 @@ export function extractCategory(query: string): string | undefined {
   for (const cat of STATIC_CATEGORIES) {
     const catLower = cat.toLowerCase();
     if (
-      lower.includes(catLower) || 
-      (catLower.endsWith('s') && lower.includes(catLower.slice(0, -1))) || 
+      lower.includes(catLower) ||
+      (catLower.endsWith('s') && lower.includes(catLower.slice(0, -1))) ||
       (!catLower.endsWith('s') && lower.includes(catLower + 's'))
     ) {
       return cat;
@@ -145,10 +147,10 @@ export async function extractSearchQuery(query: string): Promise<string | undefi
       const nameRegex = new RegExp(`\\b${branch.name}\\b`, 'gi');
       clean = clean.replace(nameRegex, '');
     }
-  } catch {}
+  } catch { }
   clean = clean.replace(/\b(show|list|how|many|do|we|have|is|are|left|stock|available|of|in|at|what|which|items|item|any|quantity|quantities|availability|inventory|store|central)\b/gi, '');
   clean = clean.trim().replace(/[?.]/g, '').replace(/\s+/g, ' ');
-  
+
   if (clean.length >= 2) {
     // Check if the query is just a category name (plural or singular)
     const lowerClean = clean.toLowerCase();
@@ -171,16 +173,19 @@ export async function extractSearchQuery(query: string): Promise<string | undefi
 
 // ── Node: list full inventory catalog ────────────────────────────────────────
 async function inventoryListAll(state: typeof InventoryState.State) {
+  console.log('ENtered the node:', inventoryListAll)
   const branchId = await extractBranchId(state.query);
   const category = extractCategory(state.query);
   const searchQ = await extractSearchQuery(state.query);
 
   let data: any[];
   if (branchId) {
+    console.log('Hey, We are in branchId', branchId);
     const raw = await listBranchStock.invoke({ branchId, query: searchQ, category });
     const parsed = JSON.parse(raw);
     data = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
   } else {
+    console.log('Hey, We are in else of branchId', branchId);
     const raw = await listCentralInventory.invoke({ pageSize: 100, query: searchQ, category });
     const parsed = JSON.parse(raw);
     data = Array.isArray(parsed) ? parsed : (parsed.data ?? []);
@@ -478,8 +483,9 @@ function inventorySummarize(state: typeof InventoryState.State) {
 
 // ── Routing function ──────────────────────────────────────────────────────────
 function routeInventory(state: typeof InventoryState.State): string {
-  if (state.intent === 'requests') return 'list_requests';
-  return state.intent === 'list' ? 'list_inventory' : 'check_stock';
+  console.log('Started and landed router node', state.intent);
+  // if (state.intent === 'requests') return 'list_requests';
+  return state.intent;
 }
 
 export const inventoryAgentGraph = new StateGraph(InventoryState)
@@ -569,7 +575,11 @@ Reply with ONE option only — one of: discharge_dates, by_disease, by_age, gene
 
 // ── Node: fetch all active patients ──────────────────────────────────────────
 async function patientFetchAll(state: typeof PatientState.State) {
-  const raw = await apiFetch('/patients');
+  const raw = await apiFetch('/patients', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: 1, pageSize: 1000 }),
+  });
   const patients = Array.isArray(raw) ? raw : (raw?.data ?? []);
   return { patients };
 }

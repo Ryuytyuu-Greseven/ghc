@@ -5,7 +5,7 @@ import type {
   CentralInventoryEntry,
   BranchInventoryEntry,
   InventoryRequest,
-  InventoryTransaction,
+  AuditLog,
   PaginationMeta,
 } from '../types';
 import { inventoryApi } from '../services/inventoryApi';
@@ -32,7 +32,7 @@ interface InventoryContextValue {
   centralStock: CentralInventoryEntry[];
   branchStock: BranchInventoryEntry[];
   requests: InventoryRequest[];
-  transactions: InventoryTransaction[];
+  transactions: AuditLog[];
 
   // Pagination Metadata
   mastersPagination: PaginationMeta | null;
@@ -87,7 +87,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const [centralStock, setCentralStock] = useState<CentralInventoryEntry[]>([]);
   const [branchStock, setBranchStock] = useState<BranchInventoryEntry[]>([]);
   const [requests, setRequests] = useState<InventoryRequest[]>([]);
-  const [transactions, setTransactions] = useState<InventoryTransaction[]>([]);
+  const [transactions, setTransactions] = useState<AuditLog[]>([]);
 
   // Pagination state
   const [mastersPagination, setMastersPagination] = useState<PaginationMeta | null>(null);
