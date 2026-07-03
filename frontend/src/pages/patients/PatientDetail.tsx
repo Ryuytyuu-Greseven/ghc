@@ -10,6 +10,7 @@ import { Select } from '../../components/ui/Select';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { authFetch, useApp } from '../../context/AppContext';
+import { environment } from '@env/environment';
 import type { PatientData } from '../../types';
 import { environment } from '@env/environment';
 

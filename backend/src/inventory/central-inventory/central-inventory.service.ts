@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CentralInventoryRepository } from '../../repositories/central-inventory.repository';
-import { InventoryTransactionRepository } from '../../repositories/inventory-transaction.repository';
+import { AuditLogRepository } from '../../repositories/audit-log.repository';
 import { CentralInventoryHelperService } from './central-inventory-helper.service';
 import { TransactionType } from '../../common/enums';
 import { Types } from 'mongoose';
@@ -10,7 +10,7 @@ import { buildPaginatedResponse } from '../utils/pagination.util';
 export class CentralInventoryService {
   constructor(
     private readonly repo: CentralInventoryRepository,
-    private readonly transactionRepo: InventoryTransactionRepository,
+    private readonly transactionRepo: AuditLogRepository,
     private readonly helper: CentralInventoryHelperService,
   ) {}
 
@@ -40,13 +40,18 @@ export class CentralInventoryService {
   async addStock(data: Record<string, any>) {
     const entry = await this.repo.create(data);
     await this.transactionRepo.create({
-      itemId: new Types.ObjectId(data.itemId),
-      fromLocation: 'External',
-      toLocation: 'Central',
-      quantity: data.availableQty,
-      transactionType: TransactionType.PURCHASE,
-      requestId: null,
+      module: 'inventory',
+      action: 'PURCHASE',
+      message: `Purchased ${data.availableQty} units of medicine stock and added to Central Store.`,
       performedBy: data.performedBy ?? 'System',
+      performedByRole: 'Admin',
+      metadata: {
+        itemId: data.itemId,
+        quantity: data.availableQty,
+        fromLocation: 'External',
+        toLocation: 'Central',
+        transactionType: TransactionType.PURCHASE,
+      }
     });
     return entry;
   }

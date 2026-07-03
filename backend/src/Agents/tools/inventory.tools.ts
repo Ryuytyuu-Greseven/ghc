@@ -5,7 +5,7 @@ import { InventoryMasterService } from '../../inventory/inventory-master/invento
 import { CentralInventoryService } from '../../inventory/central-inventory/central-inventory.service';
 import { BranchInventoryService } from '../../inventory/branch-inventory/branch-inventory.service';
 import { InventoryRequestsService } from '../../inventory/inventory-requests/inventory-requests.service';
-import { InventoryTransactionsService } from '../../inventory/inventory-transactions/inventory-transactions.service';
+import { AuditLogsService } from '../../audit-logs/audit-logs.service';
 import { HospitalsService } from '../../hospitals/hospitals.service';
 
 export const listInventoryMasters = tool(
@@ -314,9 +314,10 @@ export const rejectInventoryRequest = tool(
 
 export const listInventoryTransactions = tool(
   async ({ type, itemId, location, fromDate, toDate }) => {
-    const service = appInstance.get(InventoryTransactionsService);
+    const service = appInstance.get(AuditLogsService);
     const result = await service.findAll({
-      transactionType: type,
+      module: 'inventory',
+      action: type,
       itemId,
       branchId: location,
       fromDate,

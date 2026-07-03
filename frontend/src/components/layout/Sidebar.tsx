@@ -8,6 +8,9 @@ import {
   X,
   Calendar,
   Shuffle,
+  ClipboardList,
+  Sparkles,
+  AlertOctagon,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
@@ -20,12 +23,15 @@ const allNavItems = [
   { to: '/staff', key: 'staff', icon: Users },
   { to: '/patients', key: 'patients', icon: UserRound },
   { to: '/medicines', key: 'medicines', icon: Pill },
+  { to: '/ai-analytics', key: 'ai-analytics', icon: Sparkles },
+  { to: '/critical-alerts', key: 'critical-alerts', icon: AlertOctagon },
   { to: '/availability', key: 'availability', icon: Calendar },
   { to: '/transfers', key: 'transfers', icon: Shuffle },
+  { to: '/audits', key: 'audits', icon: ClipboardList },
 ];
 
 const roleNavItemsMap: Record<string, string[]> = {
-  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/transfers'],
+  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/critical-alerts', '/transfers', '/audits'],
   Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability'],
   Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability'],
   Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability'],

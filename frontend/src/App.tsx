@@ -11,8 +11,11 @@ import { StaffList } from './pages/staff/StaffList';
 import { PatientList } from './pages/patients/PatientList';
 import { PatientDetail } from './pages/patients/PatientDetail';
 import { MedicineList } from './pages/medicines/MedicineList';
+import { AIInventoryAnalytics } from './pages/inventory/AIInventoryAnalytics';
+import { CriticalAlertsPage } from './pages/alerts/CriticalAlertsPage';
 import { Availability } from './pages/Availability';
 import { Transfers } from './pages/Transfers';
+import { Audits } from './pages/Audits';
 
 interface GuardProps {
   allowedRoles: string[];
@@ -98,6 +101,22 @@ export default function App() {
                     }
                   />
                   <Route
+                    path="/ai-analytics"
+                    element={
+                      <RoleGuard allowedRoles={['Admin']}>
+                        <AIInventoryAnalytics />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/critical-alerts"
+                    element={
+                      <RoleGuard allowedRoles={['Admin']}>
+                        <CriticalAlertsPage />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
                     path="/availability"
                     element={
                       <RoleGuard allowedRoles={['Doctor', 'Nurse', 'Receptionist', 'Pharmacist', 'Compounder', 'Lab Technician', 'Cashier']}>
@@ -110,6 +129,14 @@ export default function App() {
                     element={
                       <RoleGuard allowedRoles={['Admin']}>
                         <Transfers />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/audits"
+                    element={
+                      <RoleGuard allowedRoles={['Admin']}>
+                        <Audits />
                       </RoleGuard>
                     }
                   />

@@ -3,12 +3,16 @@ import type {
   CentralInventoryEntry,
   BranchInventoryEntry,
   InventoryRequest,
-  InventoryTransaction,
+  AuditLog,
   PaginatedResponse,
+  StockoutWarning,
+  DemandForecast,
+  RedistributionRecommendation,
 } from '../types';
 import { authFetch } from '../context/AppContext';
+import { environment } from '@env/environment';
 
-const BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:3000';
+const BASE = (import.meta as any).env?.VITE_API_URL ?? environment.mainBackendUrl;
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await authFetch(`${BASE}${path}`, {
@@ -70,8 +74,23 @@ export const inventoryApi = {
     put<InventoryRequest>(`/inventory-requests/${id}/reject`, data),
 
   // Inventory Transactions
-  getTransactions: (params = '') =>
-    get<PaginatedResponse<InventoryTransaction>>(`/inventory-transactions${params ? '?' + params : ''}`),
+  getTransactions: (params = '') => {
+    const queryParts = [];
+    if (params) {
+      queryParts.push(params);
+    }
+    queryParts.push('module=inventory');
+    return get<PaginatedResponse<AuditLog>>(`/audit-logs?${queryParts.join('&')}`);
+  },
   getItemTransactions: (itemId: string) =>
-    get<InventoryTransaction[]>(`/inventory-transactions/item/${itemId}`),
+    get<AuditLog[]>(`/audit-logs?module=inventory&itemId=${itemId}`),
+
+  // Inventory Analytics
+  getStockoutWarnings: () => get<StockoutWarning[]>('/inventory-analytics/stockout-warnings'),
+  getDemandForecast: (itemId: string, branchId: string) =>
+    get<DemandForecast>(`/inventory-analytics/forecast/${itemId}/${branchId}`),
+  getRedistributionRecommendations: () =>
+    get<RedistributionRecommendation[]>('/inventory-analytics/redistribution-recommendations'),
+  applyRedistribution: (data: object) =>
+    post<InventoryRequest>('/inventory-analytics/redistribution/apply', data),
 };
