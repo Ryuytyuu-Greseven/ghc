@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { HospitalRepository } from '../../repositories/hospital.repository';
 import { BedAllocationRepository } from '../../repositories/bed-allocation.repository';
 import { BranchInventoryRepository } from '../../repositories/branch-inventory.repository';

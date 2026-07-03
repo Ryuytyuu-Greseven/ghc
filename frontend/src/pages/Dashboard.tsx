@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { DistrictInterventionAlerts } from '../components/dashboard/DistrictInterventionAlerts';
 
 export function Dashboard() {
-  const { hospitals, staff, patients, medicines } = useApp();
+  const { hospitals, staff, patients, medicines, currentUser } = useApp();
   const { t } = useTranslation();
 
   const totalBeds = hospitals.reduce((s, h) => s + h.totalBeds, 0);
@@ -39,7 +39,7 @@ export function Dashboard() {
         <div className="max-w-screen-2xl mx-auto space-y-6">
 
           {/* District Intervention Alerts */}
-          <DistrictInterventionAlerts mode="banner" />
+          {currentUser?.role === 'Admin' && <DistrictInterventionAlerts mode="banner" />}
 
           {/* Stat cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

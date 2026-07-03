@@ -15,7 +15,11 @@ export class HospitalsController {
   ) { }
 
   @Get('district/intervention-alerts')
-  getInterventionAlerts() {
+  getInterventionAlerts(@Req() req: any) {
+    const user = req.user;
+    if (user.role !== 'Admin') {
+      throw new ForbiddenException('Access denied. Admins only.');
+    }
     return this.facilityAlertsService.getInterventionAlerts();
   }
 
