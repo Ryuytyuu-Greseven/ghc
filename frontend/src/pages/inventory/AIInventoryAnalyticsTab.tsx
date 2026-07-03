@@ -113,7 +113,7 @@ export function AIInventoryAnalyticsTab() {
       const data = await inventoryApi.getStockoutWarnings();
       setWarnings(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load warnings');
+      setError(err instanceof Error ? err.message : t('inventory.analytics.loadWarningsError', 'Failed to load warnings'));
     } finally {
       setLoadingWarnings(false);
     }
@@ -125,7 +125,7 @@ export function AIInventoryAnalyticsTab() {
       const data = await inventoryApi.getRedistributionRecommendations();
       setRecommendations(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load recommendations');
+      setError(err instanceof Error ? err.message : t('inventory.analytics.loadRecommendationsError', 'Failed to load recommendations'));
     } finally {
       setLoadingRecommendations(false);
     }
@@ -145,7 +145,7 @@ export function AIInventoryAnalyticsTab() {
       const data = await inventoryApi.getDemandForecast(selectedItemId, selectedBranchId);
       setForecast(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load forecast');
+      setError(err instanceof Error ? err.message : t('inventory.analytics.loadForecastError', 'Failed to load forecast'));
       setForecast(null);
     } finally {
       setLoadingForecast(false);
@@ -168,7 +168,7 @@ export function AIInventoryAnalyticsTab() {
       setSuccessMessage(t('inventory.analytics.applySuccess'));
       await loadRecommendations();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to apply transfer');
+      setError(err instanceof Error ? err.message : t('inventory.analytics.applyTransferError', 'Failed to apply transfer'));
     } finally {
       setApplyingKey(null);
     }
@@ -337,7 +337,7 @@ export function AIInventoryAnalyticsTab() {
                       {forecast.itemName} · {forecast.branchName}
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Avg daily consumption: {forecast.averageDailyConsumption}
+                      {t('inventory.analytics.avgDailyConsumption', 'Avg daily consumption: {{val}}', { val: forecast.averageDailyConsumption })}
                     </p>
                   </div>
                 </div>
