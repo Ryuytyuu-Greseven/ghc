@@ -1,5 +1,11 @@
 import { PatientDocument } from '../schemas/patient.schema';
 import { PatientDataDocument } from '../schemas/patient-data.schema';
+import {
+  doctorAssignedDoctorTemplate,
+  doctorAssignedPatientTemplate,
+  medicinesAssignedTemplate,
+  patientOnboardedTemplate,
+} from './email-templates';
 
 export enum NotificationType {
   PATIENT_ONBOARDED = 'PATIENT_ONBOARDED',
@@ -62,12 +68,7 @@ export const notificationTypeConfig: Record<NotificationType, NotificationTypeCo
       return [{
         to: patient.email,
         subject: 'Welcome to GHC — Registration Successful',
-        html: `
-          <p>Dear ${patient.name},</p>
-          <p>You have been successfully onboarded at <strong>${facility}</strong>.</p>
-          <p>Your registration is complete. Our care team will be in touch if any further steps are needed.</p>
-          <p>Thank you,<br/>GHC Healthcare</p>
-        `,
+        html: patientOnboardedTemplate(patient.name, facility),
       }];
     },
   },
@@ -96,12 +97,7 @@ export const notificationTypeConfig: Record<NotificationType, NotificationTypeCo
         emails.push({
           to: patient.email,
           subject: 'Your Doctor Has Been Assigned — GHC',
-          html: `
-          <p>Dear ${patient.name},</p>
-          <p><strong>${doctorName}</strong> has been assigned to your care.</p>
-          <p>If you have questions, please contact your hospital.</p>
-          <p>Thank you,<br/>GHC Healthcare</p>
-        `,
+          html: doctorAssignedPatientTemplate(patient.name, doctorName),
         });
       }
 
@@ -112,14 +108,12 @@ export const notificationTypeConfig: Record<NotificationType, NotificationTypeCo
         emails.push({
           to: doctorEmail,
           subject: 'New Patient Assigned — GHC',
-          html: `
-          <p>Dear ${doctorName},</p>
-          <p>Patient <strong>${patient.name}</strong> has been assigned to you.</p>
-          <p><strong>Visit reason:</strong> ${visit.problem || 'General visit'}</p>
-          <p><strong>Visit date:</strong> ${visitDate}</p>
-          <p>Please log in to the GHC portal to review the patient details.</p>
-          <p>Thank you,<br/>GHC Healthcare</p>
-        `,
+          html: doctorAssignedDoctorTemplate(
+            doctorName,
+            patient.name,
+            visit.problem || 'General visit',
+            visitDate,
+          ),
         });
       }
 
@@ -134,9 +128,6 @@ export const notificationTypeConfig: Record<NotificationType, NotificationTypeCo
       const { patient, visit, medicines } = payload as PatientMedicinesAssignedPayload;
       if (!patient.email || medicines.length === 0) return [];
 
-      const medicineList = medicines
-        .map(m => `<li>${m.name} — quantity: ${m.quantity}</li>`)
-        .join('');
       const visitDate = visit.visitDate
         ? new Date(visit.visitDate).toLocaleDateString()
         : 'your recent visit';
@@ -144,14 +135,12 @@ export const notificationTypeConfig: Record<NotificationType, NotificationTypeCo
       return [{
         to: patient.email,
         subject: 'Your Prescribed Medicines — GHC',
-        html: `
-          <p>Dear ${patient.name},</p>
-          <p>The following medicines have been prescribed for your visit on <strong>${visitDate}</strong>:</p>
-          <ul>${medicineList}</ul>
-          ${visit.doctor ? `<p><strong>Prescribing doctor:</strong> ${visit.doctor}</p>` : ''}
-          <p>Please follow your doctor's instructions. Contact your hospital if you have any questions.</p>
-          <p>Thank you,<br/>GHC Healthcare</p>
-        `,
+        html: medicinesAssignedTemplate(
+          patient.name,
+          visitDate,
+          visit.doctor,
+          medicines,
+        ),
       }];
     },
   },
