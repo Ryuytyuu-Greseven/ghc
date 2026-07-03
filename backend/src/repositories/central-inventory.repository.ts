@@ -105,7 +105,7 @@ export class CentralInventoryRepository {
 
     // Count query
     const countPipeline = [...pipeline, { $count: 'total' }];
-    console.log('Pipelines: ', JSON.stringify(pipeline));
+    // console.log('Pipelines: ', JSON.stringify(pipeline));
     const countResult = await this.model.aggregate(countPipeline).exec();
     const total = countResult[0]?.total ?? 0;
 
@@ -126,8 +126,8 @@ export class CentralInventoryRepository {
       },
     });
 
-    const deta = await this.model.aggregate(pipeline).exec();
-    console.log('furst query', deta);
+    // const deta = await this.model.aggregate(pipeline).exec();
+    // console.log('furst query', deta);
     const [data, statsResult, lowStockCount, expiringCount] = await Promise.all([
       this.model.aggregate(pipeline).exec(),
       this.model.aggregate([
