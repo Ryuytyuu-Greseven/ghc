@@ -2,7 +2,7 @@ import type { Hospital, PaginatedResponse } from '../types';
 import { authFetch } from '../context/AppContext';
 import { environment } from '@env/environment';
 
-const BASE = (import.meta as any).env?.VITE_API_URL ?? environment.mainBackendUrl;
+const BASE = environment.mainBackendUrl;
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await authFetch(`${BASE}${path}`, {
