@@ -122,12 +122,12 @@ export function createSpeechStream(
     encoding === 'WEBM_OPUS'
       ? { autoDecodingConfig: {} }
       : {
-          explicitDecodingConfig: {
-            encoding,
-            sampleRateHertz,
-            audioChannelCount: 1,
-          },
-        };
+        explicitDecodingConfig: {
+          encoding,
+          sampleRateHertz,
+          audioChannelCount: 1,
+        },
+      };
 
   stream.write({
     recognizer: recognizerPath,
@@ -136,6 +136,14 @@ export function createSpeechStream(
         ...decodingConfig,
         languageCodes: [languageCode],
         model: 'chirp_3',
+        alternative_language_codes: [
+          "gu-IN",
+          "hi-IN",
+          "kn-IN",
+          "ml-IN",
+          "ta-IN",
+          "te-IN",
+        ],
       },
       streamingFeatures: {
         interimResults: true,
@@ -176,6 +184,14 @@ export async function transcribeAudio(
       config: {
         languageCodes: ['en-US'],
         model: 'chirp_3',
+        alternative_language_codes: [
+          "gu-IN",
+          "hi-IN",
+          "kn-IN",
+          "ml-IN",
+          "ta-IN",
+          "te-IN",
+        ],
       },
       content: base64Data,
     };
