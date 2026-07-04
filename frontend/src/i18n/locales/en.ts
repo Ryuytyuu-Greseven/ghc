@@ -5,8 +5,8 @@ export const en = {
       addFacility: "Add Facility",
       searchFacilities: "Search facilities...",
       all: "All",
-      phcs: "PHCs",
-      chcs: "CHCs",
+      phcs: "PHC's",
+      chcs: "CHC's",
       loading: "Loading...",
       noFacilities: "No facilities found",
       tryRelaxing: "Try relaxing your search query or add a new facility.",
@@ -57,7 +57,28 @@ export const en = {
       notifications: "Notifications",
       unknown: "Unknown",
       saving: "Saving...",
-      saveChanges: "Save Changes"
+      saveChanges: "Save Changes",
+      changePassword: "Change Password",
+      oldPassword: "Old Password",
+      oldPasswordPlaceholder: "Enter old password",
+      newPassword: "New Password",
+      newPasswordPlaceholder: "Enter new password",
+      confirmPassword: "Confirm Password",
+      confirmPasswordPlaceholder: "Confirm new password",
+      changePasswordSuccess: "Password changed successfully!",
+      passwordsDoNotMatch: "New passwords do not match.",
+      passwordError: "Failed to change password. Please check your credentials.",
+      loggingOutIn: "You will be logged out in {{count}} seconds...",
+      logoutNow: "Logout Now",
+      logoutConfirmTitle: "Confirm Sign Out",
+      logoutConfirmMessage: "Are you sure you want to sign out of your account?",
+      logoutConfirmButton: "Sign Out",
+      time: {
+        justNow: "just now",
+        minutesAgo: "{{count}}m ago",
+        hoursAgo: "{{count}}h ago",
+        daysAgo: "{{count}}d ago"
+      }
     },
     nav: {
       dashboard: "Dashboard",
@@ -753,6 +774,20 @@ export const en = {
         ICU: "ICU",
         "Operation Theatre": "Operation Theatre",
         Administration: "Administration"
+    },
+    notifications: {
+      hospitalOnboardedTitle: "Hospital onboarded successfully",
+      hospitalOnboardedBody: "Facility \"{{name}}\" ({{type}}) has been successfully onboarded in {{city}} by {{performedBy}}.",
+      hospitalUpdatedTitle: "Hospital profile updated",
+      hospitalUpdatedBody: "Facility profile for \"{{name}}\" has been updated by {{performedBy}}.",
+      staffCreatedTitle: "Staff registered successfully",
+      staffCreatedBody: "Staff member \"{{name}}\" ({{role}}) has been successfully registered by {{performedBy}}.",
+      staffUpdatedTitle: "Staff profile updated",
+      staffUpdatedBody: "Staff profile for \"{{name}}\" has been updated by {{performedBy}}.",
+      staffAssignedTitle: "Staff assigned to facility",
+      staffAssignedBody: "Staff member \"{{name}}\" has been assigned to {{facility}} by {{performedBy}}.",
+      staffDeassignedTitle: "Staff de-assigned from facility",
+      staffDeassignedBody: "Staff member \"{{name}}\" has been de-assigned from {{facility}} by {{performedBy}}."
     }
   }
 };

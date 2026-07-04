@@ -82,7 +82,7 @@ export class HospitalsController {
     if (req.user.role !== 'Admin') {
       throw new ForbiddenException('Only Administrators can create hospitals');
     }
-    return this.hospitalsService.createHospital(body);
+    return this.hospitalsService.createHospital(body, req.user.userId, req.user.username);
   }
 
   @Put(':id')
@@ -90,7 +90,7 @@ export class HospitalsController {
     if (req.user.role !== 'Admin') {
       throw new ForbiddenException('Only Administrators can update hospitals');
     }
-    return this.hospitalsService.updateHospital(id, body);
+    return this.hospitalsService.updateHospital(id, body, req.user.userId, req.user.username);
   }
 
   @Delete(':id')

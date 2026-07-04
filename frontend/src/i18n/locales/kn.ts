@@ -57,7 +57,28 @@ export const kn = {
       notifications: "ಅಧಿಸೂಚನೆಗಳು",
       unknown: "ತಿಳಿದಿಲ್ಲ",
       saving: "ಉಳಿಸಲಾಗುತ್ತಿದೆ...",
-      saveChanges: "ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ"
+      saveChanges: "ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ",
+      changePassword: "ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಯಿಸಿ",
+      oldPassword: "ಹಳೆಯ ಪಾಸ್‌ವರ್ಡ್",
+      oldPasswordPlaceholder: "ಹಳೆಯ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ",
+      newPassword: "ಹೊಸ ಪಾಸ್‌ವರ್ಡ್",
+      newPasswordPlaceholder: "ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ",
+      confirmPassword: "ಪಾಸ್‌ವರ್ಡ್ ಖಚಿತಪಡಿಸಿ",
+      confirmPasswordPlaceholder: "ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಖಚಿತಪಡಿಸಿ",
+      changePasswordSuccess: "ಪಾಸ್‌ವರ್ಡ್ ಯಶಸ್ವಿಯಾಗಿ ಬದಲಾಗಿದೆ!",
+      passwordsDoNotMatch: "ಹೊಸ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹೊಂದಾಣಿಕೆಯಾಗುತ್ತಿಲ್ಲ.",
+      passwordError: "ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಯಿಸಲು ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ರುಜುವಾತುಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.",
+      loggingOutIn: "ನೀವು {{count}} ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಲಾಗ್ ಔಟ್ ಆಗುತ್ತೀರಿ...",
+      logoutNow: "ಈಗಲೇ ಲಾಗ್ ಔಟ್ ಮಾಡಿ",
+      logoutConfirmTitle: "ಲಾಗ್ ಔಟ್ ದೃಢೀಕರಿಸಿ",
+      logoutConfirmMessage: "ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಲಾಗ್ ಔಟ್ ಮಾಡಲು ನೀವು ಖಚಿತವಾಗಿ ಬಯಸುತ್ತೀರಾ?",
+      logoutConfirmButton: "ಲಾಗ್ ಔಟ್ ಮಾಡಿ",
+      time: {
+        justNow: "ಈಗಷ್ಟೇ",
+        minutesAgo: "{{count}}ನಿಮಿಷಗಳ ಹಿಂದೆ",
+        hoursAgo: "{{count}}ಗಂಟೆಗಳ ಹಿಂದೆ",
+        daysAgo: "{{count}}ದಿನಗಳ ಹಿಂದೆ"
+      }
     },
     nav: {
       dashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
@@ -729,6 +750,20 @@ export const kn = {
         ICU: "ಐಸಿಯು",
         "Operation Theatre": "ಶಸ್ತ್ರಚಿಕಿತ್ಸಾ ಕೊಠಡಿ",
         Administration: "ಆಡಳಿತ"
+    },
+    notifications: {
+      hospitalOnboardedTitle: "ಆಸ್ಪತ್ರೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಆನ್‌ಬೋರ್ಡ್ ಮಾಡಲಾಗಿದೆ",
+      hospitalOnboardedBody: "ಸೌಲಭ್ಯ \"{{name}}\" ({{type}}) ಅನ್ನು {{city}} ನಲ್ಲಿ {{performedBy}} ರವರಿಂದ ಯಶಸ್ವಿಯಾಗಿ ಆನ್‌ಬೋರ್ಡ್ ಮಾಡಲಾಗಿದೆ.",
+      hospitalUpdatedTitle: "ಆಸ್ಪತ್ರೆಯ ಪ್ರೊಫೈಲ್ ಅನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ",
+      hospitalUpdatedBody: "ಸೌಲಭ್ಯದ ಪ್ರೊಫೈಲ್ \"{{name}}\" ಅನ್ನು {{performedBy}} ರವರಿಂದ ನವೀಕರಿಸಲಾಗಿದೆ.",
+      staffCreatedTitle: "ಸಿಬ್ಬಂದಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನೋಂದಾಯಿಸಲಾಗಿದೆ",
+      staffCreatedBody: "ಸಿಬ್ಬಂದಿ ಸದಸ್ಯ \"{{name}}\" ({{role}}) ರವರನ್ನು {{performedBy}} ರವರಿಂದ ಯಶಸ್ವಿಯಾಗಿ ನೋಂದಾಯಿಸಲಾಗಿದೆ.",
+      staffUpdatedTitle: "ಸಿಬ್ಬಂದಿ ಪ್ರೊಫೈಲ್ ನವೀಕರಿಸಲಾಗಿದೆ",
+      staffUpdatedBody: "ಸಿಬ್ಬಂದಿ ಪ್ರೊಫೈಲ್ \"{{name}}\" ಅನ್ನು {{performedBy}} ರವರಿಂದ ನವೀಕರಿಸಲಾಗಿದೆ.",
+      staffAssignedTitle: "ಸಿಬ್ಬಂದಿಯನ್ನು ಕೇಂದ್ರಕ್ಕೆ ನಿಯೋಜಿಸಲಾಗಿದೆ",
+      staffAssignedBody: "ಸಿಬ್ಬಂದಿ ಸದಸ್ಯ \"{{name}}\" ರವರನ್ನು {{performedBy}} ರವರಿಂದ {{facility}} ಗೆ ನಿಯೋಜಿಸಲಾಗಿದೆ.",
+      staffDeassignedTitle: "ಸಿಬ್ಬಂದಿಯನ್ನು ಕೇಂದ್ರದಿಂದ ಮುಕ್ತಗೊಳಿಸಲಾಗಿದೆ",
+      staffDeassignedBody: "ಸಿಬ್ಬಂದಿ ಸದಸ್ಯ \"{{name}}\" ರವರನ್ನು {{performedBy}} ರವರಿಂದ {{facility}} ನಿಂದ ಮುಕ್ತಗೊಳಿಸಲಾಗಿದೆ."
     }
   }
 };
