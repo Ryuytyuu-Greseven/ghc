@@ -2,6 +2,7 @@ export const ta = {
   translation: {
     common: {
       signOut: "வெளியேறு",
+      refresh: "புதுப்பி",
       addFacility: "மையத்தைச் சேர்",
       searchFacilities: "மையங்களைத் தேடு...",
       all: "அனைத்தும்",
@@ -90,7 +91,8 @@ export const ta = {
       "critical-alerts": "முக்கிய எச்சரிக்கைகள்",
       availability: "என் இருப்பு நிலை",
       transfers: "பணிப் பரிமாற்றங்கள்",
-      audits: "தணிக்கை பதிவுகள்"
+      audits: "தணிக்கை பதிவுகள்",
+      reports: "அறிக்கைகள்"
     },
     roles: {
       Admin: "நிர்வாகி",
@@ -750,6 +752,58 @@ export const ta = {
         ICU: "தீவிர சிகிச்சைப் பிரிவு",
         "Operation Theatre": "அறுவை சிகிச்சை அரங்கம்",
         Administration: "நிர்வாகம்"
+      },
+      reports: {
+        subtitle: "கணினி முறிவுகள், மருத்துவ புள்ளிவிவரங்கள், படுக்கை இருப்பு மற்றும் பங்கு சோதனைகளை அணுகவும்.",
+        allBranches: "அனைத்து கிளைகளும்",
+        to: "முதல்",
+        exportReport: "எக்செல் பதிவிறக்கம்",
+        tabOccupancy: "படுக்கை ஆக்கிரமிப்பு திறன்",
+        tabClinical: "மருத்துவ நோய் கண்டறிதல்",
+        tabStaffing: "பணியாளர்கள் விநியோகம்",
+        tabInventory: "பங்கு நிலை & காலாவதி",
+        loading: "அறிக்கை பகுப்பாய்வுகளைத் தொகுக்கிறது...",
+        error: "எதிர்பாராத பிழை ஏற்பட்டது",
+        totalBeds: "மொத்த படுக்கைகள்",
+        occupiedBeds: "ஆக்கிரமிக்கப்பட்ட படுக்கைகள்",
+        availableBeds: "கிடைக்கும் படுக்கைகள்",
+        averageOccupancy: "சராசரி ஆக்கிரமிப்பு",
+        branchBreakdown: "கிளை படுக்கை திறன் விவரங்கள்",
+        colBranchName: "கிளை பெயர்",
+        colType: "கிளை வகை",
+        colTotalBeds: "மொத்த படுக்கைகள்",
+        colOccupiedBeds: "நிரப்பப்பட்ட படுக்கைகள்",
+        colAvailableBeds: "கிடைக்கும் படுக்கைகள்",
+        colOccupancyRate: "ஆக்கிரமிப்பு விகிதம்",
+        totalConsultations: "மொத்த ஆலோசனைகள்",
+        visitsRange: "தேர்ந்தெடுக்கப்பட்ட தேதி வரம்பிற்குள் வந்த வருகைகள்.",
+        livePatient: "நேரடி நோயாளி ஈடுபாடு",
+        topDiagnoses: "முக்கிய மருத்துவ கண்டறிதல் பிரச்சனைகள்",
+        noDiagnoses: "தேர்ந்தெடுக்கப்பட்ட வடிப்பான்களுக்கு மருத்துவ பதிவுகள் எதுவும் கிடைக்கவில்லை.",
+        cases: "வழக்குகள்",
+        highlyPrescribed: "அதிகம் பரிந்துரைக்கப்பட்ட மருந்துகள்",
+        noMedicines: "மருந்து பரிந்துரை பதிவுகள் எதுவும் இல்லை.",
+        units: "அலகுகள்",
+        totalStaff: "மொத்த பணியாளர்கள் எண்ணிக்கை",
+        clinicalAdminBase: "மருத்துவ மற்றும் நிர்வாக ஊழியர்கள்",
+        staffDept: "துறை வாரியாக பணியாளர்கள் எண்ணிக்கை",
+        members: "உறுப்பினர்கள்",
+        staffRole: "பணிப் பொறுப்பு வாரியாக பணியாளர்கள் எண்ணிக்கை",
+        expiringSoon: "அடுத்த 90 நாட்களில் காலாவதியாகும் மருந்துகள்",
+        noExpiry: "அடுத்த 90 நாட்களில் காலாவதியாகும் மருந்துகள் ஏதும் இல்லை.",
+        colBranch: "शाखा",
+        medsByBranch: "शाखावार निर्धारित दवाएं",
+        colMedName: "மருந்து பெயர்",
+        colBatchNo: "தொகுதி எண்",
+        colQty: "அளவு",
+        colExpiryDate: "காலாவதி தேதி",
+        stockCategory: "பிரிவு வாரியாக பங்கு",
+        noStock: "பங்கு பதிவுகள் எதுவும் கிடைக்கவில்லை.",
+        uniqueItems: "தனித்துவமான பொருட்கள்",
+        medicineAvailabilityTitle: "மருந்து கையிருப்பு கிடைத்தல்",
+        colBranchesCount: "கையிருப்பு உள்ள கிளைகள்",
+        colBatchesCount: "தொகுதிகள்"
+      }
     },
     notifications: {
       hospitalOnboardedTitle: "மருத்துவமனை வெற்றிகரமாக சேர்க்கப்பட்டது",
@@ -765,5 +819,4 @@ export const ta = {
       staffDeassignedTitle: "ஊழியர் சுகாதார மையப் பணியிலிருந்து விடுவிக்கப்பட்டார்",
       staffDeassignedBody: "ஊழியர் \"{{name}}\" {{performedBy}} என்பவரால் {{facility}} பணியிலிருந்து விடுவிக்கப்பட்டார்."
     }
-  }
-};
+  };

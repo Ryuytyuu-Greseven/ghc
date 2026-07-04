@@ -26,7 +26,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const lang = client.handshake.auth?.lang || 'en';
     const transcribeOptions = {
       languageCode:
-        lang === 'hi' ? 'hi-IN' : lang === 'te' ? 'te-IN' : lang === 'bn' ? 'bn-IN' : 'en-US',
+        lang === 'hi'
+          ? 'hi-IN'
+          : lang === 'te'
+            ? 'te-IN'
+            : lang === 'bn'
+              ? 'bn-IN'
+              : 'en-US',
     };
     this.sessionService.create(client.id, transcribeOptions);
     client.emit('session:ready', { sessionId: client.id });
@@ -53,7 +59,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const session = this.sessionService.get(client.id);
     if (!session) return;
 
-    const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
+    const token =
+      client.handshake.auth?.token || client.handshake.headers?.authorization;
     const lang = client.handshake.auth?.lang || 'en';
     httpLocalStorage.run({ token, lang }, () => {
       void this.agentPipeline.processUserMessage(
@@ -67,7 +74,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private sttCallbacks(client: Socket) {
     return {
-      onFinal: (transcript: string) => this.onFinalTranscript(client, transcript),
+      onFinal: (transcript: string) =>
+        this.onFinalTranscript(client, transcript),
       onInterim: (text: string) => client.emit('transcript:partial', { text }),
     };
   }
@@ -113,7 +121,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const session = this.sessionService.get(client.id);
     if (!session || !transcript.trim()) return;
 
-    const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
+    const token =
+      client.handshake.auth?.token || client.handshake.headers?.authorization;
     const lang = client.handshake.auth?.lang || 'en';
     httpLocalStorage.run({ token, lang }, () => {
       void this.agentPipeline.processUserMessage(

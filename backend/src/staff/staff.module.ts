@@ -5,7 +5,10 @@ import { StaffController } from './staff.controller';
 import { StaffService } from './staff.service';
 import { StaffHelperService } from './staff-helper.service';
 import { Staff, StaffSchema } from '../schemas/staff.schema';
-import { CoverageRequest, CoverageRequestSchema } from '../schemas/coverage-request.schema';
+import {
+  CoverageRequest,
+  CoverageRequestSchema,
+} from '../schemas/coverage-request.schema';
 import { Hospital, HospitalSchema } from '../schemas/hospital.schema';
 import { StaffRepository } from '../repositories/staff.repository';
 import { UsersModule } from '../users/users.module';

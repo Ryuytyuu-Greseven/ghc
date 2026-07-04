@@ -46,7 +46,9 @@ export class AuthService {
     if (user && user.isActive) {
       const isMatch = await bcrypt.compare(pass, user.passwordHash);
       if (isMatch) {
-        const { passwordHash, ...result } = user.toObject ? user.toObject() : user;
+        const { passwordHash, ...result } = user.toObject
+          ? user.toObject()
+          : user;
         return result;
       }
     }

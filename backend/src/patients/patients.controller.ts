@@ -1,4 +1,14 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PatientsService } from './patients.service';
@@ -24,16 +34,26 @@ export class PatientsController {
   @Get()
   async findAll(@Req() req: any) {
     const hospitalId = await this.getAssignedHospitalId(req);
-    const filter = hospitalId ? { hospitalId: new Types.ObjectId(hospitalId) } : {};
+    const filter = hospitalId
+      ? { hospitalId: new Types.ObjectId(hospitalId) }
+      : {};
     return this.patientsService.findAllList(filter);
   }
 
   @Get('by-hospital/:hospitalId')
-  async findByHospital(@Req() req: any, @Param('hospitalId') hospitalId: string) {
+  async findByHospital(
+    @Req() req: any,
+    @Param('hospitalId') hospitalId: string,
+  ) {
     const user = req.user;
-    const userHospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const userHospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     if (userHospitalId && userHospitalId !== hospitalId) {
-      throw new ForbiddenException('Access denied to other hospital patient list');
+      throw new ForbiddenException(
+        'Access denied to other hospital patient list',
+      );
     }
     return this.patientsService.findByHospital(hospitalId);
   }
@@ -41,9 +61,16 @@ export class PatientsController {
   @Get(':id')
   async findOne(@Req() req: any, @Param('id') id: string) {
     const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     const patient = await this.patientsService.findOne(id);
-    if (hospitalId && patient.hospitalId && patient.hospitalId.toString() !== hospitalId) {
+    if (
+      hospitalId &&
+      patient.hospitalId &&
+      patient.hospitalId.toString() !== hospitalId
+    ) {
       throw new ForbiddenException('Access denied to this patient record');
     }
     return patient;
@@ -57,9 +84,14 @@ export class PatientsController {
   private async createPatient(req: any, body: CreatePatientDto) {
     const user = req.user;
     if (user.role === 'Admin') {
-      throw new ForbiddenException('Administrators are not allowed to add patients');
+      throw new ForbiddenException(
+        'Administrators are not allowed to add patients',
+      );
     }
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     if (hospitalId) {
       body.hospitalId = hospitalId;
     }
@@ -67,16 +99,27 @@ export class PatientsController {
   }
 
   @Put(':id')
-  async update(@Req() req: any, @Param('id') id: string, @Body() body: UpdatePatientDto) {
+  async update(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() body: UpdatePatientDto,
+  ) {
     const user = req.user;
     if (user.role === 'Admin') {
-      throw new ForbiddenException('Administrators are not allowed to edit patients');
+      throw new ForbiddenException(
+        'Administrators are not allowed to edit patients',
+      );
     }
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     if (hospitalId) {
       const patient = await this.patientsService.findOne(id);
       if (patient.hospitalId && patient.hospitalId.toString() !== hospitalId) {
-        throw new ForbiddenException('Access denied to update this patient record');
+        throw new ForbiddenException(
+          'Access denied to update this patient record',
+        );
       }
       body.hospitalId = hospitalId;
     }

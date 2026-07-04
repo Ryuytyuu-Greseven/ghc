@@ -9,10 +9,9 @@ const BRAND = {
   white: '#ffffff',
 };
 
-const DEFAULT_LOGO_URL =
-  process.env.API_BASE_URL?.trim()
-    ? `${process.env.API_BASE_URL.replace(/\/$/, '')}/email-assets/logo-email.png`
-    : 'https://ghc-login.web.app/logo-email.png';
+const DEFAULT_LOGO_URL = process.env.API_BASE_URL?.trim()
+  ? `${process.env.API_BASE_URL.replace(/\/$/, '')}/email-assets/logo-email.png`
+  : 'https://ghc-login.web.app/logo-email.png';
 
 function getLogoUrl(): string {
   return process.env.EMAIL_LOGO_URL?.trim() || DEFAULT_LOGO_URL;
@@ -98,7 +97,10 @@ function infoCard(label: string, value: string): string {
   </table>`;
 }
 
-export function patientOnboardedTemplate(patientName: string, facilityName: string): string {
+export function patientOnboardedTemplate(
+  patientName: string,
+  facilityName: string,
+): string {
   return wrapEmailLayout({
     title: 'Welcome — Registration Successful',
     preheader: `You have been successfully onboarded at ${facilityName}.`,
@@ -113,7 +115,10 @@ export function patientOnboardedTemplate(patientName: string, facilityName: stri
   });
 }
 
-export function doctorAssignedPatientTemplate(patientName: string, doctorName: string): string {
+export function doctorAssignedPatientTemplate(
+  patientName: string,
+  doctorName: string,
+): string {
   return wrapEmailLayout({
     title: 'Your Doctor Has Been Assigned',
     preheader: `${doctorName} has been assigned to your care.`,
@@ -158,14 +163,19 @@ export function medicinesAssignedTemplate(
 ): string {
   const rows = medicines
     .map(
-      (m, index) => `<tr style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+      (
+        m,
+        index,
+      ) => `<tr style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
           <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:${BRAND.slate};">${escapeHtml(m.name)}</td>
           <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:${BRAND.tealDark};font-weight:700;text-align:center;">${m.quantity}</td>
         </tr>`,
     )
     .join('');
 
-  const doctorBlock = doctorName ? infoCard('Prescribing Doctor', doctorName) : '';
+  const doctorBlock = doctorName
+    ? infoCard('Prescribing Doctor', doctorName)
+    : '';
 
   return wrapEmailLayout({
     title: 'Your Prescribed Medicines',

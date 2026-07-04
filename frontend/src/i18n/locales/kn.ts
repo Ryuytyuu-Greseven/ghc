@@ -2,6 +2,7 @@ export const kn = {
   translation: {
     common: {
       signOut: "ಸೈನ್ ಔಟ್",
+      refresh: "ರಿಫ್ರೆಶ್ ಮಾಡಿ",
       addFacility: "ಕೇಂದ್ರವನ್ನು ಸೇರಿಸಿ",
       searchFacilities: "ಆರೋಗ್ಯ ಕೇಂದ್ರಗಳನ್ನು ಹುಡುಕಿ...",
       all: "ಎಲ್ಲಾ",
@@ -90,7 +91,8 @@ export const kn = {
       "critical-alerts": "ನಿರ್ಣಾಯಕ ಎಚ್ಚರಿಕೆಗಳು",
       availability: "ನನ್ನ ಲಭ್ಯತೆ",
       transfers: "ಕರ್ತವ್ಯ ವರ್ಗಾವಣೆಗಳು",
-      audits: "ಆಡಿಟ್ ಲಾಗ್ಗಳು"
+      audits: "ಆಡಿಟ್ ಲಾಗ್ಗಳು",
+      reports: "ವರದಿಗಳು"
     },
     roles: {
       Admin: "ಅಡ್ಮಿನ್",
@@ -750,6 +752,58 @@ export const kn = {
         ICU: "ಐಸಿಯು",
         "Operation Theatre": "ಶಸ್ತ್ರಚಿಕಿತ್ಸಾ ಕೊಠಡಿ",
         Administration: "ಆಡಳಿತ"
+      },
+      reports: {
+        subtitle: "ವ್ಯವಸ್ಥೆಯ ಸ್ಥಿತಿಗತಿಗಳು, ವೈದ್ಯಕೀಯ ಅಂಕಿಅಂಶಗಳು, ಹಾಸಿಗೆ ಲಭ್ಯತೆ ಮತ್ತು ದಾಸ್ತಾನು ಪರಿಶೀಲನೆ ವಿವರಗಳನ್ನು ನೋಡಿ.",
+        allBranches: "ಎಲ್ಲಾ ಶಾಖೆಗಳು",
+        to: "ಇಂದ",
+        exportReport: "ಎಕ್ಸೆಲ್ ಡೌನ್‌ಲೋಡ್",
+        tabOccupancy: "ಹಾಸಿಗೆ ಭರ್ತಿ ಸಾಮರ್ಥ್ಯ",
+        tabClinical: "ವೈದ್ಯಕೀಯ ರೋಗನಿರ್ಣಯ",
+        tabStaffing: "ಸಿಬ್ಬಂದಿ ಹಂಚಿಕೆ",
+        tabInventory: "ದಾಸ್ತಾನು ಸ್ಥಿತಿ ಮತ್ತು ಗಡುವು ವಿವರ",
+        loading: "ವರದಿ ವಿಶ್ಲೇಷಣೆ ಸಂಗ್ರಹಿಸಲಾಗುತ್ತಿದೆ...",
+        error: "ಅನಿರೀಕ್ಷಿತ ದೋಷ ಸಂಭವಿಸಿದೆ",
+        totalBeds: "ಒಟ್ಟು ಹಾಸಿಗೆಗಳು",
+        occupiedBeds: "ಭರ್ತಿಯಾದ ಹಾಸಿಗೆಗಳು",
+        availableBeds: "ಲಭ್ಯವಿರುವ ಹಾಸಿಗೆಗಳು",
+        averageOccupancy: "ಸರಾಸರಿ ಹಾಸಿಗೆ ಭರ್ತಿ",
+        branchBreakdown: "ಶಾಖಾವಾರು ಹಾಸಿಗೆ ಸಾಮರ್ಥ್ಯದ ವಿವರಗಳು",
+        colBranchName: "ಶಾಖೆಯ ಹೆಸರು",
+        colType: "ಮಾದರಿ",
+        colTotalBeds: "ಒಟ್ಟು ಹಾಸಿಗೆಗಳು",
+        colOccupiedBeds: "ಭರ್ತಿಯಾದ ಹಾಸಿಗೆಗಳು",
+        colAvailableBeds: "ಲಭ್ಯವಿರುವ ಹಾಸಿಗೆಗಳು",
+        colOccupancyRate: "ಭರ್ತಿ ಪ್ರಮಾಣ",
+        totalConsultations: "ಒಟ್ಟು ಸಮಾಲೋಚನೆಗಳು",
+        visitsRange: "ಆಯ್ದ ಅವಧಿಯಲ್ಲಿ ನಡೆದ ರೋಗಿ ಭೇಟಿಗಳು.",
+        livePatient: "ಸಕ್ರಿಯ ರೋಗಿ ವಿವರ",
+        topDiagnoses: "ಮುಖ್ಯ ರೋಗನಿರ್ಣಯದ समस्याಗಳು",
+        noDiagnoses: "ಆಯ್ದ ಫಿಲ್ಟರ್‌ಗಳಿಗೆ ಯಾವುದೇ ವೈದ್ಯಕೀಯ ರೋಗಿ ದಾಖಲೆಗಳಿಲ್ಲ.",
+        cases: "ಪ್ರಕರಣಗಳು",
+        highlyPrescribed: "ಹೆಚ್ಚು ಶಿಫಾರಸು ಮಾಡಿದ ಔಷಧಿಗಳು",
+        noMedicines: "ಯಾವುದೇ ಔಷಧಿ ಚೀಟಿ ದಾಖಲೆಗಳಿಲ್ಲ.",
+        units: "ಘಟಕಗಳು",
+        totalStaff: "ಒಟ್ಟು ನೋಂದಾಯಿತ ಸಿಬ್ಬಂದಿ",
+        clinicalAdminBase: "ವೈದ್ಯಕೀಯ ಮತ್ತು ಆಡಳಿತ ಸಿಬ್ಬಂದಿ",
+        staffDept: "ವಿಭಾಗವಾರು ಸಿಬ್ಬಂದಿ ಸಂಖ್ಯೆ",
+        members: "ಸದಸ್ಯರು",
+        staffRole: "ಪಾತ್ರಗಳ ಆಧಾರದ ಮೇಲೆ ಸಿಬ್ಬಂದಿ ಸಂಖ್ಯೆ",
+        expiringSoon: "ಮುಂದಿನ 90 ದಿನಗಳಲ್ಲಿ ಗಡುವು ಮುಗಿಯುವ ಔಷಧಿ ಬ್ಯಾಚ್‌ಗಳು",
+        noExpiry: "ಮುಂದಿನ 90 ದಿನಗಳಲ್ಲಿ ಗಡುವು ಮುಗಿಯುವ ಔಷಧಿ ದಾಸ್ತಾನು ಇಲ್ಲ.",
+        colBranch: "शाखा",
+        medsByBranch: "शाखावार निर्धारित दवाएं",
+        colMedName: "ಔಷಧಿಯ ಹೆಸರು",
+        colBatchNo: "ಬ್ಯಾಚ್ ಸಂಖ್ಯೆ",
+        colQty: "ಪ್ರಮಾಣ",
+        colExpiryDate: "ಗಡುವು ದಿನಾಂಕ",
+        stockCategory: "ವರ್ಗವಾರು ದಾಸ್ತಾನು",
+        noStock: "ಯಾವುದೇ ದಾಸ್ತಾನು ದಾಖಲೆಗಳಿಲ್ಲ.",
+        uniqueItems: "ವಿಶಿಷ್ಟ ವಸ್ತುಗಳು",
+        medicineAvailabilityTitle: "ಔಷಧ ದಾಸ್ತಾನು ಲಭ್ಯತೆ",
+        colBranchesCount: "ದಾಸ್ತಾನು ಇರುವ ಶಾಖೆಗಳು",
+        colBatchesCount: "ಬ್ಯಾಚ್‌ಗಳು"
+      }
     },
     notifications: {
       hospitalOnboardedTitle: "ಆಸ್ಪತ್ರೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಆನ್‌ಬೋರ್ಡ್ ಮಾಡಲಾಗಿದೆ",
@@ -765,5 +819,4 @@ export const kn = {
       staffDeassignedTitle: "ಸಿಬ್ಬಂದಿಯನ್ನು ಕೇಂದ್ರದಿಂದ ಮುಕ್ತಗೊಳಿಸಲಾಗಿದೆ",
       staffDeassignedBody: "ಸಿಬ್ಬಂದಿ ಸದಸ್ಯ \"{{name}}\" ರವರನ್ನು {{performedBy}} ರವರಿಂದ {{facility}} ನಿಂದ ಮುಕ್ತಗೊಳಿಸಲಾಗಿದೆ."
     }
-  }
-};
+  };

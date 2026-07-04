@@ -1,10 +1,18 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { StaffRepository } from '../repositories/staff.repository';
 import { Staff } from '../schemas/staff.schema';
-import { CoverageRequest, CoverageRequestDocument } from '../schemas/coverage-request.schema';
+import {
+  CoverageRequest,
+  CoverageRequestDocument,
+} from '../schemas/coverage-request.schema';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { UserRole } from '../common/enums';
@@ -37,7 +45,7 @@ export class StaffService {
     @InjectModel(Hospital.name)
     private readonly hospitalModel: Model<HospitalDocument>,
     private readonly userRepository: UserRepository,
-  ) { }
+  ) {}
 
   async findAll(filter: object = {}) {
     const list = await this.staffRepository.findAll(filter);
@@ -62,7 +70,9 @@ export class StaffService {
       username = username.trim().toLowerCase();
       const existingUser = await this.usersService.findOneByUsername(username);
       if (existingUser) {
-        throw new ConflictException(`Username "${data.username}" is already taken`);
+        throw new ConflictException(
+          `Username "${data.username}" is already taken`,
+        );
       }
     }
 
@@ -93,7 +103,9 @@ export class StaffService {
 
     const createdStaff = await this.staffRepository.create(staffData);
 
-    const populated = await this.staffRepository.findById((createdStaff._id as any).toString());
+    const populated = await this.staffRepository.findById(
+      (createdStaff._id as any).toString(),
+    );
 
     if (populated && populated.email) {
       void this.notificationsService.dispatch(NotificationType.STAFF_ACCOUNT_CREATED, {
@@ -143,14 +155,21 @@ export class StaffService {
 
     // Check username uniqueness if it's changing
     if (data.username !== undefined) {
-      const newUsername = data.username ? data.username.trim().toLowerCase() : undefined;
-      const oldUsername = (existingStaff.userId as any)?.username?.trim().toLowerCase();
+      const newUsername = data.username
+        ? data.username.trim().toLowerCase()
+        : undefined;
+      const oldUsername = (existingStaff.userId as any)?.username
+        ?.trim()
+        .toLowerCase();
 
       if (newUsername !== oldUsername) {
         if (newUsername) {
-          const existingUser = await this.usersService.findOneByUsername(newUsername);
+          const existingUser =
+            await this.usersService.findOneByUsername(newUsername);
           if (existingUser) {
-            throw new ConflictException(`Username "${data.username}" is already taken`);
+            throw new ConflictException(
+              `Username "${data.username}" is already taken`,
+            );
           }
         }
         userUpdate.username = newUsername || null;
@@ -180,7 +199,9 @@ export class StaffService {
 
     // Sync to User collection
     if (existingStaff.userId) {
-      const userIdStr = (existingStaff.userId as any)._id?.toString() ?? existingStaff.userId.toString();
+      const userIdStr =
+        (existingStaff.userId as any)._id?.toString() ??
+        existingStaff.userId.toString();
       if (Object.keys(userUpdate).length > 0) {
         await this.usersService.updateById(userIdStr, userUpdate);
       }
@@ -188,7 +209,9 @@ export class StaffService {
       // Fallback: If existing staff has no userId (e.g. legacy data), create one now!
       const fallbackRole = data.role || (existingStaff as any).role || 'Doctor';
       const userDoc = await this.usersService.create({
-        username: data.username ? data.username.trim().toLowerCase() : undefined,
+        username: data.username
+          ? data.username.trim().toLowerCase()
+          : undefined,
         passwordHash: userUpdate.passwordHash || undefined,
         role: fallbackRole,
         isActive: data.isActive !== undefined ? data.isActive : true,
@@ -248,7 +271,9 @@ export class StaffService {
 
     // Delete corresponding User if userId is present
     if (existingStaff.userId) {
-      const userIdStr = (existingStaff.userId as any)._id?.toString() ?? existingStaff.userId.toString();
+      const userIdStr =
+        (existingStaff.userId as any)._id?.toString() ??
+        existingStaff.userId.toString();
       await this.usersService.deleteById(userIdStr);
     }
 
@@ -274,16 +299,17 @@ export class StaffService {
     for (const req of endedRequests) {
       try {
         if (req.replacementStaffId) {
-          await this.staffRepository.update(
-            req.replacementStaffId.toString(),
-            { hospitalId: req.originalReplacementHospitalId || null }
-          );
+          await this.staffRepository.update(req.replacementStaffId.toString(), {
+            hospitalId: req.originalReplacementHospitalId || null,
+          });
         }
 
-        const originalDoc = await this.staffRepository.findById(req.staffId.toString());
+        const originalDoc = await this.staffRepository.findById(
+          req.staffId.toString(),
+        );
         if (originalDoc) {
           const newUnavailable = originalDoc.unavailableOnDays.filter(
-            d => !req.dates.includes(d)
+            (d) => !req.dates.includes(d),
           );
           await this.staffRepository.update(originalDoc._id.toString(), {
             unavailableOnDays: newUnavailable,
@@ -292,7 +318,9 @@ export class StaffService {
 
         req.status = 'Completed';
         await req.save();
-        console.log(`Cron: Deactivated ended coverage request ${req._id}. Restored replacement doctor.`);
+        console.log(
+          `Cron: Deactivated ended coverage request ${req._id}. Restored replacement doctor.`,
+        );
       } catch (err) {
         console.error(`Failed to restore coverage for request ${req._id}`, err);
       }
@@ -308,35 +336,49 @@ export class StaffService {
     for (const req of startingRequests) {
       try {
         if (req.replacementStaffId && req.vacantHospitalId) {
-          const replacement = await this.staffRepository.findById(req.replacementStaffId.toString());
+          const replacement = await this.staffRepository.findById(
+            req.replacementStaffId.toString(),
+          );
           if (replacement) {
-            const currentHospitalId = replacement.hospitalId && (replacement.hospitalId as any)._id
-              ? (replacement.hospitalId as any)._id.toString()
-              : replacement.hospitalId?.toString() || null;
-            const targetHospitalId = (req.vacantHospitalId as any)._id 
-              ? (req.vacantHospitalId as any)._id.toString() 
+            const currentHospitalId =
+              replacement.hospitalId && (replacement.hospitalId as any)._id
+                ? (replacement.hospitalId as any)._id.toString()
+                : replacement.hospitalId?.toString() || null;
+            const targetHospitalId = (req.vacantHospitalId as any)._id
+              ? (req.vacantHospitalId as any)._id.toString()
               : req.vacantHospitalId.toString();
 
             if (currentHospitalId !== targetHospitalId) {
-              await this.staffRepository.update(req.replacementStaffId.toString(), {
-                hospitalId: req.vacantHospitalId,
-              });
-              console.log(`Cron: Activated coverage request ${req._id}. Assigned replacement doctor to vacant branch.`);
+              await this.staffRepository.update(
+                req.replacementStaffId.toString(),
+                {
+                  hospitalId: req.vacantHospitalId,
+                },
+              );
+              console.log(
+                `Cron: Activated coverage request ${req._id}. Assigned replacement doctor to vacant branch.`,
+              );
             }
           }
         }
       } catch (err) {
-        console.error(`Failed to activate coverage for request ${req._id}`, err);
+        console.error(
+          `Failed to activate coverage for request ${req._id}`,
+          err,
+        );
       }
     }
   }
 
   async getAvailability(userId: string) {
-    const staff = await this.staffRepository.findOne({ userId: new Types.ObjectId(userId) });
+    const staff = await this.staffRepository.findOne({
+      userId: new Types.ObjectId(userId),
+    });
 
     if (!staff) throw new NotFoundException('Staff record not found');
 
-    const defaultHospitalName = (staff.hospitalId as any)?.name || 'Unassigned (Reserved)';
+    const defaultHospitalName =
+      (staff.hospitalId as any)?.name || 'Unassigned (Reserved)';
 
     // Find all Approved coverage requests where this staff is the replacement
     const replacementRequests = await this.coverageRequestModel
@@ -360,10 +402,13 @@ export class StaffService {
       const dateStr = `${yyyy}-${mm}-${dd}`;
 
       // Check if unavailable/off
-      const isUnavailable = staff.unavailableOnDays && staff.unavailableOnDays.includes(dateStr);
+      const isUnavailable =
+        staff.unavailableOnDays && staff.unavailableOnDays.includes(dateStr);
 
       // Check if covering
-      const activeReplacement = replacementRequests.find(req => req.dates.includes(dateStr));
+      const activeReplacement = replacementRequests.find((req) =>
+        req.dates.includes(dateStr),
+      );
 
       let location = defaultHospitalName;
       let status = 'Working at Default Branch';
@@ -374,7 +419,8 @@ export class StaffService {
         status = 'Off';
         type = 'off';
       } else if (activeReplacement) {
-        location = (activeReplacement.vacantHospitalId as any)?.name || 'Unknown Branch';
+        location =
+          (activeReplacement.vacantHospitalId as any)?.name || 'Unknown Branch';
         status = 'Covering Duty';
         type = 'coverage';
       }
@@ -388,20 +434,30 @@ export class StaffService {
     }
 
     return {
-      status: staff.unavailableOnDays && staff.unavailableOnDays.length > 0 ? 'Unavailable' : 'Available',
+      status:
+        staff.unavailableOnDays && staff.unavailableOnDays.length > 0
+          ? 'Unavailable'
+          : 'Available',
       unavailableOnDays: staff.unavailableOnDays || [],
       schedule,
       defaultHospitalName,
     };
   }
 
-  async updateAvailability(userId: string, status: string, startDate?: string, endDate?: string) {
-    const staff = await this.staffRepository.findOne({ userId: new Types.ObjectId(userId) });
-    console.log(staff, "stafffff")
+  async updateAvailability(
+    userId: string,
+    status: string,
+    startDate?: string,
+    endDate?: string,
+  ) {
+    const staff = await this.staffRepository.findOne({
+      userId: new Types.ObjectId(userId),
+    });
+    console.log(staff, 'stafffff');
 
     if (!staff) throw new NotFoundException('Staff record not found');
 
-    let dates: string[] = [];
+    const dates: string[] = [];
     if (status === 'Unavailable' && startDate && endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
@@ -422,7 +478,9 @@ export class StaffService {
       });
 
       if (existingRequest) {
-        throw new BadRequestException('A coverage request has already been raised for one or more of these dates');
+        throw new BadRequestException(
+          'A coverage request has already been raised for one or more of these dates',
+        );
       }
     }
 
@@ -443,39 +501,45 @@ export class StaffService {
         if (s.department !== staff.department) continue;
 
         // Check if candidate is unassigned (reserved state) or from a different branch
-        const sHospitalId = s.hospitalId && (s.hospitalId as any)._id
-          ? (s.hospitalId as any)._id.toString()
-          : s.hospitalId?.toString() || null;
-        const staffHospitalId = staff.hospitalId && (staff.hospitalId as any)._id
-          ? (staff.hospitalId as any)._id.toString()
-          : staff.hospitalId?.toString() || null;
+        const sHospitalId =
+          s.hospitalId && (s.hospitalId as any)._id
+            ? (s.hospitalId as any)._id.toString()
+            : s.hospitalId?.toString() || null;
+        const staffHospitalId =
+          staff.hospitalId && (staff.hospitalId as any)._id
+            ? (staff.hospitalId as any)._id.toString()
+            : staff.hospitalId?.toString() || null;
 
         if (sHospitalId !== null && sHospitalId === staffHospitalId) continue;
 
         // Check availability on target dates
-        const isUnavailableOnAny = dates.some(d => s.unavailableOnDays && s.unavailableOnDays.includes(d));
+        const isUnavailableOnAny = dates.some(
+          (d) => s.unavailableOnDays && s.unavailableOnDays.includes(d),
+        );
         if (isUnavailableOnAny) continue;
 
         // Check overlap with other active coverage requests
         const overlappingRequests = await this.coverageRequestModel.find({
           replacementStaffId: s._id,
           status: 'Approved',
-          dates: { $in: dates }
+          dates: { $in: dates },
         });
         if (overlappingRequests.length > 0) continue;
 
         candidates.push(s);
       }
 
-      const vacantHospitalId = staff.hospitalId && (staff.hospitalId as any)._id
-        ? (staff.hospitalId as any)._id
-        : staff.hospitalId || null;
+      const vacantHospitalId =
+        staff.hospitalId && (staff.hospitalId as any)._id
+          ? (staff.hospitalId as any)._id
+          : staff.hospitalId || null;
 
       if (candidates.length > 0) {
         const replacement = candidates[0];
-        const replacementOriginalHospitalId = replacement.hospitalId && (replacement.hospitalId as any)._id
-          ? (replacement.hospitalId as any)._id
-          : replacement.hospitalId || null;
+        const replacementOriginalHospitalId =
+          replacement.hospitalId && replacement.hospitalId._id
+            ? replacement.hospitalId._id
+            : replacement.hospitalId || null;
 
         await this.coverageRequestModel.create({
           staffId: staff._id,
@@ -514,7 +578,7 @@ export class StaffService {
       // Revert/complete active and pending requests
       await this.coverageRequestModel.updateMany(
         { staffId: staff._id, status: 'Pending' },
-        { status: 'Rejected' }
+        { status: 'Rejected' },
       );
 
       const activeRequests = await this.coverageRequestModel.find({
@@ -524,10 +588,9 @@ export class StaffService {
 
       for (const req of activeRequests) {
         if (req.replacementStaffId) {
-          await this.staffRepository.update(
-            req.replacementStaffId.toString(),
-            { hospitalId: req.originalReplacementHospitalId || null }
-          );
+          await this.staffRepository.update(req.replacementStaffId.toString(), {
+            hospitalId: req.originalReplacementHospitalId || null,
+          });
         }
         req.status = 'Completed';
         await req.save();
@@ -535,7 +598,12 @@ export class StaffService {
     }
 
     return {
-      status: updated && updated.unavailableOnDays && updated.unavailableOnDays.length > 0 ? 'Unavailable' : 'Available',
+      status:
+        updated &&
+        updated.unavailableOnDays &&
+        updated.unavailableOnDays.length > 0
+          ? 'Unavailable'
+          : 'Available',
       unavailableOnDays: updated?.unavailableOnDays || [],
     };
   }
@@ -545,25 +613,34 @@ export class StaffService {
       .find()
       .populate({
         path: 'staffId',
-        populate: { path: 'userId' }
+        populate: { path: 'userId' },
       })
       .populate({
         path: 'replacementStaffId',
-        populate: { path: 'userId' }
+        populate: { path: 'userId' },
       })
       .populate('vacantHospitalId')
       .sort({ createdAt: -1 })
       .exec();
 
-    return list.map(req => {
+    return list.map((req) => {
       const obj = req.toObject();
       if (obj.staffId && typeof obj.staffId === 'object') {
         const staffObj = obj.staffId as any;
-        staffObj.name = staffObj.displayName || `${staffObj.firstName || ''} ${staffObj.lastName || ''}`.trim() || 'Unnamed';
+        staffObj.name =
+          staffObj.displayName ||
+          `${staffObj.firstName || ''} ${staffObj.lastName || ''}`.trim() ||
+          'Unnamed';
       }
-      if (obj.replacementStaffId && typeof obj.replacementStaffId === 'object') {
+      if (
+        obj.replacementStaffId &&
+        typeof obj.replacementStaffId === 'object'
+      ) {
         const repObj = obj.replacementStaffId as any;
-        repObj.name = repObj.displayName || `${repObj.firstName || ''} ${repObj.lastName || ''}`.trim() || 'Unnamed';
+        repObj.name =
+          repObj.displayName ||
+          `${repObj.firstName || ''} ${repObj.lastName || ''}`.trim() ||
+          'Unnamed';
       }
       return obj;
     });
@@ -574,11 +651,13 @@ export class StaffService {
     if (!req) throw new NotFoundException('Coverage request not found');
 
     const replacement = await this.staffRepository.findById(replacementStaffId);
-    if (!replacement) throw new NotFoundException('Replacement staff not found');
+    if (!replacement)
+      throw new NotFoundException('Replacement staff not found');
 
-    const replacementOriginalHospitalId = replacement.hospitalId && (replacement.hospitalId as any)._id
-      ? (replacement.hospitalId as any)._id
-      : replacement.hospitalId || null;
+    const replacementOriginalHospitalId =
+      replacement.hospitalId && (replacement.hospitalId as any)._id
+        ? (replacement.hospitalId as any)._id
+        : replacement.hospitalId || null;
 
     req.originalReplacementHospitalId = replacementOriginalHospitalId;
     req.replacementStaffId = replacement._id;
@@ -612,7 +691,9 @@ export class StaffService {
     } else {
       const parsedDate = new Date(date);
       if (isNaN(parsedDate.getTime())) {
-        throw new BadRequestException('Invalid date format. Expected YYYY-MM-DD.');
+        throw new BadRequestException(
+          'Invalid date format. Expected YYYY-MM-DD.',
+        );
       }
       const yyyy = parsedDate.getFullYear();
       const mm = String(parsedDate.getMonth() + 1).padStart(2, '0');
@@ -630,10 +711,12 @@ export class StaffService {
     });
 
     return availableDoctors.map((s) => {
-      const doctorName = s.displayName || `${s.firstName} ${s.lastName || ''}`.trim();
-      const userId = s.userId && (s.userId as any)._id
-        ? (s.userId as any)._id.toString()
-        : s.userId.toString();
+      const doctorName =
+        s.displayName || `${s.firstName} ${s.lastName || ''}`.trim();
+      const userId =
+        s.userId && (s.userId as any)._id
+          ? (s.userId as any)._id.toString()
+          : s.userId.toString();
       return {
         doctorName: `${doctorName} - ${s.department}`,
         userId,

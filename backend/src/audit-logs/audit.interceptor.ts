@@ -1,4 +1,9 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AuditLogsService } from './audit-logs.service';
@@ -18,16 +23,17 @@ export class AuditInterceptor implements NestInterceptor {
     }
 
     // Skip endpoints that manually log inventory transactions or audits to prevent duplicate entries
-    const isInventoryTransactionEndpoint = 
-      (url.includes('/inventory-requests') && (url.includes('/approve') || url.includes('/reject'))) ||
+    const isInventoryTransactionEndpoint =
+      (url.includes('/inventory-requests') &&
+        (url.includes('/approve') || url.includes('/reject'))) ||
       (method === 'POST' && url.split('?')[0] === '/central-inventory') ||
       url.includes('/inventory-analytics/redistribution/apply') ||
       url.includes('/audit-logs') ||
       url.includes('/auth/logout');
-      
+
     // Skip read-only search/query POST endpoints
     const isSearchPost = method === 'POST' && url.split('?')[0] === '/patients';
-      
+
     if (isInventoryTransactionEndpoint || isSearchPost) {
       return next.handle();
     }
@@ -45,13 +51,22 @@ export class AuditInterceptor implements NestInterceptor {
     );
   }
 
-  private logAction(method: string, url: string, user: any, body: any, response: any) {
+  private logAction(
+    method: string,
+    url: string,
+    user: any,
+    body: any,
+    response: any,
+  ) {
     // Determine the module and action based on the URL path
     let module = 'general';
     let action = method;
     let message = '';
 
-    const pathParts = url.split('?')[0].split('/').filter(p => p);
+    const pathParts = url
+      .split('?')[0]
+      .split('/')
+      .filter((p) => p);
     const mainPath = pathParts[0] || '';
 
     // Map path to a module name
@@ -120,9 +135,12 @@ export class AuditInterceptor implements NestInterceptor {
       case 'inventory':
         // General inventory modifications (e.g. Master items, manual adjustments)
         if (mainPath === 'inventory-master') {
-          if (action === 'CREATE') message = `Inventory item "${response?.itemName || body?.itemName || 'Unknown'}" was created by ${performer}.`;
-          else if (action === 'UPDATE') message = `Inventory item "${response?.itemName || body?.itemName || entityId}" was updated by ${performer}.`;
-          else message = `Inventory item ID ${entityId} was deleted by ${performer}.`;
+          if (action === 'CREATE')
+            message = `Inventory item "${response?.itemName || body?.itemName || 'Unknown'}" was created by ${performer}.`;
+          else if (action === 'UPDATE')
+            message = `Inventory item "${response?.itemName || body?.itemName || entityId}" was updated by ${performer}.`;
+          else
+            message = `Inventory item ID ${entityId} was deleted by ${performer}.`;
         } else if (mainPath === 'branch-inventory' && url.includes('/adjust')) {
           message = `Branch inventory stock adjustment performed by ${performer}.`;
         } else if (mainPath === 'inventory-requests') {

@@ -50,7 +50,7 @@ export class QueryService {
         }
         const patterns = [...variants].map((v) => new RegExp(v, 'i'));
         filter.$or = patterns.flatMap((re) =>
-          config.searchFields!.map((field) => ({ [field]: { $regex: re } }))
+          config.searchFields!.map((field) => ({ [field]: { $regex: re } })),
         );
       } else {
         filter.$or = config.searchFields.map((field) => ({
@@ -62,7 +62,11 @@ export class QueryService {
     // 2. Exact Match Filters
     if (config.exactFilters) {
       for (const field of config.exactFilters) {
-        if (options[field] !== undefined && options[field] !== '' && options[field] !== 'All') {
+        if (
+          options[field] !== undefined &&
+          options[field] !== '' &&
+          options[field] !== 'All'
+        ) {
           // Cast string booleans
           if (options[field] === 'true' || options[field] === true) {
             filter[field] = true;
@@ -87,7 +91,11 @@ export class QueryService {
     // 4. ObjectId Filters
     if (config.objectIdFilters) {
       for (const field of config.objectIdFilters) {
-        if (options[field] !== undefined && options[field] !== '' && options[field] !== 'All') {
+        if (
+          options[field] !== undefined &&
+          options[field] !== '' &&
+          options[field] !== 'All'
+        ) {
           try {
             filter[field] = new Types.ObjectId(options[field]);
           } catch {
@@ -101,8 +109,12 @@ export class QueryService {
     // 5. Date Range Filters
     if (config.dateFilters) {
       for (const [dbField, rangeConfig] of Object.entries(config.dateFilters)) {
-        const fromVal = rangeConfig.fromParam ? options[rangeConfig.fromParam] : undefined;
-        const toVal = rangeConfig.toParam ? options[rangeConfig.toParam] : undefined;
+        const fromVal = rangeConfig.fromParam
+          ? options[rangeConfig.fromParam]
+          : undefined;
+        const toVal = rangeConfig.toParam
+          ? options[rangeConfig.toParam]
+          : undefined;
 
         if (fromVal || toVal) {
           filter[dbField] = {};

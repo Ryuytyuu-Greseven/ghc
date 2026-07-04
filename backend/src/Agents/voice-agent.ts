@@ -7,10 +7,20 @@ import { medicineNode } from './nodes/medicine.node';
 import { staffNode } from './nodes/staff.node';
 import { inventoryNode } from './nodes/inventory.node';
 import { outOfScopeNode } from './nodes/out-of-scope.node';
-import { transcribeAudio, type TranscribeOptions } from '../google/speech.service';
+import {
+  transcribeAudio,
+  type TranscribeOptions,
+} from '../google/speech.service';
 import { toPlainSpeechText } from './prompts/guardrails.prompt';
 
-const DOMAIN_NODES = ['hospital', 'patient', 'medicine', 'staff', 'inventory', 'out_of_scope'] as const;
+const DOMAIN_NODES = [
+  'hospital',
+  'patient',
+  'medicine',
+  'staff',
+  'inventory',
+  'out_of_scope',
+] as const;
 const DOMAIN_SET = new Set<string>(DOMAIN_NODES);
 
 export function routeDomain(state: typeof AgentState.State): string {
@@ -60,6 +70,8 @@ export async function runVoiceAgent(
 
   const last = result.messages[result.messages.length - 1];
   const content =
-    typeof last?.content === 'string' ? last.content : JSON.stringify(last?.content ?? '');
+    typeof last?.content === 'string'
+      ? last.content
+      : JSON.stringify(last?.content ?? '');
   return toPlainSpeechText(content);
 }

@@ -15,7 +15,8 @@ export class CentralInventoryService {
   ) {}
 
   async findAll(query: Record<string, any> = {}) {
-    const { data, total, summary, page, pageSize } = await this.repo.findPaginated(query);
+    const { data, total, summary, page, pageSize } =
+      await this.repo.findPaginated(query);
     const paginatedRes = buildPaginatedResponse(data, total, page, pageSize);
     return {
       ...paginatedRes,
@@ -33,7 +34,8 @@ export class CentralInventoryService {
 
   async findOne(id: string) {
     const entry = await this.repo.findById(id);
-    if (!entry) throw new NotFoundException(`Central inventory entry ${id} not found`);
+    if (!entry)
+      throw new NotFoundException(`Central inventory entry ${id} not found`);
     return entry;
   }
 
@@ -51,20 +53,22 @@ export class CentralInventoryService {
         fromLocation: 'External',
         toLocation: 'Central',
         transactionType: TransactionType.PURCHASE,
-      }
+      },
     });
     return entry;
   }
 
   async update(id: string, data: Record<string, any>) {
     const entry = await this.repo.update(id, data);
-    if (!entry) throw new NotFoundException(`Central inventory entry ${id} not found`);
+    if (!entry)
+      throw new NotFoundException(`Central inventory entry ${id} not found`);
     return entry;
   }
 
   async remove(id: string) {
     const entry = await this.repo.delete(id);
-    if (!entry) throw new NotFoundException(`Central inventory entry ${id} not found`);
+    if (!entry)
+      throw new NotFoundException(`Central inventory entry ${id} not found`);
     return { id, removed: true };
   }
 }

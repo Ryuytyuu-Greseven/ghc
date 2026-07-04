@@ -1,5 +1,9 @@
 import { createAgent } from 'langchain';
-import { AIMessage, HumanMessage, SystemMessage } from '@langchain/core/messages';
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+} from '@langchain/core/messages';
 import { llmInstance } from '../../google/vertex.config';
 import { patientTools } from '../tools/patient.tools';
 import { PATIENT_PROMPT } from '../prompts/patient.prompt';
@@ -28,7 +32,6 @@ export async function patientNode(state: typeof AgentState.State) {
   return { messages: [new AIMessage(response)] };
 }
 
-
 // ── Node: classify patient query intent ──────────────────────────────────────
 export async function patientClassifyIntent(state: typeof PatientState.State) {
   const intent = await llmClassify(
@@ -52,7 +55,9 @@ Reply with ONE option only — one of: discharge_dates, by_disease, by_age, gene
 }
 
 // ── Node: filter patients discharging within daysAhead ───────────────────────
-export async function patientFilterDischarging(state: typeof PatientState.State) {
+export async function patientFilterDischarging(
+  state: typeof PatientState.State,
+) {
   // try {
   //   const raw = await apiFetch(
   //     `/patients/discharge-soon?days=${state.daysAhead}`,
@@ -200,7 +205,9 @@ export async function patientSummarize(state: typeof PatientState.State) {
 }
 
 // ── Routing from fetch_patients → correct analysis node ──────────────────────
-export function routePatientAfterFetch(state: typeof PatientState.State): string {
+export function routePatientAfterFetch(
+  state: typeof PatientState.State,
+): string {
   switch (state.intent) {
     case 'discharge_dates':
       return 'filter_discharging';
@@ -223,4 +230,3 @@ export async function patientFetchAll(state: typeof PatientState.State) {
   // const patients = Array.isArray(raw) ? raw : (raw?.data ?? []);
   return { patients: [] };
 }
-

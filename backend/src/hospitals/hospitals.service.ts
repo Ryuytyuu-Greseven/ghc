@@ -15,10 +15,20 @@ export class HospitalsService {
     private readonly notificationsService: NotificationsService,
   ) {}
 
-  async getAllHospitals(query: Record<string, any> = {}, extraFilter: Record<string, any> = {}) {
+  async getAllHospitals(
+    query: Record<string, any> = {},
+    extraFilter: Record<string, any> = {},
+  ) {
     // If no pagination properties are provided, return the flat backwards-compatible array
-    if (query.page === undefined && query.pageSize === undefined && query.limit === undefined) {
-      return this.hospitalRepository.findAll({ isActive: true, ...extraFilter });
+    if (
+      query.page === undefined &&
+      query.pageSize === undefined &&
+      query.limit === undefined
+    ) {
+      return this.hospitalRepository.findAll({
+        isActive: true,
+        ...extraFilter,
+      });
     }
 
     // Map 'limit' to 'pageSize' if passed
@@ -26,7 +36,8 @@ export class HospitalsService {
       query.pageSize = query.limit;
     }
 
-    const { data, total, page, pageSize } = await this.hospitalRepository.findPaginated(query, extraFilter);
+    const { data, total, page, pageSize } =
+      await this.hospitalRepository.findPaginated(query, extraFilter);
     return buildPaginatedResponse(data, total, page, pageSize);
   }
 
@@ -35,7 +46,9 @@ export class HospitalsService {
     if (!hospital) throw new NotFoundException(`Hospital ${id} not found`);
     // If it's an archive version, automatically resolve to current active version details
     if (!hospital.isCurrent && hospital.hospitalId) {
-      const current = await this.hospitalRepository.findCurrentByHospitalId(hospital.hospitalId);
+      const current = await this.hospitalRepository.findCurrentByHospitalId(
+        hospital.hospitalId,
+      );
       if (current) return current;
     }
     return hospital;
@@ -69,14 +82,17 @@ export class HospitalsService {
     // Safety: If the requested document is not the current active version, resolve to the current active version
     let activeDoc = oldDoc;
     if (!oldDoc.isCurrent) {
-      const current = await this.hospitalRepository.findCurrentByHospitalId(logicalId);
+      const current =
+        await this.hospitalRepository.findCurrentByHospitalId(logicalId);
       if (current) {
         activeDoc = current;
       }
     }
 
     // 2. Set the current version isCurrent to false
-    await this.hospitalRepository.update(activeDoc._id.toString(), { isCurrent: false });
+    await this.hospitalRepository.update(activeDoc._id.toString(), {
+      isCurrent: false,
+    });
 
     // 3. Create a fresh document for the new version
     const newDocData: any = {

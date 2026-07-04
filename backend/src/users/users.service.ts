@@ -12,11 +12,16 @@ export class UsersService {
     @InjectModel(Staff.name) private readonly staffModel: Model<StaffDocument>,
   ) {}
 
-  async getAssignedHospitalId(userId: string, role: string): Promise<string | null> {
+  async getAssignedHospitalId(
+    userId: string,
+    role: string,
+  ): Promise<string | null> {
     if (role === 'Admin') {
       return null;
     }
-    const staff = await this.staffModel.findOne({ userId: new Types.ObjectId(userId) }).exec();
+    const staff = await this.staffModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .exec();
     return staff?.hospitalId ? staff.hospitalId.toString() : null;
   }
 

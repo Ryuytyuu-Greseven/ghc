@@ -34,4 +34,5 @@ export class CoverageRequest {
   originalReplacementHospitalId?: Types.ObjectId;
 }
 
-export const CoverageRequestSchema = SchemaFactory.createForClass(CoverageRequest);
+export const CoverageRequestSchema =
+  SchemaFactory.createForClass(CoverageRequest);

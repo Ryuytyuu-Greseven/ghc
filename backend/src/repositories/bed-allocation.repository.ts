@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
-import { BedAllocation, BedAllocationDocument } from '../schemas/bed-allocation.schema';
+import {
+  BedAllocation,
+  BedAllocationDocument,
+} from '../schemas/bed-allocation.schema';
 
 @Injectable()
 export class BedAllocationRepository {
@@ -31,7 +34,8 @@ export class BedAllocationRepository {
   }
 
   async findByHospital(hospitalId: string): Promise<BedAllocationDocument[]> {
-    return this.model.find({ hospitalId: new Types.ObjectId(hospitalId) })
+    return this.model
+      .find({ hospitalId: new Types.ObjectId(hospitalId) })
       .populate('patientId')
       .sort({ createdAt: -1 })
       .exec();

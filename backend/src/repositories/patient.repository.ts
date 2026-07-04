@@ -19,16 +19,31 @@ export class PatientRepository {
   }
 
   async findPaginated(options: Record<string, any> = {}) {
-    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(options, {
-      searchFields: ['name', 'phone', 'email', 'aadhaarNumber', 'address', 'gender', 'bloodGroup'],
-      exactFilters: ['bedRequired'],
-      objectIdFilters: ['hospitalId'],
-      defaultSort: { field: 'admittedAt', order: 'desc' },
-    });
+    const { filter, sort, skip, limit, page, pageSize } =
+      this.queryService.buildQuery(options, {
+        searchFields: [
+          'name',
+          'phone',
+          'email',
+          'aadhaarNumber',
+          'address',
+          'gender',
+          'bloodGroup',
+        ],
+        exactFilters: ['bedRequired'],
+        objectIdFilters: ['hospitalId'],
+        defaultSort: { field: 'admittedAt', order: 'desc' },
+      });
     const finalFilter = { ...filter, isActive: true };
 
     const [data, total] = await Promise.all([
-      this.patientModel.find(finalFilter).populate('hospitalId').sort(sort).skip(skip).limit(limit).exec(),
+      this.patientModel
+        .find(finalFilter)
+        .populate('hospitalId')
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .exec(),
       this.patientModel.countDocuments(finalFilter).exec(),
     ]);
 
@@ -47,7 +62,10 @@ export class PatientRepository {
     return this.patientModel.find({ hospitalId }).populate('hospitalId').exec();
   }
 
-  async findByAadhaarNumber(aadhaarNumber: string, excludeId?: string): Promise<PatientDocument | null> {
+  async findByAadhaarNumber(
+    aadhaarNumber: string,
+    excludeId?: string,
+  ): Promise<PatientDocument | null> {
     const filter: Record<string, unknown> = { aadhaarNumber };
     if (excludeId) filter._id = { $ne: excludeId };
     return this.patientModel.findOne(filter).exec();

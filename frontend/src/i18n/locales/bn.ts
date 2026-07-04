@@ -2,6 +2,7 @@ export const bn = {
   translation: {
     common: {
       signOut: "লগ আউট",
+      refresh: "রিফ্রেশ করুন",
       addFacility: "নতুন কেন্দ্র যোগ করুন",
       searchFacilities: "অনুসন্ধান করুন...",
       all: "সব",
@@ -90,7 +91,8 @@ export const bn = {
       "critical-alerts": "গুরুতর সতর্কতা",
       availability: "আমার প্রাপ্যতা",
       transfers: "কভারেজ ও স্থানান্তর",
-      audits: "অডিট লগ"
+      audits: "অডিট লগ",
+      reports: "প্রতিবেদন"
     },
     roles: {
       Admin: "প্রশাসক",
@@ -774,6 +776,58 @@ export const bn = {
         ICU: "আইসিইউ",
         "Operation Theatre": "অপারেশন থিয়েটার",
         Administration: "প্রশাসন"
+      },
+      reports: {
+        subtitle: "সিস্টেমের ত্রুটিসমূহ, চিকিৎসা পরিসংখ্যান, শয্যা প্রাপ্যতা এবং স্টক চেক বিবরণ দেখুন।",
+        allBranches: "সমস্ত শাখা",
+        to: "থেকে",
+        exportReport: "এক্সেল ডাউনলোড",
+        tabOccupancy: "শয্যা দখলের হার ও ক্ষমতা",
+        tabClinical: "চিকিৎসা সংক্রান্ত পরিসংখ্যান",
+        tabStaffing: "কর্মী বণ্টন বিবরণ",
+        tabInventory: "স্টক পরিস্থিতি ও মেয়াদ উত্তীর্ণের তালিকা",
+        loading: "রিপোর্ট বিশ্লেষণ তৈরি হচ্ছে...",
+        error: "একটি অপ্রত্যাশিত ত্রুটি ঘটেছে",
+        totalBeds: "মোট শয্যা",
+        occupiedBeds: "ব্যবহৃত শয্যা",
+        availableBeds: "খালি শয্যা",
+        averageOccupancy: "গড় শয্যা ব্যবহারের হার",
+        branchBreakdown: "শাখা ভিত্তিক শয্যা বিবরণ",
+        colBranchName: "শাখার নাম",
+        colType: "প্রকার",
+        colTotalBeds: "মোট শয্যা",
+        colOccupiedBeds: "ভর্তি শয্যা",
+        colAvailableBeds: "খালি শয্যা",
+        colOccupancyRate: "শয্যা ব্যবহারের হার",
+        totalConsultations: "মোট পরামর্শ",
+        visitsRange: "নির্বাচিত সময়ের মধ্যে রোগীর মোট আগমন।",
+        livePatient: "সক্রিয় রোগী উপস্থিতি",
+        topDiagnoses: "শীর্ষ রোগ ও সমস্যাসমূহ",
+        noDiagnoses: "নির্বাচিত ফিল্টারের জন্য কোনো রেকর্ড পাওয়া যায়নি।",
+        cases: "টি ঘটনা",
+        highlyPrescribed: "সর্বোচ্চ ব্যবহূত ওষুধসমূহ",
+        noMedicines: "কোনো ওষুধের রেকর্ড পাওয়া যায়নি।",
+        units: "টি ইউনিট",
+        totalStaff: "মোট নিবন্ধিত কর্মী",
+        clinicalAdminBase: "চিকিৎসক ও প্রশাসনিক কর্মী",
+        staffDept: "বিভাগ ভিত্তিক কর্মী সংখ্যা",
+        members: "জন কর্মী",
+        staffRole: "পদবী ভিত্তিক কর্মী সংখ্যা",
+        expiringSoon: "আগামী ৯০ দিনে মেয়াদ উত্তীর্ণ হবে এমন ওষুধের তালিকা",
+        noExpiry: "আগামী ৯০ দিনে মেয়াদ শেষ হওয়ার মতো কোনো ওষুধ নেই।",
+        colBranch: "शाखा",
+        medsByBranch: "शाखावार निर्धारित दवाएं",
+        colMedName: "ওষুধের নাম",
+        colBatchNo: "ব্যাচ নম্বর",
+        colQty: "পরিমাণ",
+        colExpiryDate: "মেয়াদ শেষের তারিখ",
+        stockCategory: "শ্রেণী ভিত্তিক স্টক পরিমাণ",
+        noStock: "কোনো স্টকের রেকর্ড পাওয়া যায়নি।",
+        uniqueItems: "ধরণের ওষুধ",
+        medicineAvailabilityTitle: "ওষুধের মজুদ প্রাপ্যতা",
+        colBranchesCount: "মজুদ আছে যে শাখায়",
+        colBatchesCount: "ব্যাচ"
+      }
     },
     notifications: {
       hospitalOnboardedTitle: "হাসপাতাল সফলভাবে অনবোর্ড করা হয়েছে",
@@ -789,5 +843,4 @@ export const bn = {
       staffDeassignedTitle: "কর্মী স্বাস্থ্যকেন্দ্র থেকে অপসারিত",
       staffDeassignedBody: "কর্মী \"{{name}}\" {{performedBy}} দ্বারা {{facility}} থেকে অপসারিত হয়েছে।"
     }
-  }
-};
+  };

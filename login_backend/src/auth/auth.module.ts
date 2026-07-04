@@ -29,7 +29,8 @@ import { Staff, StaffSchema } from '../schemas/staff.schema';
         return {
           secret,
           signOptions: {
-            expiresIn: (configService.get<string>('JWT_EXPIRES_IN') || '24h') as any,
+            expiresIn: (configService.get<string>('JWT_EXPIRES_IN') ||
+              '24h') as any,
           },
         };
       },

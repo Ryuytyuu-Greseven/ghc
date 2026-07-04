@@ -1,4 +1,5 @@
-export const SKIP_THOUGHT_SIGNATURE_VALIDATOR = 'skip_thought_signature_validator';
+export const SKIP_THOUGHT_SIGNATURE_VALIDATOR =
+  'skip_thought_signature_validator';
 
 type GeminiFunctionCallPart = {
   functionCall?: unknown;
@@ -14,7 +15,9 @@ type FormatDataResult = {
   contents?: GeminiContent[];
 };
 
-function injectThoughtSignatureBypass(contents: GeminiContent[] | undefined): void {
+function injectThoughtSignatureBypass(
+  contents: GeminiContent[] | undefined,
+): void {
   if (!contents?.length) return;
 
   for (const content of contents) {
@@ -34,7 +37,10 @@ export function patchConnectionFormatData(connection: {
   const originalFormatData = connection.formatData.bind(connection);
 
   connection.formatData = async (input, parameters) => {
-    const data = (await originalFormatData(input, parameters)) as FormatDataResult;
+    const data = (await originalFormatData(
+      input,
+      parameters,
+    )) as FormatDataResult;
     injectThoughtSignatureBypass(data.contents);
     return data;
   };

@@ -1,7 +1,24 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req, Query, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Req,
+  Query,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { StaffService } from './staff.service';
 import { UsersService } from '../users/users.service';
+import { CreateStaffDto } from './dto/create-staff.dto';
+import { UpdateStaffDto } from './dto/update-staff.dto';
+import { UpdateAvailabilityDto } from './dto/update-availability.dto';
+import { AssignReplacementDto } from './dto/assign-replacement.dto';
 
 @Controller('staff')
 @UseGuards(JwtAuthGuard)
@@ -9,23 +26,33 @@ export class StaffController {
   constructor(
     private readonly staffService: StaffService,
     private readonly usersService: UsersService,
-  ) { }
+  ) {}
 
   @Get()
   async findAll(@Req() req: any, @Query() query?: Record<string, any>) {
     const user = req.user;
     const isDashboard = query?.dashboard === 'true';
-    const hospitalId = isDashboard ? await this.usersService.getAssignedHospitalId(user.userId, user.role) : null;
+    const hospitalId = isDashboard
+      ? await this.usersService.getAssignedHospitalId(user.userId, user.role)
+      : null;
     const filter = hospitalId ? { hospitalId } : {};
     return this.staffService.findAll(filter);
   }
 
   @Get('by-hospital/:hospitalId')
-  async findByHospital(@Req() req: any, @Param('hospitalId') hospitalId: string) {
+  async findByHospital(
+    @Req() req: any,
+    @Param('hospitalId') hospitalId: string,
+  ) {
     const user = req.user;
-    const userHospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const userHospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     if (userHospitalId && userHospitalId !== hospitalId) {
-      throw new ForbiddenException('Access denied to other hospital staff list');
+      throw new ForbiddenException(
+        'Access denied to other hospital staff list',
+      );
     }
     return this.staffService.findByHospital(hospitalId);
   }
@@ -41,18 +68,20 @@ export class StaffController {
   @Get('me/availability')
   getAvailability(@Req() req: any) {
     const userId = req.user.userId;
-    console.log(userId, "userIddddd i Geetttt")
+    console.log(userId, 'userIddddd i Geetttt');
     return this.staffService.getAvailability(userId);
   }
 
   @Put('me/availability')
-  updateAvailability(
-    @Req() req: any,
-    @Body() body: { status: string; startDate?: string; endDate?: string }
-  ) {
+  updateAvailability(@Req() req: any, @Body() body: UpdateAvailabilityDto) {
     const userId = req.user.userId;
-    console.log("UserId in me/availability", userId)
-    return this.staffService.updateAvailability(userId, body.status, body.startDate, body.endDate);
+    console.log('UserId in me/availability', userId);
+    return this.staffService.updateAvailability(
+      userId,
+      body.status,
+      body.startDate,
+      body.endDate,
+    );
   }
 
   @Get('coverage-requests')
@@ -63,26 +92,39 @@ export class StaffController {
   @Put('coverage-requests/:id/transfer')
   assignReplacement(
     @Param('id') requestId: string,
-    @Body() body: { replacementStaffId: string }
+    @Body() body: AssignReplacementDto,
   ) {
-    return this.staffService.assignReplacement(requestId, body.replacementStaffId);
+    return this.staffService.assignReplacement(
+      requestId,
+      body.replacementStaffId,
+    );
   }
 
   @Get(':id')
   async findOne(@Req() req: any, @Param('id') id: string) {
     const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     const staff = await this.staffService.findOne(id);
-    if (hospitalId && staff.hospitalId && staff.hospitalId.toString() !== hospitalId) {
+    if (
+      hospitalId &&
+      staff.hospitalId &&
+      staff.hospitalId.toString() !== hospitalId
+    ) {
       throw new ForbiddenException('Access denied to this staff member');
     }
     return staff;
   }
 
   @Post()
-  async create(@Req() req: any, @Body() body: Record<string, any>) {
+  async create(@Req() req: any, @Body() body: CreateStaffDto) {
     const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     if (hospitalId) {
       body.hospitalId = hospitalId;
     }
@@ -93,14 +135,19 @@ export class StaffController {
   async update(
     @Req() req: any,
     @Param('id') id: string,
-    @Body() body: Record<string, any>,
+    @Body() body: UpdateStaffDto,
   ) {
     const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     if (hospitalId) {
       const staff = await this.staffService.findOne(id);
       if (staff.hospitalId && staff.hospitalId.toString() !== hospitalId) {
-        throw new ForbiddenException('Access denied to update this staff member');
+        throw new ForbiddenException(
+          'Access denied to update this staff member',
+        );
       }
       body.hospitalId = hospitalId;
     }

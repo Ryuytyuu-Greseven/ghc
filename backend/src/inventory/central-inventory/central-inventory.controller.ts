@@ -1,6 +1,18 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { CentralInventoryService } from './central-inventory.service';
+import { AddCentralInventoryStockDto } from './dto/add-central-inventory-stock.dto';
+import { UpdateCentralInventoryStockDto } from './dto/update-central-inventory-stock.dto';
 
 @Controller('central-inventory')
 @UseGuards(JwtAuthGuard)
@@ -28,12 +40,15 @@ export class CentralInventoryController {
   }
 
   @Post()
-  addStock(@Body() body: Record<string, any>) {
+  addStock(@Body() body: AddCentralInventoryStockDto) {
     return this.service.addStock(body);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: Record<string, any>) {
+  update(
+    @Param('id') id: string,
+    @Body() body: UpdateCentralInventoryStockDto,
+  ) {
     return this.service.update(id, body);
   }
 

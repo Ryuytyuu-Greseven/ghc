@@ -12,9 +12,13 @@ export class InventoryMaster {
   @Prop({ required: true, enum: Object.values(InventoryCategory) })
   category: InventoryCategory;
 
-  @Prop({ enum: Object.values(InventoryStatus), default: InventoryStatus.ACTIVE })
+  @Prop({
+    enum: Object.values(InventoryStatus),
+    default: InventoryStatus.ACTIVE,
+  })
   status: InventoryStatus;
 }
 
-export const InventoryMasterSchema = SchemaFactory.createForClass(InventoryMaster);
+export const InventoryMasterSchema =
+  SchemaFactory.createForClass(InventoryMaster);
 InventoryMasterSchema.index({ itemName: 1 });

@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
-import { InventoryMaster, InventoryMasterDocument } from '../schemas/inventory-master.schema';
+import {
+  InventoryMaster,
+  InventoryMasterDocument,
+} from '../schemas/inventory-master.schema';
 import { QueryService } from '../common/services/query.service';
 
 @Injectable()
@@ -35,19 +38,17 @@ export class InventoryMasterRepository {
     const orClauses = [...variants].map((v) => ({
       itemName: { $regex: new RegExp(v, 'i') },
     }));
-    return this.model
-      .find({ $or: orClauses })
-      .sort({ itemName: 1 })
-      .exec();
+    return this.model.find({ $or: orClauses }).sort({ itemName: 1 }).exec();
   }
 
   async findPaginated(options: any) {
-    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(options, {
-      searchFields: ['itemName'],
-      exactFilters: ['category', 'status'],
-      fuzzySearch: true,
-      defaultSort: { field: 'itemName', order: 'asc' },
-    });
+    const { filter, sort, skip, limit, page, pageSize } =
+      this.queryService.buildQuery(options, {
+        searchFields: ['itemName'],
+        exactFilters: ['category', 'status'],
+        fuzzySearch: true,
+        defaultSort: { field: 'itemName', order: 'asc' },
+      });
 
     const [data, total] = await Promise.all([
       this.model.find(filter).sort(sort).skip(skip).limit(limit).exec(),
@@ -58,10 +59,15 @@ export class InventoryMasterRepository {
   }
 
   async findByCategory(category: string): Promise<InventoryMasterDocument[]> {
-    return this.model.find({ category: category as any }).sort({ itemName: 1 }).exec();
+    return this.model
+      .find({ category: category as any })
+      .sort({ itemName: 1 })
+      .exec();
   }
 
-  async create(data: Partial<InventoryMaster>): Promise<InventoryMasterDocument> {
+  async create(
+    data: Partial<InventoryMaster>,
+  ): Promise<InventoryMasterDocument> {
     return this.model.create(data);
   }
 

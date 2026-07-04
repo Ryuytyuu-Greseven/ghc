@@ -12,7 +12,8 @@ export class InventoryMasterService {
   ) {}
 
   async findAll(query: Record<string, any> = {}) {
-    const { data, total, page, pageSize } = await this.repo.findPaginated(query);
+    const { data, total, page, pageSize } =
+      await this.repo.findPaginated(query);
     return buildPaginatedResponse(data, total, page, pageSize);
   }
 
@@ -41,7 +42,9 @@ export class InventoryMasterService {
   }
 
   async softDelete(id: string) {
-    const item = await this.repo.update(id, { status: InventoryStatus.INACTIVE });
+    const item = await this.repo.update(id, {
+      status: InventoryStatus.INACTIVE,
+    });
     if (!item) throw new NotFoundException(`Inventory item ${id} not found`);
     return { id, deactivated: true };
   }

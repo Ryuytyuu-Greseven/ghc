@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { AuditLogRepository } from '../repositories/audit-log.repository';
 import { AuditLog } from '../schemas/audit-log.schema';
+import { buildPaginatedResponse } from '../inventory/utils/pagination.util';
 
 @Injectable()
 export class AuditLogsService {
@@ -16,7 +17,9 @@ export class AuditLogsService {
       fromDate: query.fromDate ?? query.from,
       toDate: query.toDate ?? query.to,
     };
-    return this.repo.findPaginated(queryParams);
+    const { data, total, page, pageSize } =
+      await this.repo.findPaginated(queryParams);
+    return buildPaginatedResponse(data, total, page, pageSize);
   }
 
   async findOne(id: string) {
