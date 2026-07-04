@@ -1,0 +1,223 @@
+SMART HEALTH HACKATHON — GAP ANALYSIS
+Build with AI: Code for Communities (Google Cloud x Hack2skill) — Track 3: Smart Health
+Analysis date: 2026-07-04
+Registration closes: Wed 08 Jul 2026 (per event page — confirm this is registration deadline, not submission deadline)
+
+=====================================================================
+1. HACKATHON CONTEXT
+=====================================================================
+
+Event: Build with AI: Code for Communities
+Organizer: Google Cloud, via Hack2skill
+Format: National hackathon connecting developers/designers/AI builders directly with
+sitting Members of Parliament (MPs) to solve on-the-ground governance problems in
+constituency development planning, environment, healthcare, and agriculture.
+Every problem statement was submitted by an MP's office describing a real, active gap.
+Winning solutions may be piloted in a real PHC, constituency, or district, with
+possible scale-up. Top teams present at an in-person demo day in New Delhi.
+
+Track 3 — Smart Health: AI-Driven Health Center & Supply Chain Management
+
+THE PROBLEM (as stated by the MP's office):
+PHCs and CHCs face recurring operational gaps — medicine stock-outs, unmanaged
+patient footfall, bed unavailability, unpredictable doctor attendance — tracked
+manually with no real-time visibility, leading to shortages and under-resourced
+facilities.
+
+THE CHALLENGE (as stated):
+Build a multilingual AI platform for real-time health centre management covering:
+  - stock monitoring
+  - patient footfall
+  - bed availability
+  - doctor attendance
+  - test availability audits
+It should generate:
+  - early stock-out warnings
+  - AI-driven demand forecasts
+  - smart resource redistribution recommendations across a district's PHCs/CHCs
+  - automatic flagging of underperforming/under-resourced centres to district
+    administrators for intervention
+
+RECOMMENDED TOOLS/TECH (not mandatory — "free to build with any stack"):
+  AI/ML: Gemini API, Vertex AI (model building, fine-tuning, agents), Google AI Studio
+  Language & voice: Cloud Speech-to-Text / Text-to-Speech, Dialogflow, Translation API
+  Vision: Vertex AI Vision / Gemini multimodal, MediaPipe
+  Geospatial: Google Maps Platform, Earth Engine
+  Data & backend: BigQuery, Firebase, Cloud Run / Cloud Functions
+  Apps: Flutter/Android, WhatsApp Business API or SMS gateways for low-connectivity access
+  Public data: data.gov.in, Census/NFHS, CPCB, IMD, state agriculture datasets
+
+JUDGING CRITERIA (Evaluation Parameters):
+  Problem-Solution Fit ........ 20%  (Does it directly address the stated problem, right scope?)
+  AI/Technical Execution ...... 25%  (Is the AI doing real work, not decorative? End-to-end functional?)
+  Deployability & Scalability .. 25%  (Could this realistically run in a real PHC/constituency/
+                                       district in weeks, and scale beyond one pilot site?)
+  Inclusivity & Accessibility .. 15%  (Multilingual support, voice/low-literacy access,
+                                       low-connectivity design)
+  Impact Potential ............ 10%  (Scale of benefit — how many citizens, how meaningfully?)
+  Presentation & Clarity ....... 5%  (Can a non-technical MP's office understand the value
+                                       in 5 minutes?)
+
+=====================================================================
+2. GAP MAP — REQUIRED SIGNAL vs CURRENT BUILD (verified against actual source)
+=====================================================================
+
+Stock monitoring
+  STATUS: Built — solid
+  EVIDENCE: Full inventory suite (inventory-master, central-inventory, branch-inventory,
+  inventory-requests) with real CRUD and transaction history.
+
+Early stock-out warnings
+  STATUS: Built
+  EVIDENCE: backend/src/inventory/inventory-analytics/inventory-analytics.service.ts —
+  Days-of-Stock (DOS) calculated from real audit-log transaction history, flags items
+  with DOS < 7.
+
+AI-driven demand forecasts
+  STATUS: Built
+  EVIDENCE: Same service — Gemini-based forecasting via Vertex AI, with a statistical
+  fallback if the LLM response is malformed.
+
+Smart redistribution recommendations across a district's PHCs/CHCs
+  STATUS: Built
+  EVIDENCE: Surplus/deficit matching algorithm in inventory-analytics.service.ts;
+  applyRecommendation() creates a real InventoryRequest record to execute the transfer.
+  This maps almost verbatim onto the challenge's exact wording.
+
+Bed availability
+  STATUS: Built
+  EVIDENCE: Hospital schema has totalBeds/availableBeds fields; dedicated
+  BedAllocation schema (backend/src/schemas/bed-allocation.schema.ts) tracks
+  ALLOCATED/DEALLOCATED events tied to patient admission/discharge.
+
+Auto-flag underperforming/under-resourced centres to district administrators
+  STATUS: Built, but rule-based rather than AI-driven
+  EVIDENCE: GET /hospitals/district/intervention-alerts
+  (backend/src/hospitals/facility-alerts/facility-alerts.service.ts) flags three
+  conditions per facility: Bed Shortage (occupancy >85% or <=2 beds left),
+  Severe Stockout (>25% of monitored items out of stock, or >=5 items),
+  Staff Crunch (patient:staff ratio >10). This is the closest one-to-one match
+  to the challenge's headline ask and is already live — but it is pure threshold
+  logic, not an LLM/AI pass. Given "AI/Technical Execution" is 25% of the score,
+  this is the single highest-leverage upgrade available: feed these raw alerts
+  to Gemini to produce a prioritized, explained brief for district admins.
+
+Doctor attendance  [GAP]
+  STATUS: Not implemented
+  EVIDENCE: Staff schema (backend/src/schemas/staff.schema.ts) only has
+  unavailableOnDays: string[] — a planned-leave list, not actual attendance.
+  The "Staff Crunch" alert is a patient:staff ratio proxy, not attendance tracking.
+  Grep for attendance/checkin/clockin across staff/ and schemas/ returns nothing.
+  This is explicitly named in the problem statement ("unpredictable doctor
+  attendance — tracked manually with no real-time visibility").
+
+Patient footfall  [GAP]
+  STATUS: Not implemented
+  EVIDENCE: Grep for "footfall" across the entire backend returns zero matches.
+  Patients are stored as individual records; there is no daily/hourly walk-in
+  count, trend, or forecasting for footfall.
+
+Test availability audits  [GAP]
+  STATUS: Not implemented
+  EVIDENCE: Grep for labTest/diagnosticTest/testResult/test-availab across
+  patient-data/, reports/, schemas/ returns zero matches. No lab/diagnostic
+  test catalog or availability-tracking module exists anywhere in the codebase.
+
+District as a first-class entity  [PARTIAL GAP]
+  STATUS: Implicit, not modeled
+  EVIDENCE: Hospital schema has city (free text) and parentCHCId (PHC->CHC
+  hierarchy) but no district field. The "district/intervention-alerts" endpoint
+  is actually scoped to "all facilities visible to this admin," not grouped by
+  an actual district. Cosmetically and narratively important for the MP/district-
+  administrator framing used throughout the problem statement.
+
+=====================================================================
+3. JUDGING-CRITERIA READ
+=====================================================================
+
+AI/Technical Execution (25%)
+  Strong: Gemini-based demand forecasting and redistribution matching are real,
+  functioning end-to-end, not decorative.
+  Weak spot: facility-alerts (the feature most directly matching the challenge's
+  headline ask) is pure rule-based thresholding with no AI layer at all.
+
+Deployability & Scalability (25%)
+  Strong: already deployed to Cloud Run (asia-south1), Vertex AI wired in
+  production, multi-tenant hospital data model already exists (parentCHCId
+  hierarchy, hospitalId scoping per user).
+
+Inclusivity & Accessibility (15%)
+  Good bones: 7 UI languages (en/hi/bn/gu/kn/ta/te), voice via Google STT
+  (Chirp3, with hi/ta/te/kn/gu/ml alternates) and TTS (hi/te/bn/en voices).
+  Weaknesses: no SMS/WhatsApp channel despite this being explicitly recommended
+  for low-connectivity PHC staff; email notifications silently no-op when
+  SMTP_HOST is unset (blank by default); STT/TTS/UI language coverage is
+  inconsistent (e.g. Malayalam STT alternate exists but no Malayalam UI locale;
+  no Marathi/Punjabi/Odia despite large government-hospital populations).
+
+Problem-Solution Fit (20%)
+  Currently ~3 of 5 named signals fully covered (stock, beds, redistribution/
+  forecasting). Doctor attendance, patient footfall, and test availability are
+  explicitly named in the problem statement and are the three gaps most likely
+  to read as an incomplete fit at demo time, even though what exists is strong.
+
+Impact Potential (10%) / Presentation & Clarity (5%)
+  Not directly assessed here — depends on framing/demo narrative once gaps are
+  addressed or explicitly scoped out.
+
+=====================================================================
+4. RECOMMENDED PRIORITY ORDER (given limited runway before deadline)
+=====================================================================
+
+1. Doctor attendance tracking
+   Smallest lift; reuses existing Staff/Hospital models. Add a daily
+   present/absent (or check-in/out) log per staff member per facility.
+   Closes a named gap directly.
+
+2. Patient footfall tracking + forecast
+   Derivable from existing patient registration timestamps as a starting point
+   (daily/hourly counts per facility). Reuse the existing Gemini forecasting
+   pattern already proven in inventory-analytics.service.ts.
+
+3. Test availability audits
+   Likely the largest net-new lift (new domain/schema). If time-constrained,
+   a minimal "lab test catalog + available/unavailable per facility" flag
+   would satisfy the literal ask without building a full lab workflow.
+
+4. Add `district` field to Hospital + group intervention-alerts by district
+   Cheap schema change; strengthens alignment with the problem statement's
+   district-administrator framing used throughout the challenge and would
+   likely read well in the MP demo narrative.
+
+5. AI-ify the facility-alerts / intervention-alerts feature
+   Feed the existing rule-based alerts through Gemini to produce a
+   prioritized, human-readable brief for district admins. Directly
+   strengthens the highest-weighted criterion (AI/Technical Execution, 25%)
+   using a feature that already exists and already matches the challenge's
+   exact wording.
+
+6. WhatsApp/SMS channel for low-connectivity access
+   High relevance to the Inclusivity & Accessibility criterion and explicitly
+   named in the hackathon's recommended tools list, but the highest-effort
+   item on this list — sequence after 1-5 given the registration deadline.
+
+=====================================================================
+5. OPEN QUESTIONS
+=====================================================================
+
+- The countdown shown on the event page ("Registration closes in 4d:5h:36m")
+  is the REGISTRATION deadline, not necessarily the submission/build deadline.
+  Check the "Timeline" tab on the event page for the actual submission date
+  before treating this as the hard deadline for the gaps above.
+- Confirm team size / role split so priority items 1-4 can be parallelized.
+
+=====================================================================
+6. SECURITY NOTE (unrelated to hackathon fit, surfaced during this audit)
+=====================================================================
+
+backend/.env.example (committed, pushed to origin on the `production` branch)
+contains a live MongoDB Atlas connection string + password and a live
+GEMINI_API_KEY, not placeholders. login_backend/.env.example correctly uses
+placeholders — the same pattern should be applied to backend/.env.example.
+Recommended: rotate the MongoDB Atlas password and regenerate the Gemini API
+key regardless of repo visibility, since both are already in git history.
