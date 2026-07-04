@@ -11,6 +11,9 @@ import { Model } from 'mongoose';
 import { AuthService } from './auth.service';
 import { AuditLog } from '../schemas/audit-log.schema';
 import { LoginDto } from './dto/login.dto';
+import { ResetPasswordDirectDto } from './dto/reset-password-direct.dto';
+import { SendOtpDto } from './dto/send-otp.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -56,13 +59,13 @@ export class AuthController {
 
   @Post('reset-password-direct')
   @HttpCode(HttpStatus.OK)
-  async resetPasswordDirect(@Body() body: Record<string, any>) {
+  async resetPasswordDirect(@Body() body: ResetPasswordDirectDto) {
     const result = await this.authService.resetPasswordDirect(body);
     await this.auditLogModel.create({
       module: 'auth',
       action: 'PASSWORD_RESET_DIRECT',
       message: `User "${body.username}" reset their password directly.`,
-      performedBy: body.username || 'System',
+      performedBy: body.username,
       performedByRole: 'Guest',
     });
     return result;
@@ -70,13 +73,13 @@ export class AuthController {
 
   @Post('forgot-password/send-otp')
   @HttpCode(HttpStatus.OK)
-  async sendOtp(@Body() body: Record<string, any>) {
+  async sendOtp(@Body() body: SendOtpDto) {
     const result = await this.authService.sendOtp(body);
     await this.auditLogModel.create({
       module: 'auth',
       action: 'FORGOT_PASSWORD_OTP_REQUEST',
       message: `Password reset OTP requested for identifier: "${body.identifier}".`,
-      performedBy: body.identifier || 'System',
+      performedBy: body.identifier,
       performedByRole: 'Guest',
     });
     return result;
@@ -84,13 +87,13 @@ export class AuthController {
 
   @Post('forgot-password/verify-otp')
   @HttpCode(HttpStatus.OK)
-  async verifyOtp(@Body() body: Record<string, any>) {
+  async verifyOtp(@Body() body: VerifyOtpDto) {
     const result = await this.authService.verifyOtp(body);
     await this.auditLogModel.create({
       module: 'auth',
       action: 'FORGOT_PASSWORD_OTP_VERIFY',
       message: `Password reset successfully via OTP for identifier: "${body.identifier}".`,
-      performedBy: body.identifier || 'System',
+      performedBy: body.identifier,
       performedByRole: 'Guest',
     });
     return result;

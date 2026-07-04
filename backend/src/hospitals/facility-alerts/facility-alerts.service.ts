@@ -35,9 +35,14 @@ export class FacilityAlertsService {
     private readonly patientRepository: PatientRepository,
   ) {}
 
-  async getInterventionAlerts(): Promise<InterventionAlert[]> {
+  async getInterventionAlerts(hospitalId?: string): Promise<InterventionAlert[]> {
     const alerts: InterventionAlert[] = [];
-    const hospitals = await this.hospitalRepository.findAll({ isActive: true });
+    const filter: Record<string, any> = { isActive: true };
+    // Non-admin: only load their assigned hospital
+    if (hospitalId) {
+      filter.$or = [{ hospitalId }, { _id: hospitalId }];
+    }
+    const hospitals = await this.hospitalRepository.findAll(filter);
 
     for (const hosp of hospitals) {
       const branchId = hosp._id.toString();
