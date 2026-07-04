@@ -47,6 +47,39 @@ export class StaffService {
     return list.map(flattenStaff);
   }
 
+  async findFiltered(options: {
+    hospitalId?: string;
+    role?: string;
+    status?: 'active' | 'inactive' | 'all';
+    name?: string;
+  } = {}) {
+    const filter: Record<string, unknown> = {};
+    if (options.hospitalId) filter.hospitalId = options.hospitalId;
+
+    let staffList = (await this.staffRepository.findAll(filter)).map(flattenStaff);
+
+    if (options.role) {
+      staffList = staffList.filter(
+        (s) => s.role?.toLowerCase() === options.role!.toLowerCase(),
+      );
+    }
+    if (options.status === 'active') {
+      staffList = staffList.filter((s) => s.isActive === true);
+    } else if (options.status === 'inactive') {
+      staffList = staffList.filter((s) => s.isActive === false);
+    }
+    if (options.name) {
+      const lower = options.name.toLowerCase();
+      staffList = staffList.filter((s) => {
+        const fullName =
+          s.displayName || `${s.firstName} ${s.lastName || ''}`.trim();
+        return fullName.toLowerCase().includes(lower);
+      });
+    }
+
+    return staffList;
+  }
+
   async create(data: any) {
     // Validate username uniqueness in User collection if provided
     let username = data.username;

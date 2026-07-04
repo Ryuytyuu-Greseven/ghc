@@ -15,9 +15,18 @@ export class StaffController {
   async findAll(@Req() req: any, @Query() query?: Record<string, any>) {
     const user = req.user;
     const isDashboard = query?.dashboard === 'true';
-    const hospitalId = isDashboard ? await this.usersService.getAssignedHospitalId(user.userId, user.role) : null;
-    const filter = hospitalId ? { hospitalId } : {};
-    return this.staffService.findAll(filter);
+    const scopedHospitalId = isDashboard
+      ? await this.usersService.getAssignedHospitalId(user.userId, user.role)
+      : null;
+    const hospitalId = scopedHospitalId || query?.hospitalId;
+    const status = query?.status as 'active' | 'inactive' | 'all' | undefined;
+
+    return this.staffService.findFiltered({
+      hospitalId,
+      role: query?.role,
+      status: status ?? 'active',
+      name: query?.name,
+    });
   }
 
   @Get('by-hospital/:hospitalId')

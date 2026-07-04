@@ -3,22 +3,43 @@ import { llmInstance } from '../../google/vertex.config';
 import {
   findAbsenceStaff,
   findAvailableStaff,
+  getStaffService,
+  staffListingTools,
   mapStaff,
-  staffTools,
 } from '../tools/staff.tools';
-import { STAFF_MAPPING_PROMPT, STAFF_PROMPT } from '../prompts/staff.prompt';
+import {
+  STAFF_MAPPING_PROMPT,
+  STAFF_LIST_PROMPT,
+  STAFF_ON_LEAVE_PROMPT,
+} from '../prompts/staff.prompt';
 import { withGuardrails } from '../prompts/guardrails.prompt';
 import { AgentState } from '../state';
 import { END, START, StateGraph } from '@langchain/langgraph';
 import { StaffState } from '../states/staff.state';
-import { appInstance } from '../../main';
-import { StaffService } from '../../staff/staff.service';
-import { UserRole } from '../../common/enums';
-import { llmClassify, extractBranchId } from './helper.node';
+import { llmClassify, resolveUserQuery } from './helper.node';
 import { runStaffAgent } from '../graphs/staff.graph';
 
 const COVERAGE_QUERY_PATTERN =
   /\b(transfer|replacement|cover(?:age|ing)?|reassign|absent(?:ee)?)\b/i;
+
+async function generateStaffResponse(
+  messages: any[],
+  data: any,
+  promptTemplate: string,
+) {
+  const dataPrompt = promptTemplate.replace(
+    '{staffData}',
+    JSON.stringify(data),
+  );
+  const agent = createAgent({
+    model: llmInstance,
+    tools: [],
+    systemPrompt: withGuardrails(dataPrompt),
+  });
+  const llmResponse = await agent.invoke({ messages });
+  return llmResponse.messages[llmResponse.messages.length - 1]
+    .content as string;
+}
 
 // ── Node: classify staff query intent ─────────────────────────────────────────
 export async function staffClassifyIntent(state: typeof StaffState.State) {
@@ -32,60 +53,32 @@ export async function staffClassifyIntent(state: typeof StaffState.State) {
 
       Reply with ONE option only — one of: list_staff, on_leave_today`,
   );
+  console.log('Staff Classify Intent:', intent);
   return { intent };
 }
 
-function extractStaffRole(query: string): string | undefined {
-  const lower = query.toLowerCase();
-  return Object.values(UserRole).find((role) =>
-    lower.includes(role.toLowerCase()),
-  );
-}
-
-function extractStaffName(query: string, role?: string): string | undefined {
-  let clean = query;
-  if (role) clean = clean.replace(new RegExp(role, 'gi'), '');
-  clean = clean
-    .replace(
-      /\b(list|show|find|get|search|staff|member|members|details|detail|of|for|the|a|an|is|are|in|at|please|who)\b/gi,
-      '',
-    )
-    .replace(/[?.]/g, '')
-    .trim()
-    .replace(/\s+/g, ' ');
-  return clean.length >= 2 ? clean : undefined;
-}
-
-// ── Node: fetch staff list, optionally filtered by hospital/role/name ────────
+// ── Node: list staff via LLM + list_staff tool ───────────────────────────────
 export async function staffListAll(state: typeof StaffState.State) {
-  const hospitalId = await extractBranchId(state.query);
-  const role = extractStaffRole(state.query);
-  const name = extractStaffName(state.query, role);
+  const staffListAgent = createAgent({
+    model: llmInstance,
+    tools: staffListingTools,
+    systemPrompt: withGuardrails(STAFF_LIST_PROMPT),
+  });
 
-  const service = appInstance.get(StaffService);
-  let staffList: any[] = await service.findAll(
-    hospitalId ? { hospitalId } : {},
-  );
+  console.log('Staff Messages:', state.messages);
+  const llmResponse = await staffListAgent.invoke({ messages: state.messages });
+  const finalMessage = llmResponse.messages[llmResponse.messages.length - 1];
+  const finalResponse =
+    typeof finalMessage.content === 'string'
+      ? finalMessage.content
+      : JSON.stringify(finalMessage.content);
 
-  if (role) {
-    staffList = staffList.filter(
-      (s: any) => s.role?.toLowerCase() === role.toLowerCase(),
-    );
-  }
-  if (name) {
-    staffList = staffList.filter((s: any) => {
-      const fullName =
-        s.displayName || `${s.firstName} ${s.lastName || ''}`.trim();
-      return fullName.toLowerCase().includes(name.toLowerCase());
-    });
-  }
-
-  return { staffList };
+  return { finalResponse };
 }
 
 // ── Node: find staff currently on leave (via approved coverage requests) ────
-export async function staffOnLeaveToday(_state: typeof StaffState.State) {
-  const service = appInstance.get(StaffService);
+export async function staffOnLeaveToday(state: typeof StaffState.State) {
+  const service = getStaffService();
   const requests: any[] = await service.getCoverageRequests();
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -105,65 +98,19 @@ export async function staffOnLeaveToday(_state: typeof StaffState.State) {
       replacementName: r.replacementStaffId?.name,
     }));
 
-  return { onLeaveToday };
-}
+  const finalResponse = await generateStaffResponse(
+    state.messages,
+    { onLeaveToday, intent: state.intent },
+    STAFF_ON_LEAVE_PROMPT,
+  );
 
-// ── Node: format staff data into structured markdown cards (no LLM call) ────
-export function staffSummarize(state: typeof StaffState.State) {
-  const cards: string[] = [];
-
-  if (state.intent === 'on_leave_today') {
-    if (state.onLeaveToday.length === 0) {
-      const finalResponse = 'No staff members are on leave today.';
-      return { finalResponse, messages: [new AIMessage(finalResponse)] };
-    }
-    state.onLeaveToday.forEach((s: any, index: number) => {
-      cards.push(
-        `### Staff - ${index + 1}\n` +
-        `**Name:** ${s.staffName}\n` +
-        `**Department:** ${s.department || 'N/A'}\n` +
-        `**Hospital:** ${s.hospitalName || 'N/A'}\n` +
-        `**On Leave From:** ${s.startDate}\n` +
-        `**On Leave Until:** ${s.endDate}` +
-        (s.replacementName ? `\n**Covered By:** ${s.replacementName}` : ''),
-      );
-    });
-    const finalResponse = cards.join('\n\n');
-    return { finalResponse, messages: [new AIMessage(finalResponse)] };
-  }
-
-  if (state.staffList.length === 0) {
-    const finalResponse = 'No staff members found matching that query.';
-    return { finalResponse, messages: [new AIMessage(finalResponse)] };
-  }
-
-  state.staffList.slice(0, 15).forEach((s: any, index: number) => {
-    const name = s.displayName || `${s.firstName} ${s.lastName || ''}`.trim();
-    cards.push(
-      `### Staff - ${index + 1}\n` +
-      `**Name:** ${name}\n` +
-      `**Role:** ${s.role || 'N/A'}\n` +
-      `**Department:** ${s.department || 'N/A'}\n` +
-      `**Specialization:** ${s.specialization || 'N/A'}\n` +
-      `**Phone:** ${s.mobileNumber || 'N/A'}\n` +
-      `**Hospital:** ${s.hospitalId?.name || 'Unassigned'}`,
-    );
-  });
-
-  const finalResponse = cards.join('\n\n');
-  return { finalResponse, messages: [new AIMessage(finalResponse)] };
+  return { onLeaveToday, finalResponse };
 }
 
 // ── Routing from classify_intent → correct fetch node ────────────────────────
 export function routeStaff(state: typeof StaffState.State): string {
   return state.intent === 'on_leave_today' ? 'on_leave_today' : 'list_staff';
 }
-
-export const staffAgent = createAgent({
-  model: llmInstance,
-  tools: staffTools,
-  systemPrompt: withGuardrails(STAFF_PROMPT),
-});
 
 // Main Nodes
 export const staffMapping = async (state: typeof AgentState.State) => {
@@ -223,18 +170,14 @@ export const staffMapping = async (state: typeof AgentState.State) => {
 // Used by voice-agent.ts graph — dispatches between the coverage-automation
 // flow (transfer/replacement queries) and the staff query graph (list/details/leave)
 export async function staffNode(state: typeof AgentState.State) {
-  const firstMessage = state.messages[0];
-  const query =
-    typeof firstMessage?.content === 'string'
-      ? firstMessage.content
-      : state.transcript || 'List staff';
+  const query = resolveUserQuery(state, 'List staff');
 
   if (COVERAGE_QUERY_PATTERN.test(query)) {
     const response = await runAutonomousStaffAgent(state, query);
     return { messages: [new AIMessage(response.finalResponse)] };
   }
 
-  const finalResponse = await runStaffAgent(query);
+  const finalResponse = await runStaffAgent(query, state.messages);
   return { messages: [new AIMessage(finalResponse)], finalResponse };
 }
 
