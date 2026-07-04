@@ -24,7 +24,9 @@ export class UserRepository {
   }
 
   async findOneByUsername(username: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({ username: username.trim().toLowerCase() }).exec();
+    return this.userModel
+      .findOne({ username: username.trim().toLowerCase() })
+      .exec();
   }
 
   async create(data: Partial<User>): Promise<UserDocument> {
@@ -42,7 +44,11 @@ export class UserRepository {
     username: string,
     data: UpdateQuery<UserDocument>,
   ): Promise<UserDocument | null> {
-    return this.userModel.findOneAndUpdate({ username: username.trim().toLowerCase() }, data, { new: true }).exec();
+    return this.userModel
+      .findOneAndUpdate({ username: username.trim().toLowerCase() }, data, {
+        new: true,
+      })
+      .exec();
   }
 
   async delete(id: string): Promise<UserDocument | null> {
@@ -50,7 +56,9 @@ export class UserRepository {
   }
 
   async deleteByUsername(username: string): Promise<UserDocument | null> {
-    return this.userModel.findOneAndDelete({ username: username.trim().toLowerCase() }).exec();
+    return this.userModel
+      .findOneAndDelete({ username: username.trim().toLowerCase() })
+      .exec();
   }
 
   async count(filter: object = {}): Promise<number> {

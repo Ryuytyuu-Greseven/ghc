@@ -2,6 +2,7 @@ export const te = {
   translation: {
     common: {
       signOut: "సైన్ అవుట్",
+      refresh: "రీఫ్రెష్ చేయండి",
       addFacility: "సదుపాయాన్ని జోడించు",
       searchFacilities: "సదుపాయాల కోసం వెతకండి...",
       all: "అన్ని",
@@ -69,7 +70,8 @@ export const te = {
       "critical-alerts": "కీలక హెచ్చరికలు",
       availability: "నా అందుబాటు",
       transfers: "కవరేజ్ & బదిలీలు",
-      audits: "ఆడిట్ లాగ్స్"
+      audits: "ఆడిట్ లాగ్స్",
+      reports: "నివేదికలు"
     },
     roles: {
       Admin: "అడ్మిన్",
@@ -753,6 +755,57 @@ export const te = {
         ICU: "ఐసీయూ",
         "Operation Theatre": "ఆపరేషన్ థియేటర్",
         Administration: "అడ్మినిస్ట్రేషన్"
+      },
+      reports: {
+        subtitle: "సిస్టమ్ పనితీరు, క్లినికల్ గణాంకాలు, బెడ్ల లభ్యత మరియు స్టాక్ తనిఖీలను చూడండి.",
+        allBranches: "అన్ని బ్రాంచీలు",
+        to: "నుండి",
+        exportReport: "ఎక్సెల్ డౌన్‌లోడ్",
+        tabOccupancy: "బెడ్ ఆక్యుపెన్సీ సామర్థ్యం",
+        tabClinical: "క్లినికల్ విశ్లేషణలు",
+        tabStaffing: "సిబ్బంది పంపిణీ",
+        tabInventory: "స్టాక్ లభ్యత & గడువు వివరాలు",
+        loading: "నివేదిక విశ్లేషణను సేకరిస్తోంది...",
+        error: "అనుకోని లోపం సంభవించింది",
+        totalBeds: "మొత్తం బెడ్లు",
+        occupiedBeds: "భర్తీ అయిన బెడ్లు",
+        availableBeds: "అందుబాటులో ఉన్న బెడ్లు",
+        averageOccupancy: "సగటు ఆక్యుపెన్సీ",
+        branchBreakdown: "బ్రాంచ్ సామర్థ్యాల వివరాలు",
+        colBranchName: "బ్రాంచ్ పేరు",
+        colType: "రకం",
+        colTotalBeds: "మొత్తం బెడ్లు",
+        colOccupiedBeds: "నిండిన బెడ్లు",
+        colAvailableBeds: "ఖాళీ బెడ్లు",
+        colOccupancyRate: "ఆక్యుపెన్సీ రేటు",
+        totalConsultations: "మొత్తం సంప్రదింపులు",
+        visitsRange: "ఎంచుకున్న తేదీల మధ్య జరిగిన సందర్శనలు.",
+        livePatient: "లైవ్ రోగి సమాచారం",
+        topDiagnoses: "టాప్ వ్యాధి నిర్ధారణ సమస్యలు",
+        noDiagnoses: "ఎంచుకున్న ఫిల్టర్‌లకు సంబంధించిన రికార్డులు లేవు.",
+        cases: "కేసులు",
+        highlyPrescribed: "ఎక్కువగా సూచించిన మందులు",
+        noMedicines: "మందుల ప్రిస్క్రిప్షన్లు ఏవీ లేవు.",
+        units: "యూనిట్లు",
+        totalStaff: "మొత్తం నమోదైన సిబ్బంది",
+        clinicalAdminBase: "వైద్య మరియు పరిపాలనా సిబ్బంది",
+        staffDept: "విభాగం వారీగా సిబ్బంది సంఖ్య",
+        members: "సభ్యులు",
+        staffRole: "పాత్రల వారీగా సిబ్బంది సంఖ్య",
+        expiringSoon: "తదుపరి 90 రోజుల్లో గడువు ముగిసే స్టాక్",
+        noExpiry: "తదుపరి 90 రోజుల్లో గడువు ముగిసే స్టాక్ ఏదీ లేదు.",
+        colBranch: "शाखा",
+        medsByBranch: "शाखावार निर्धारित दवाएं",
+        colMedName: "మందు పేరు",
+        colBatchNo: "బ్యాచ్ నంబర్",
+        colQty: "పరిమాణం",
+        colExpiryDate: "గడువు తేదీ",
+        stockCategory: "వర్గం వారీగా స్టాక్",
+        noStock: "ఎటువంటి స్టాక్ నమోదు కాలేదు.",
+        uniqueItems: "ప్రత్యేక వస్తువులు",
+        medicineAvailabilityTitle: "మందుల స్టాక్ లభ్యత",
+        colBranchesCount: "స్టాక్ ఉన్న బ్రాంచీలు",
+        colBatchesCount: "బ్యాచ్‌లు"
+      }
     }
-  }
-};
+  };

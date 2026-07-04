@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { PatientDataRepository } from '../repositories/patient-data.repository';
 import { PatientData } from '../schemas/patient-data.schema';
@@ -65,24 +69,32 @@ export class PatientDataService {
     return { id, removed: true };
   }
 
-
   private async notifyDoctorAssignment(visit: any, data: Record<string, any>) {
-    const doctorUserId = data.doctorUserId ? String(data.doctorUserId).trim() : '';
+    const doctorUserId = data.doctorUserId
+      ? String(data.doctorUserId).trim()
+      : '';
     if (!doctorUserId || !Types.ObjectId.isValid(doctorUserId)) return;
 
-    const patient = await this.patientRepository.findById(visit.patientId.toString());
+    const patient = await this.patientRepository.findById(
+      visit.patientId.toString(),
+    );
     if (!patient) return;
 
-    const staff = await this.staffRepository.findOne({ userId: new Types.ObjectId(doctorUserId) });
+    const staff = await this.staffRepository.findOne({
+      userId: new Types.ObjectId(doctorUserId),
+    });
     const doctorEmail = staff?.email?.trim() || undefined;
 
-    void this.notificationsService.dispatch(NotificationType.PATIENT_ASSIGNED_TO_DOCTOR, {
-      patient,
-      visit,
-      doctorUserId,
-      doctorName: String(data.doctor ?? visit.doctor ?? 'your doctor'),
-      doctorEmail,
-    });
+    void this.notificationsService.dispatch(
+      NotificationType.PATIENT_ASSIGNED_TO_DOCTOR,
+      {
+        patient,
+        visit,
+        doctorUserId,
+        doctorName: String(data.doctor ?? visit.doctor ?? 'your doctor'),
+        doctorEmail,
+      },
+    );
   }
 
   private async notifyMedicinesAssigned(
@@ -96,14 +108,19 @@ export class PatientDataService {
     if (medicines.length === 0) return;
     if (!this.medicinesChanged(existing.medicines ?? [], medicines)) return;
 
-    const patient = await this.patientRepository.findById(visit.patientId.toString());
+    const patient = await this.patientRepository.findById(
+      visit.patientId.toString(),
+    );
     if (!patient) return;
 
-    void this.notificationsService.dispatch(NotificationType.PATIENT_MEDICINES_ASSIGNED, {
-      patient,
-      visit,
-      medicines,
-    });
+    void this.notificationsService.dispatch(
+      NotificationType.PATIENT_MEDICINES_ASSIGNED,
+      {
+        patient,
+        visit,
+        medicines,
+      },
+    );
   }
 
   private medicinesChanged(
@@ -113,54 +130,79 @@ export class PatientDataService {
     const serialize = (list: { name: string; quantity: number }[]) =>
       JSON.stringify(
         [...list]
-          .map(m => ({ name: m.name, quantity: m.quantity }))
+          .map((m) => ({ name: m.name, quantity: m.quantity }))
           .sort((a, b) => a.name.localeCompare(b.name)),
       );
     return serialize(before) !== serialize(after);
   }
 
-  private preparePatientData(data: Record<string, any>, partial = false): Partial<PatientData> {
+  private preparePatientData(
+    data: Record<string, any>,
+    partial = false,
+  ): Partial<PatientData> {
     const requiredFields = ['patientId', 'problem', 'visitDate', 'doctor'];
 
     if (!partial) {
-      requiredFields.forEach(field => {
+      requiredFields.forEach((field) => {
         const value = data[field];
-        if (value === undefined || value === null || (typeof value === 'string' && value.trim() === '')) {
+        if (
+          value === undefined ||
+          value === null ||
+          (typeof value === 'string' && value.trim() === '')
+        ) {
           throw new BadRequestException(`${field} is required`);
         }
       });
     }
 
-    if (data.patientId !== undefined && !Types.ObjectId.isValid(data.patientId)) {
+    if (
+      data.patientId !== undefined &&
+      !Types.ObjectId.isValid(data.patientId)
+    ) {
       throw new BadRequestException('patientId is invalid');
     }
 
     const patientData: Partial<PatientData> = {};
-    if (data.patientId) patientData.patientId = new Types.ObjectId(data.patientId);
-    if (data.problem !== undefined) patientData.problem = String(data.problem).trim();
-    if (data.visitDate !== undefined) patientData.visitDate = new Date(data.visitDate);
-    if (data.category !== undefined) patientData.category = String(data.category).trim();
+    if (data.patientId)
+      patientData.patientId = new Types.ObjectId(data.patientId);
+    if (data.problem !== undefined)
+      patientData.problem = String(data.problem).trim();
+    if (data.visitDate !== undefined)
+      patientData.visitDate = new Date(data.visitDate);
+    if (data.category !== undefined)
+      patientData.category = String(data.category).trim();
     if (data.medicines !== undefined) {
       patientData.medicines = Array.isArray(data.medicines)
         ? data.medicines
             .map((medicine: unknown) => this.normalizeMedicine(medicine))
-            .filter((medicine): medicine is { name: string; quantity: number } => medicine !== null)
+            .filter(
+              (medicine): medicine is { name: string; quantity: number } =>
+                medicine !== null,
+            )
         : [];
     }
-    if (data.doctor !== undefined) patientData.doctor = String(data.doctor).trim();
-    if (data.doctorUserId !== undefined && data.doctorUserId !== null && String(data.doctorUserId).trim() !== '') {
+    if (data.doctor !== undefined)
+      patientData.doctor = String(data.doctor).trim();
+    if (
+      data.doctorUserId !== undefined &&
+      data.doctorUserId !== null &&
+      String(data.doctorUserId).trim() !== ''
+    ) {
       if (!Types.ObjectId.isValid(String(data.doctorUserId))) {
         throw new BadRequestException('doctorUserId is invalid');
       }
       patientData.doctorUserId = new Types.ObjectId(String(data.doctorUserId));
     }
     if (data.notes !== undefined) patientData.notes = String(data.notes).trim();
-    if (data.isActive !== undefined) patientData.isActive = Boolean(data.isActive);
+    if (data.isActive !== undefined)
+      patientData.isActive = Boolean(data.isActive);
 
     return patientData;
   }
 
-  private normalizeMedicine(medicine: unknown): { name: string; quantity: number } | null {
+  private normalizeMedicine(
+    medicine: unknown,
+  ): { name: string; quantity: number } | null {
     if (typeof medicine === 'string') {
       const trimmed = medicine.trim();
       if (!trimmed) return null;
@@ -185,7 +227,9 @@ export class PatientDataService {
   private async applyBranchInventoryAdjustments(adjustments: unknown) {
     if (adjustments === undefined) return;
     if (!Array.isArray(adjustments)) {
-      throw new BadRequestException('branchInventoryAdjustments must be an array');
+      throw new BadRequestException(
+        'branchInventoryAdjustments must be an array',
+      );
     }
 
     for (const adjustment of adjustments) {

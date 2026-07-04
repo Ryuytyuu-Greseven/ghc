@@ -1,9 +1,23 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Query, Req, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Query,
+  Req,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { HospitalsService } from './hospitals.service';
 import { FacilityAlertsService } from './facility-alerts/facility-alerts.service';
 import { UsersService } from '../users/users.service';
+import { CreateHospitalDto } from './dto/create-hospital.dto';
+import { UpdateHospitalDto } from './dto/update-hospital.dto';
 
 @Controller('hospitals')
 @UseGuards(JwtAuthGuard)
@@ -11,8 +25,8 @@ export class HospitalsController {
   constructor(
     private readonly hospitalsService: HospitalsService,
     private readonly facilityAlertsService: FacilityAlertsService,
-    private readonly usersService: UsersService
-  ) { }
+    private readonly usersService: UsersService,
+  ) {}
 
   @Get('district/intervention-alerts')
   getInterventionAlerts(@Req() req: any) {
@@ -26,7 +40,10 @@ export class HospitalsController {
   @Get()
   async getHospitals(@Req() req: any, @Query() query?: Record<string, any>) {
     const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     const filter = hospitalId
       ? {
           $or: [
@@ -41,10 +58,16 @@ export class HospitalsController {
   @Get(':id/history')
   async getHospitalHistory(@Req() req: any, @Param('id') id: string) {
     const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     if (hospitalId) {
       const targetHospital = await this.hospitalsService.getHospitalById(id);
-      if (targetHospital.hospitalId !== hospitalId && targetHospital._id.toString() !== hospitalId) {
+      if (
+        targetHospital.hospitalId !== hospitalId &&
+        targetHospital._id.toString() !== hospitalId
+      ) {
         throw new ForbiddenException('Access denied to this hospital history');
       }
     }
@@ -54,11 +77,19 @@ export class HospitalsController {
   @Get(':id/bed-allocations')
   async getHospitalBedAllocations(@Req() req: any, @Param('id') id: string) {
     const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     if (hospitalId) {
       const targetHospital = await this.hospitalsService.getHospitalById(id);
-      if (targetHospital.hospitalId !== hospitalId && targetHospital._id.toString() !== hospitalId) {
-        throw new ForbiddenException('Access denied to this hospital bed allocations');
+      if (
+        targetHospital.hospitalId !== hospitalId &&
+        targetHospital._id.toString() !== hospitalId
+      ) {
+        throw new ForbiddenException(
+          'Access denied to this hospital bed allocations',
+        );
       }
     }
     return this.hospitalsService.getHospitalBedAllocations(id);
@@ -67,10 +98,16 @@ export class HospitalsController {
   @Get(':id')
   async getHospital(@Req() req: any, @Param('id') id: string) {
     const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
     if (hospitalId) {
       const targetHospital = await this.hospitalsService.getHospitalById(id);
-      if (targetHospital.hospitalId !== hospitalId && targetHospital._id.toString() !== hospitalId) {
+      if (
+        targetHospital.hospitalId !== hospitalId &&
+        targetHospital._id.toString() !== hospitalId
+      ) {
         throw new ForbiddenException('Access denied to this hospital details');
       }
     }
@@ -78,7 +115,7 @@ export class HospitalsController {
   }
 
   @Post()
-  async createHospital(@Req() req: any, @Body() body: Record<string, any>) {
+  async createHospital(@Req() req: any, @Body() body: CreateHospitalDto) {
     if (req.user.role !== 'Admin') {
       throw new ForbiddenException('Only Administrators can create hospitals');
     }
@@ -86,7 +123,11 @@ export class HospitalsController {
   }
 
   @Put(':id')
-  async updateHospital(@Req() req: any, @Param('id') id: string, @Body() body: Record<string, any>) {
+  async updateHospital(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() body: UpdateHospitalDto,
+  ) {
     if (req.user.role !== 'Admin') {
       throw new ForbiddenException('Only Administrators can update hospitals');
     }

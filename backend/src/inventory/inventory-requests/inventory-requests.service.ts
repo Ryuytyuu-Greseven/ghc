@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { InventoryRequestRepository } from '../../repositories/inventory-request.repository';
 import { CentralInventoryRepository } from '../../repositories/central-inventory.repository';
@@ -24,7 +29,9 @@ export class InventoryRequestsService {
 
   async findAll(query: Record<string, any> = {}, user?: any) {
     if (user && user.role !== 'Admin') {
-      const staff = await this.staffRepo.findOne({ userId: new Types.ObjectId(user.userId) });
+      const staff = await this.staffRepo.findOne({
+        userId: new Types.ObjectId(user.userId),
+      });
       if (staff && staff.hospitalId) {
         const staffHospitalId = (staff.hospitalId as any)._id
           ? (staff.hospitalId as any)._id.toString()
@@ -32,19 +39,24 @@ export class InventoryRequestsService {
         query.branchId = staffHospitalId;
       }
     }
-    const { data, total, page, pageSize } = await this.requestRepo.findPaginated(query);
+    const { data, total, page, pageSize } =
+      await this.requestRepo.findPaginated(query);
     return buildPaginatedResponse(data, total, page, pageSize);
   }
 
   async findByBranch(branchId: string, user?: any) {
     if (user && user.role !== 'Admin') {
-      const staff = await this.staffRepo.findOne({ userId: new Types.ObjectId(user.userId) });
+      const staff = await this.staffRepo.findOne({
+        userId: new Types.ObjectId(user.userId),
+      });
       if (staff && staff.hospitalId) {
         const staffHospitalId = (staff.hospitalId as any)._id
           ? (staff.hospitalId as any)._id.toString()
           : staff.hospitalId.toString();
         if (staffHospitalId !== branchId) {
-          throw new ForbiddenException('You can only access requests for your assigned facility.');
+          throw new ForbiddenException(
+            'You can only access requests for your assigned facility.',
+          );
         }
       }
     }
@@ -71,10 +83,14 @@ export class InventoryRequestsService {
       const requestedQty = Number(item.requestedQty);
 
       if (!itemId) {
-        throw new BadRequestException('Item ID is required for each request item.');
+        throw new BadRequestException(
+          'Item ID is required for each request item.',
+        );
       }
       if (isNaN(requestedQty) || requestedQty <= 0) {
-        throw new BadRequestException('Requested quantity must be a positive number.');
+        throw new BadRequestException(
+          'Requested quantity must be a positive number.',
+        );
       }
 
       // Check available quantity in Central Inventory
@@ -85,13 +101,17 @@ export class InventoryRequestsService {
         const masterItem = await this.masterRepo.findById(itemId.toString());
         const itemName = masterItem ? masterItem.itemName : 'Unknown Item';
         throw new BadRequestException(
-          `Requested quantity for item "${itemName}" exceeds available Central Inventory stock. Available: ${totalAvailable}, Requested: ${requestedQty}`
+          `Requested quantity for item "${itemName}" exceeds available Central Inventory stock. Available: ${totalAvailable}, Requested: ${requestedQty}`,
         );
       }
     }
 
     const requestNumber = await this.requestRepo.generateRequestNumber();
-    return this.requestRepo.create({ ...data, requestNumber, status: RequestStatus.PENDING });
+    return this.requestRepo.create({
+      ...data,
+      requestNumber,
+      status: RequestStatus.PENDING,
+    });
   }
 
   async approve(id: string, body: Record<string, any>, user?: any) {
@@ -139,7 +159,7 @@ export class InventoryRequestsService {
           branchIdStr,
           item.itemId.toString(),
           item.issuedQty,
-          request._id as Types.ObjectId,
+          request._id,
           performedBy,
         );
       } else {
@@ -147,18 +167,25 @@ export class InventoryRequestsService {
           item.itemId.toString(),
           item.issuedQty,
           branchIdStr,
-          request._id as Types.ObjectId,
+          request._id,
           performedBy,
         );
       }
     }
 
     const newStatus = this.helper.determineStatus(
-      updatedItems.map((i) => ({ requestedQty: i.requestedQty, approvedQty: i.approvedQty })),
+      updatedItems.map((i) => ({
+        requestedQty: i.requestedQty,
+        approvedQty: i.approvedQty,
+      })),
     );
 
-    const updatedRequest = await this.requestRepo.update(id, { status: newStatus, items: updatedItems, remarks });
-    
+    const updatedRequest = await this.requestRepo.update(id, {
+      status: newStatus,
+      items: updatedItems,
+      remarks,
+    });
+
     await this.transactionRepo.create({
       module: 'inventory',
       action: 'UPDATE',
@@ -169,7 +196,7 @@ export class InventoryRequestsService {
         requestId: request._id,
         status: newStatus,
         remarks,
-      }
+      },
     });
 
     return updatedRequest;
@@ -188,7 +215,7 @@ export class InventoryRequestsService {
       status: RequestStatus.REJECTED,
       remarks: body.remarks ?? '',
     });
-    
+
     const performedBy = body.performedBy ?? 'System';
     await this.transactionRepo.create({
       module: 'inventory',
@@ -200,7 +227,7 @@ export class InventoryRequestsService {
         requestId: request._id,
         status: RequestStatus.REJECTED,
         remarks: body.remarks,
-      }
+      },
     });
 
     return updatedRequest;
@@ -212,7 +239,10 @@ export class InventoryRequestsService {
     }
     const request = await this.requestRepo.findById(id);
     if (!request) throw new NotFoundException(`Request ${id} not found`);
-    return this.requestRepo.update(id, { status: body.status, remarks: body.remarks });
+    return this.requestRepo.update(id, {
+      status: body.status,
+      remarks: body.remarks,
+    });
   }
 
   private checkRole(user: any, allowedRole: 'Admin' | 'NotAdmin') {
@@ -223,11 +253,15 @@ export class InventoryRequestsService {
 
     if (allowedRole === 'Admin') {
       if (!isAdmin) {
-        throw new ForbiddenException('Only users with the Admin role can approve or reject inventory requests.');
+        throw new ForbiddenException(
+          'Only users with the Admin role can approve or reject inventory requests.',
+        );
       }
     } else if (allowedRole === 'NotAdmin') {
       if (isAdmin) {
-        throw new ForbiddenException('Admin users cannot raise inventory requests.');
+        throw new ForbiddenException(
+          'Admin users cannot raise inventory requests.',
+        );
       }
     }
   }
@@ -258,7 +292,7 @@ export class InventoryRequestsService {
     for (const batch of batches) {
       if (remaining <= 0) break;
       const deduct = Math.min(batch.availableQty, remaining);
-      
+
       // Deduct from Central
       await this.centralRepo.update(batch._id.toString(), {
         $inc: { availableQty: -deduct },
@@ -287,7 +321,7 @@ export class InventoryRequestsService {
           toLocation: branchId,
           transactionType: TransactionType.TRANSFER,
           requestId,
-        }
+        },
       });
 
       remaining -= deduct;
@@ -302,7 +336,10 @@ export class InventoryRequestsService {
     requestId: Types.ObjectId,
     performedBy: string,
   ): Promise<void> {
-    const batches = await this.branchRepo.findByBranchAndItem(fromBranchId, itemId);
+    const batches = await this.branchRepo.findByBranchAndItem(
+      fromBranchId,
+      itemId,
+    );
     // FIFO: oldest expiry date first, nulls last
     batches.sort((a, b) => {
       const aTime = a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity;
@@ -321,7 +358,7 @@ export class InventoryRequestsService {
     for (const batch of batches) {
       if (remaining <= 0) break;
       const deduct = Math.min(batch.availableQty, remaining);
-      
+
       // Deduct from source branch
       await this.branchRepo.update(batch._id.toString(), {
         $inc: { availableQty: -deduct },
@@ -350,7 +387,7 @@ export class InventoryRequestsService {
           toLocation: toBranchId,
           transactionType: TransactionType.TRANSFER,
           requestId,
-        }
+        },
       });
 
       remaining -= deduct;

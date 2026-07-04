@@ -36,7 +36,10 @@ const listMedicines = tool(
     name: 'list_medicines',
     description: 'List all available medicines; optionally filter by category',
     schema: z.object({
-      category: z.string().optional().describe('Category name e.g. Antibiotic, Analgesic, Vitamin'),
+      category: z
+        .string()
+        .optional()
+        .describe('Category name e.g. Antibiotic, Analgesic, Vitamin'),
     }),
   },
 );
@@ -73,7 +76,10 @@ const createMedicine = tool(
       stock: z.number().describe('Initial stock quantity'),
       pricePerUnit: z.number().describe('Price per unit'),
       manufacturer: z.string().optional(),
-      category: z.string().optional().describe('e.g. Antibiotic, Analgesic, Vitamin'),
+      category: z
+        .string()
+        .optional()
+        .describe('e.g. Antibiotic, Analgesic, Vitamin'),
       expiryDate: z.string().optional().describe('Expiry date as YYYY-MM-DD'),
     }),
   },

@@ -2,6 +2,7 @@ export const hi = {
   translation: {
     common: {
       signOut: "साइन आउट",
+      refresh: "ताज़ा करें",
       addFacility: "सुविधा जोड़ें",
       searchFacilities: "सुविधाएं खोजें...",
       all: "सभी",
@@ -69,7 +70,8 @@ export const hi = {
       "critical-alerts": "गंभीर अलर्ट",
       availability: "मेरी उपलब्धता",
       transfers: "कवरेज और स्थानांतरण",
-      audits: "ऑडिट लॉग्स"
+      audits: "ऑडिट लॉग्स",
+      reports: "रिपोर्ट"
     },
     roles: {
       Admin: "एडमिन",
@@ -753,6 +755,57 @@ export const hi = {
         ICU: "आईसीयू",
         "Operation Theatre": "ऑपरेशन थियेटर",
         Administration: "प्रशासन"
+      },
+      reports: {
+        subtitle: "सिस्टम की विफलता, नैदानिक आंकड़े, बिस्तर की उपलब्धता और स्टॉक जांच तक पहुंचें।",
+        allBranches: "सभी शाखाएं",
+        to: "तक",
+        exportReport: "एक्सेल निर्यात करें",
+        tabOccupancy: "बिस्तर अधिभोग क्षमता",
+        tabClinical: "नैदानिक निदान",
+        tabStaffing: "कर्मचारी वितरण",
+        tabInventory: "इन्वेंटरी स्थिति और समाप्ति",
+        loading: "रिपोर्ट विश्लेषण संकलित किया जा रहा है...",
+        error: "एक अप्रत्याशित त्रुटि हुई",
+        totalBeds: "कुल बिस्तर",
+        occupiedBeds: "भरे हुए बिस्तर",
+        availableBeds: "उपलब्ध बिस्तर",
+        averageOccupancy: "औसत अधिभोग",
+        branchBreakdown: "शाखा क्षमता विवरण",
+        colBranchName: "शाखा का नाम",
+        colType: "शाखा प्रकार",
+        colTotalBeds: "कुल बिस्तर",
+        colOccupiedBeds: "भरे हुए बिस्तर",
+        colAvailableBeds: "उपलब्ध बिस्तर",
+        colOccupancyRate: "अधिभोग दर",
+        totalConsultations: "कुल परामर्श",
+        visitsRange: "चयनित तिथि सीमा से मेल खाने वाले दौरे।",
+        livePatient: "लाइव रोगी जुड़ाव",
+        topDiagnoses: "शीर्ष नैदानिक समस्याएं",
+        noDiagnoses: "चयनित फ़िल्टर के लिए कोई नैदानिक रिकॉर्ड नहीं मिला।",
+        cases: "मामले",
+        highlyPrescribed: "अत्यधिक निर्धारित दवाएं",
+        noMedicines: "कोई दवा नुस्खा नहीं मिला।",
+        units: "इकाइयां",
+        totalStaff: "कुल ऑनबोर्डेड कर्मचारी",
+        clinicalAdminBase: "नैदानिक और प्रशासन आधार",
+        staffDept: "विभाग द्वारा कर्मचारियों की संख्या",
+        members: "सदस्य",
+        staffRole: "उपयोगकर्ता भूमिका द्वारा कर्मचारियों की संख्या",
+        expiringSoon: "अगले 90 दिनों में समाप्त होने वाले बैच",
+        noExpiry: "अगले 90 दिनों में कोई भी बैच समाप्त नहीं हो रहा है।",
+        colBranch: "शाखा",
+        medsByBranch: "शाखावार निर्धारित दवाएं",
+        colMedName: "दवा का नाम",
+        colBatchNo: "बैच नंबर",
+        colQty: "मात्रा",
+        colExpiryDate: "समाप्ति तिथि",
+        stockCategory: "श्रेणी के अनुसार स्टॉक",
+        noStock: "कोई इन्वेंटरी स्टॉक प्रविष्टि नहीं मिली।",
+        uniqueItems: "अद्वितीय वस्तुएं",
+        medicineAvailabilityTitle: "दवा स्टॉक उपलब्धता",
+        colBranchesCount: "स्टॉक वाली शाखाएं",
+        colBatchesCount: "बैच"
+      }
     }
-  }
-};
+  };

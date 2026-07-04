@@ -51,13 +51,19 @@ type NotificationTypeConfig = {
   buildEmails: (payload: unknown) => EmailNotificationItem[];
 };
 
-function hospitalLabel(patient: PatientDocument, hospitalName?: string): string {
+function hospitalLabel(
+  patient: PatientDocument,
+  hospitalName?: string,
+): string {
   if (hospitalName) return hospitalName;
   const hospital = patient.hospitalId as { name?: string } | undefined;
   return hospital?.name ?? 'the hospital';
 }
 
-export const notificationTypeConfig: Record<NotificationType, NotificationTypeConfig> = {
+export const notificationTypeConfig: Record<
+  NotificationType,
+  NotificationTypeConfig
+> = {
   [NotificationType.PATIENT_ONBOARDED]: {
     category: 'success',
     buildInApp: () => [],
@@ -65,32 +71,38 @@ export const notificationTypeConfig: Record<NotificationType, NotificationTypeCo
       const { patient, hospitalName } = payload as PatientOnboardedPayload;
       if (!patient.email) return [];
       const facility = hospitalLabel(patient, hospitalName);
-      return [{
-        to: patient.email,
-        subject: 'Welcome to GHC — Registration Successful',
-        html: patientOnboardedTemplate(patient.name, facility),
-      }];
+      return [
+        {
+          to: patient.email,
+          subject: 'Welcome to GHC — Registration Successful',
+          html: patientOnboardedTemplate(patient.name, facility),
+        },
+      ];
     },
   },
 
   [NotificationType.PATIENT_ASSIGNED_TO_DOCTOR]: {
     category: 'info',
     buildInApp: (payload: unknown) => {
-      const { patient, visit, doctorUserId } = payload as PatientAssignedToDoctorPayload;
+      const { patient, visit, doctorUserId } =
+        payload as PatientAssignedToDoctorPayload;
       if (!doctorUserId) return [];
-      return [{
-        userId: doctorUserId,
-        title: 'New patient assigned',
-        body: `Patient ${patient.name} has been assigned to you for ${visit.problem || 'a visit'}.`,
-        metadata: {
-          patientId: patient._id.toString(),
-          visitId: visit._id.toString(),
-          doctorUserId,
+      return [
+        {
+          userId: doctorUserId,
+          title: 'New patient assigned',
+          body: `Patient ${patient.name} has been assigned to you for ${visit.problem || 'a visit'}.`,
+          metadata: {
+            patientId: patient._id.toString(),
+            visitId: visit._id.toString(),
+            doctorUserId,
+          },
         },
-      }];
+      ];
     },
     buildEmails: (payload: unknown) => {
-      const { patient, visit, doctorName, doctorEmail } = payload as PatientAssignedToDoctorPayload;
+      const { patient, visit, doctorName, doctorEmail } =
+        payload as PatientAssignedToDoctorPayload;
       const emails: EmailNotificationItem[] = [];
 
       if (patient.email) {
@@ -125,23 +137,26 @@ export const notificationTypeConfig: Record<NotificationType, NotificationTypeCo
     category: 'info',
     buildInApp: () => [],
     buildEmails: (payload: unknown) => {
-      const { patient, visit, medicines } = payload as PatientMedicinesAssignedPayload;
+      const { patient, visit, medicines } =
+        payload as PatientMedicinesAssignedPayload;
       if (!patient.email || medicines.length === 0) return [];
 
       const visitDate = visit.visitDate
         ? new Date(visit.visitDate).toLocaleDateString()
         : 'your recent visit';
 
-      return [{
-        to: patient.email,
-        subject: 'Your Prescribed Medicines — GHC',
-        html: medicinesAssignedTemplate(
-          patient.name,
-          visitDate,
-          visit.doctor,
-          medicines,
-        ),
-      }];
+      return [
+        {
+          to: patient.email,
+          subject: 'Your Prescribed Medicines — GHC',
+          html: medicinesAssignedTemplate(
+            patient.name,
+            visitDate,
+            visit.doctor,
+            medicines,
+          ),
+        },
+      ];
     },
   },
 };

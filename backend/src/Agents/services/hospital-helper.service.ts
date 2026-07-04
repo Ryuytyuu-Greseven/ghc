@@ -5,11 +5,13 @@ import { Patient, PatientDocument } from '../../schemas/patient.schema';
 import { Staff, StaffDocument } from '../../schemas/staff.schema';
 
 export class HospitalHelperService {
-  static async findPatientsByHospital(hospitalId: string): Promise<PatientDocument[]> {
+  static async findPatientsByHospital(
+    hospitalId: string,
+  ): Promise<PatientDocument[]> {
     if (!appInstance) {
       throw new Error('NestJS application context is not initialized');
     }
-    const patientModel = appInstance.get(getModelToken(Patient.name)) as Model<PatientDocument>;
+    const patientModel = appInstance.get(getModelToken(Patient.name));
     const queryId = Types.ObjectId.isValid(hospitalId)
       ? new Types.ObjectId(hospitalId)
       : hospitalId;
@@ -21,11 +23,13 @@ export class HospitalHelperService {
       .exec();
   }
 
-  static async findStaffByHospital(hospitalId: string): Promise<StaffDocument[]> {
+  static async findStaffByHospital(
+    hospitalId: string,
+  ): Promise<StaffDocument[]> {
     if (!appInstance) {
       throw new Error('NestJS application context is not initialized');
     }
-    const staffModel = appInstance.get(getModelToken(Staff.name)) as Model<StaffDocument>;
+    const staffModel = appInstance.get(getModelToken(Staff.name));
     const queryId = Types.ObjectId.isValid(hospitalId)
       ? new Types.ObjectId(hospitalId)
       : hospitalId;

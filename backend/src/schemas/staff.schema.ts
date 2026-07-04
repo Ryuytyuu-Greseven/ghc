@@ -39,8 +39,6 @@ export class Staff {
   })
   email?: string;
 
-
-
   @Prop({
     type: String,
     required: true,
@@ -59,10 +57,6 @@ export class Staff {
     default: 'Full Time',
   })
   employmentType: string;
-
-
-
-
 
   // Doctor Details
   @Prop()

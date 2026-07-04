@@ -19,7 +19,14 @@ If the user asks to "list medicines", "show medicines", "medicine list", "medici
 
 Reply with ONLY one word: hospital | patient | medicine | staff | inventory | out_of_scope`;
 
-const VALID_DOMAINS = new Set(['hospital', 'patient', 'medicine', 'staff', 'inventory', 'out_of_scope']);
+const VALID_DOMAINS = new Set([
+  'hospital',
+  'patient',
+  'medicine',
+  'staff',
+  'inventory',
+  'out_of_scope',
+]);
 
 function parseDomain(content: string): string {
   const normalized = content.trim().toLowerCase();
@@ -49,7 +56,12 @@ export async function supervisorNode(state: typeof AgentState.State) {
   const last = response.messages[response.messages.length - 1];
   const domain = parseDomain(String(last.content ?? ''));
 
-  console.log('[supervisor] transcript:', state.transcript, '→ domain:', domain);
+  console.log(
+    '[supervisor] transcript:',
+    state.transcript,
+    '→ domain:',
+    domain,
+  );
 
   return {
     domain,

@@ -1,10 +1,25 @@
-import { Controller, Get, Param, UseGuards, Req, ForbiddenException, NotFoundException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+  Req,
+  ForbiddenException,
+  NotFoundException,
+  Query,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from '../users/users.service';
-import { BranchInventory, BranchInventoryDocument } from '../schemas/branch-inventory.schema';
-import { InventoryMaster, InventoryMasterDocument } from '../schemas/inventory-master.schema';
+import {
+  BranchInventory,
+  BranchInventoryDocument,
+} from '../schemas/branch-inventory.schema';
+import {
+  InventoryMaster,
+  InventoryMasterDocument,
+} from '../schemas/inventory-master.schema';
 import { InventoryCategory } from '../common/enums';
 
 @Controller('medicines')
@@ -19,10 +34,15 @@ export class MedicinesController {
   ) {}
 
   @Get()
-  async findAll(@Req() req: any, @Query() query?: Record<string, any>): Promise<any[]> {
+  async findAll(
+    @Req() req: any,
+    @Query() query?: Record<string, any>,
+  ): Promise<any[]> {
     const user = req.user;
     const isDashboard = query?.dashboard === 'true';
-    const hospitalId = isDashboard ? await this.usersService.getAssignedHospitalId(user.userId, user.role) : null;
+    const hospitalId = isDashboard
+      ? await this.usersService.getAssignedHospitalId(user.userId, user.role)
+      : null;
 
     if (hospitalId) {
       // Filtered view (Dashboard only): filter by user's assigned hospital/branch
@@ -31,8 +51,12 @@ export class MedicinesController {
         .populate('itemId')
         .exec();
       return branchStock
-        .filter(item => item.itemId && (item.itemId as any).category === InventoryCategory.MEDICINE)
-        .map(item => {
+        .filter(
+          (item) =>
+            item.itemId &&
+            (item.itemId as any).category === InventoryCategory.MEDICINE,
+        )
+        .map((item) => {
           const itemId = item.itemId as any;
           return {
             _id: itemId._id,
@@ -60,7 +84,10 @@ export class MedicinesController {
         const branchStocks = await this.branchInventoryModel
           .find({ itemId: item._id })
           .exec();
-        const totalStock = branchStocks.reduce((sum, b) => sum + (b.availableQty || 0), 0);
+        const totalStock = branchStocks.reduce(
+          (sum, b) => sum + (b.availableQty || 0),
+          0,
+        );
         results.push({
           _id: item._id,
           name: item.itemName,
@@ -82,20 +109,30 @@ export class MedicinesController {
   }
 
   @Get('available')
-  async findAvailable(@Req() req: any, @Query() query?: Record<string, any>): Promise<any[]> {
+  async findAvailable(
+    @Req() req: any,
+    @Query() query?: Record<string, any>,
+  ): Promise<any[]> {
     const list = await this.findAll(req, query);
-    return list.filter(m => m.stock > 0);
+    return list.filter((m) => m.stock > 0);
   }
 
   @Get('category/:category')
-  async findByCategory(@Req() req: any, @Param('category') category: string, @Query() query?: Record<string, any>): Promise<any[]> {
+  async findByCategory(
+    @Req() req: any,
+    @Param('category') category: string,
+    @Query() query?: Record<string, any>,
+  ): Promise<any[]> {
     return this.findAll(req, query);
   }
 
   @Get(':id')
   async findOne(@Req() req: any, @Param('id') id: string): Promise<any> {
     const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
 
     const item = await this.inventoryMasterModel.findById(id).exec();
     if (!item) throw new NotFoundException(`Medicine ${id} not found`);
@@ -103,7 +140,10 @@ export class MedicinesController {
     const branchStocks = await this.branchInventoryModel
       .find({ itemId: item._id })
       .exec();
-    const totalStock = branchStocks.reduce((sum, b) => sum + (b.availableQty || 0), 0);
+    const totalStock = branchStocks.reduce(
+      (sum, b) => sum + (b.availableQty || 0),
+      0,
+    );
 
     const medicine = {
       _id: item._id,

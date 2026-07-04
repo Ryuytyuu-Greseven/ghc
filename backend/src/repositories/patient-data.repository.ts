@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
-import { PatientData, PatientDataDocument } from '../schemas/patient-data.schema';
+import {
+  PatientData,
+  PatientDataDocument,
+} from '../schemas/patient-data.schema';
 
 @Injectable()
 export class PatientDataRepository {
@@ -21,7 +24,10 @@ export class PatientDataRepository {
 
   async findByPatient(patientId: string): Promise<PatientDataDocument[]> {
     return this.patientDataModel
-      .find({ patientId: new Types.ObjectId(patientId), isActive: { $ne: false } })
+      .find({
+        patientId: new Types.ObjectId(patientId),
+        isActive: { $ne: false },
+      })
       .sort({ visitDate: -1 })
       .exec();
   }
@@ -34,7 +40,9 @@ export class PatientDataRepository {
     id: string,
     data: UpdateQuery<PatientDataDocument>,
   ): Promise<PatientDataDocument | null> {
-    return this.patientDataModel.findByIdAndUpdate(id, data, { new: true }).exec();
+    return this.patientDataModel
+      .findByIdAndUpdate(id, data, { new: true })
+      .exec();
   }
 
   async delete(id: string): Promise<PatientDataDocument | null> {

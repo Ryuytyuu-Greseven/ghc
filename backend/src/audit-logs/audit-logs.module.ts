@@ -8,7 +8,9 @@ import { QueryService } from '../common/services/query.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: AuditLog.name, schema: AuditLogSchema }]),
+    MongooseModule.forFeature([
+      { name: AuditLog.name, schema: AuditLogSchema },
+    ]),
   ],
   controllers: [AuditLogsController],
   providers: [QueryService, AuditLogRepository, AuditLogsService],

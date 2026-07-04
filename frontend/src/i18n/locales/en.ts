@@ -2,6 +2,7 @@ export const en = {
   translation: {
     common: {
       signOut: "Sign Out",
+      refresh: "Refresh",
       addFacility: "Add Facility",
       searchFacilities: "Search facilities...",
       all: "All",
@@ -69,7 +70,8 @@ export const en = {
       "critical-alerts": "Critical Alerts",
       availability: "My Availability",
       transfers: "Coverage & Transfers",
-      audits: "Audit Logs"
+      audits: "Audit Logs",
+      reports: "Reports"
     },
     roles: {
       Admin: "Admin",
@@ -753,6 +755,58 @@ export const en = {
         ICU: "ICU",
         "Operation Theatre": "Operation Theatre",
         Administration: "Administration"
+      },
+      reports: {
+        subtitle: "Access system breakdowns, clinical statistics, bed availability, and stock checks.",
+        allBranches: "All Branches",
+        to: "to",
+        exportReport: "Export Excel",
+        tabOccupancy: "Bed Occupancy Capacity",
+        tabClinical: "Clinical Diagnostics",
+        tabStaffing: "Staffing Distribution",
+        tabInventory: "Inventory Status & Expiry",
+        loading: "Compiling Report Analytics...",
+        error: "An unexpected error occurred",
+        totalBeds: "Total Beds",
+        occupiedBeds: "Occupied Beds",
+        availableBeds: "Available Beds",
+        averageOccupancy: "Average Occupancy",
+        branchBreakdown: "Branch Capacity breakdown",
+        colBranchName: "Branch Name",
+        colType: "Branch Type",
+        colTotalBeds: "Total Beds",
+        colOccupiedBeds: "Occupied Beds",
+        colAvailableBeds: "Available Beds",
+        colOccupancyRate: "Occupancy Rate",
+        totalConsultations: "Total Consultations",
+        visitsRange: "Visits matching selected date range.",
+        livePatient: "Live Patient Engagement",
+        topDiagnoses: "Top Diagnostic Problems",
+        noDiagnoses: "No diagnostic records found for selected filters.",
+        cases: "cases",
+        highlyPrescribed: "Highly Prescribed Medicines",
+        noMedicines: "No medicine prescriptions found.",
+        units: "units",
+        totalStaff: "Total Onboarded Staff",
+        clinicalAdminBase: "Clinical & Administration Base",
+        staffDept: "Staff count by Department",
+        members: "members",
+        staffRole: "Staff count by User Role",
+        staffBranch: "Staff Assignment by Branch",
+        expiringSoon: "Batches Expiring in Next 90 Days",
+        noExpiry: "No batches expiring in the next 90 days.",
+        colMedName: "Medicine Name",
+        colBranch: "Branch",
+        medsByBranch: "Prescribed Medicines by Branch",
+        colBatchNo: "Batch No",
+        colQty: "Qty",
+        colExpiryDate: "Expiry Date",
+        stockCategory: "Stock by Category",
+        noStock: "No inventory stock entries found.",
+        uniqueItems: "unique items",
+        medicineAvailabilityTitle: "Medicine Stock Availability",
+        colBranchesCount: "Branches with Stock",
+        colBatchesCount: "Batches"
+      }
     }
-  }
-};
+  };

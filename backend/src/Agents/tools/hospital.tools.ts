@@ -33,7 +33,8 @@ export const getHospital = tool(
   },
   {
     name: 'get_hospital',
-    description: 'Get details of a primary (PHC) or community (CHC) healthcare facility by its MongoDB ObjectId',
+    description:
+      'Get details of a primary (PHC) or community (CHC) healthcare facility by its MongoDB ObjectId',
     schema: z.object({
       id: z.string().describe('MongoDB ObjectId of the facility'),
     }),
@@ -93,9 +94,13 @@ export const fetchBedsAvailability = tool(
   },
   {
     name: 'fetchBedsAvailability',
-    description: 'Fetch total and available beds for hospitals, optionally filtering by hospital name',
+    description:
+      'Fetch total and available beds for hospitals, optionally filtering by hospital name',
     schema: z.object({
-      name: z.string().optional().describe('Name of the hospital to search for'),
+      name: z
+        .string()
+        .optional()
+        .describe('Name of the hospital to search for'),
     }),
   },
 );
@@ -126,9 +131,13 @@ export const fetchMedicalInchargeDetails = tool(
   },
   {
     name: 'fetchMedicalInchargeDetails',
-    description: 'Fetch medical officer incharge details for hospitals, optionally filtering by hospital name',
+    description:
+      'Fetch medical officer incharge details for hospitals, optionally filtering by hospital name',
     schema: z.object({
-      name: z.string().optional().describe('Name of the hospital to search for'),
+      name: z
+        .string()
+        .optional()
+        .describe('Name of the hospital to search for'),
     }),
   },
 );
@@ -148,7 +157,8 @@ export const fetchPatientsDetails = tool(
       const result: any[] = [];
       for (const h of data) {
         const hospitalLogicalId = h.hospitalId || h._id.toString();
-        const patients = await HospitalHelperService.findPatientsByHospital(hospitalLogicalId);
+        const patients =
+          await HospitalHelperService.findPatientsByHospital(hospitalLogicalId);
         result.push({
           hospitalId: h._id,
           hospitalName: h.name,
@@ -190,7 +200,8 @@ export const fetchStaffDetails = tool(
       const result: any[] = [];
       for (const h of data) {
         const hospitalLogicalId = h.hospitalId || h._id.toString();
-        const staff = await HospitalHelperService.findStaffByHospital(hospitalLogicalId);
+        const staff =
+          await HospitalHelperService.findStaffByHospital(hospitalLogicalId);
         result.push({
           hospitalId: h._id,
           hospitalName: h.name,
@@ -240,7 +251,8 @@ export const fetchAvailableSpecialists = tool(
   },
   {
     name: 'fetchAvailableSpecialists',
-    description: 'Fetch lists of available specialists (e.g. surgeon, pediatrician) in hospitals, optionally filtering by hospital name',
+    description:
+      'Fetch lists of available specialists (e.g. surgeon, pediatrician) in hospitals, optionally filtering by hospital name',
     schema: z.object({
       name: z.string().optional().describe('Name of the hospital to filter by'),
     }),

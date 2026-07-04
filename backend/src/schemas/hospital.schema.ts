@@ -9,7 +9,12 @@ export class Hospital {
   @Prop({ required: true, trim: true })
   name: string;
 
-  @Prop({ type: String, required: true, trim: true, enum: Object.values(FacilityType) })
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+    enum: Object.values(FacilityType),
+  })
   type: FacilityType;
 
   @Prop({ required: true, trim: true })

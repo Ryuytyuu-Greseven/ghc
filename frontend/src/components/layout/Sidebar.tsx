@@ -11,6 +11,7 @@ import {
   ClipboardList,
   Sparkles,
   AlertOctagon,
+  BarChart3,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
@@ -28,14 +29,15 @@ const allNavItems = [
   { to: '/availability', key: 'availability', icon: Calendar },
   { to: '/transfers', key: 'transfers', icon: Shuffle },
   { to: '/audits', key: 'audits', icon: ClipboardList },
+  { to: '/reports', key: 'reports', icon: BarChart3 },
 ];
 
 const roleNavItemsMap: Record<string, string[]> = {
-  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/critical-alerts', '/transfers', '/audits'],
-  Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics'],
-  Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics'],
-  Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics'],
-  Pharmacist: ['/', '/medicines', '/availability', '/ai-analytics'],
+  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/critical-alerts', '/transfers', '/audits', '/reports'],
+  Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/reports'],
+  Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/reports'],
+  Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/reports'],
+  Pharmacist: ['/', '/medicines', '/availability', '/ai-analytics', '/reports'],
   Compounder: ['/', '/medicines', '/availability', '/ai-analytics'],
   'Lab Technician': ['/', '/medicines', '/availability', '/ai-analytics'],
   Cashier: ['/', '/medicines', '/availability', '/ai-analytics'],

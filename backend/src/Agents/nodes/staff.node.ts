@@ -1,6 +1,11 @@
 import { AIMessage, createAgent } from 'langchain';
 import { llmInstance } from '../../google/vertex.config';
-import { findAbsenceStaff, findAvailableStaff, mapStaff, staffTools } from '../tools/staff.tools';
+import {
+  findAbsenceStaff,
+  findAvailableStaff,
+  mapStaff,
+  staffTools,
+} from '../tools/staff.tools';
 import { STAFF_MAPPING_PROMPT, STAFF_PROMPT } from '../prompts/staff.prompt';
 import { withGuardrails } from '../prompts/guardrails.prompt';
 import { AgentState } from '../state';
