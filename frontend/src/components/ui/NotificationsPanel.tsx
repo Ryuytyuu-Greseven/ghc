@@ -28,15 +28,84 @@ const typeConfig: Record<
   },
 };
 
-function formatRelativeTime(iso: string): string {
+function formatRelativeTime(iso: string, t: any): string {
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return t('common.time.justNow', { defaultValue: 'just now' });
+  if (minutes < 60) return t('common.time.minutesAgo', { defaultValue: '{{count}}m ago', count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t('common.time.hoursAgo', { defaultValue: '{{count}}h ago', count: hours });
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return t('common.time.daysAgo', { defaultValue: '{{count}}d ago', count: days });
+}
+
+function getTranslatedNotification(n: PanelNotification, t: any): { title: string; body: string } {
+  if (n.type === 'HOSPITAL_ONBOARDED') {
+    return {
+      title: t('notifications.hospitalOnboardedTitle', { defaultValue: 'Hospital onboarded successfully' }),
+      body: t('notifications.hospitalOnboardedBody', {
+        defaultValue: 'Facility "{{name}}" ({{type}}) has been successfully onboarded in {{city}} by {{performedBy}}.',
+        name: n.metadata?.name || 'Hospital',
+        type: n.metadata?.type || '',
+        city: n.metadata?.city || '',
+        performedBy: n.metadata?.performedBy || 'admin',
+      }),
+    };
+  }
+  if (n.type === 'HOSPITAL_UPDATED') {
+    return {
+      title: t('notifications.hospitalUpdatedTitle', { defaultValue: 'Hospital profile updated' }),
+      body: t('notifications.hospitalUpdatedBody', {
+        defaultValue: 'Facility profile for "{{name}}" has been updated by {{performedBy}}.',
+        name: n.metadata?.name || 'Hospital',
+        performedBy: n.metadata?.performedBy || 'admin',
+      }),
+    };
+  }
+  if (n.type === 'STAFF_CREATED') {
+    return {
+      title: t('notifications.staffCreatedTitle', { defaultValue: 'Staff registered successfully' }),
+      body: t('notifications.staffCreatedBody', {
+        defaultValue: 'Staff member "{{name}}" ({{role}}) has been successfully registered by {{performedBy}}.',
+        name: n.metadata?.name || 'Staff',
+        role: n.metadata?.role || '',
+        performedBy: n.metadata?.performedBy || 'admin',
+      }),
+    };
+  }
+  if (n.type === 'STAFF_UPDATED') {
+    return {
+      title: t('notifications.staffUpdatedTitle', { defaultValue: 'Staff profile updated' }),
+      body: t('notifications.staffUpdatedBody', {
+        defaultValue: 'Staff profile for "{{name}}" has been updated by {{performedBy}}.',
+        name: n.metadata?.name || 'Staff',
+        performedBy: n.metadata?.performedBy || 'admin',
+      }),
+    };
+  }
+  if (n.type === 'STAFF_ASSIGNED_TO_FACILITY') {
+    return {
+      title: t('notifications.staffAssignedTitle', { defaultValue: 'Staff assigned to facility' }),
+      body: t('notifications.staffAssignedBody', {
+        defaultValue: 'Staff member "{{name}}" has been assigned to {{facility}} by {{performedBy}}.',
+        name: n.metadata?.name || 'Staff',
+        facility: n.metadata?.facility || '',
+        performedBy: n.metadata?.performedBy || 'admin',
+      }),
+    };
+  }
+  if (n.type === 'STAFF_DEASSIGNED_FROM_FACILITY') {
+    return {
+      title: t('notifications.staffDeassignedTitle', { defaultValue: 'Staff de-assigned from facility' }),
+      body: t('notifications.staffDeassignedBody', {
+        defaultValue: 'Staff member "{{name}}" has been de-assigned from {{facility}} by {{performedBy}}.',
+        name: n.metadata?.name || 'Staff',
+        facility: n.metadata?.facility || '',
+        performedBy: n.metadata?.performedBy || 'admin',
+      }),
+    };
+  }
+  return { title: n.title, body: n.body };
 }
 
 export function NotificationsPanel() {
@@ -55,7 +124,7 @@ export function NotificationsPanel() {
       setNotifs(
         data.map(item => ({
           ...item,
-          time: formatRelativeTime(item.createdAt),
+          time: formatRelativeTime(item.createdAt, t),
         })),
       );
     } catch {
@@ -63,7 +132,7 @@ export function NotificationsPanel() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void loadNotifications();
@@ -180,6 +249,7 @@ export function NotificationsPanel() {
             ) : (
               notifs.map(n => {
                 const { icon: Icon, iconClass, bgClass } = typeConfig[n.category];
+                const { title, body } = getTranslatedNotification(n, t);
                 return (
                   <div
                     key={n.id}
@@ -202,7 +272,7 @@ export function NotificationsPanel() {
                               : 'text-slate-800 dark:text-slate-100'
                           )}
                         >
-                          {n.title}
+                          {title}
                         </p>
                         <button
                           onClick={e => { e.stopPropagation(); void dismiss(n.id); }}
@@ -213,7 +283,7 @@ export function NotificationsPanel() {
                         </button>
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
-                        {n.body}
+                        {body}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-slate-400 dark:text-slate-500">{n.time}</span>

@@ -13,10 +13,7 @@ export class AuditLogRepository {
   ) {}
 
   async findAll(filter: object = {}): Promise<AuditLogDocument[]> {
-    return this.model
-      .find(filter)
-      .sort({ createdAt: -1 })
-      .exec();
+    return this.model.find(filter).sort({ createdAt: -1 }).exec();
   }
 
   async findById(id: string): Promise<AuditLogDocument | null> {
@@ -27,23 +24,21 @@ export class AuditLogRepository {
     return this.model.create(data);
   }
 
-  async findPaginated(options: any): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
+  async findPaginated(
+    options: any,
+  ): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
     const queryOptions = { ...options };
 
-    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
-      searchFields: [
-        'module',
-        'action',
-        'message',
-        'performedBy',
-      ],
-      exactFilters: ['module', 'action'],
-      regexFilters: ['performedBy'],
-      dateFilters: {
-        createdAt: { fromParam: 'fromDate', toParam: 'toDate' },
-      },
-      defaultSort: { field: 'createdAt', order: 'desc' },
-    });
+    const { filter, sort, skip, limit, page, pageSize } =
+      this.queryService.buildQuery(queryOptions, {
+        searchFields: ['module', 'action', 'message', 'performedBy'],
+        exactFilters: ['module', 'action'],
+        regexFilters: ['performedBy'],
+        dateFilters: {
+          createdAt: { fromParam: 'fromDate', toParam: 'toDate' },
+        },
+        defaultSort: { field: 'createdAt', order: 'desc' },
+      });
 
     const total = await this.model.countDocuments(filter).exec();
     const data = await this.model

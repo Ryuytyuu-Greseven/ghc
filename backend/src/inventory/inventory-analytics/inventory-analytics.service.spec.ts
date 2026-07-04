@@ -165,7 +165,9 @@ describe('InventoryAnalyticsService', () => {
 
       jest
         .spyOn(service, 'getDailyConsumptionRate')
-        .mockImplementation(async (_itemId, branchId) => (branchId === 'low-branch' ? 2 : 1));
+        .mockImplementation(async (_itemId, branchId) =>
+          branchId === 'low-branch' ? 2 : 1,
+        );
 
       masterRepo.findById.mockResolvedValue({ itemName: 'Saline' });
       hospitalRepo.findById.mockImplementation(async (id: string) => ({
@@ -195,9 +197,17 @@ describe('InventoryAnalyticsService', () => {
       }));
       branchRepo.findByBranchAndItem.mockResolvedValue([{ availableQty: 50 }]);
       requestRepo.generateRequestNumber.mockResolvedValue('REQ-2026-000001');
-      requestRepo.create.mockResolvedValue({ _id: 'req1', requestNumber: 'REQ-2026-000001' });
+      requestRepo.create.mockResolvedValue({
+        _id: 'req1',
+        requestNumber: 'REQ-2026-000001',
+      });
 
-      const result = await service.applyRecommendation(fromBranchId, toBranchId, itemId, 20);
+      const result = await service.applyRecommendation(
+        fromBranchId,
+        toBranchId,
+        itemId,
+        20,
+      );
 
       expect(requestRepo.create).toHaveBeenCalled();
       expect(result.requestNumber).toBe('REQ-2026-000001');

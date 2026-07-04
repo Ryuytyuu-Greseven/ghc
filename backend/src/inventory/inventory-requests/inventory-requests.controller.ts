@@ -1,6 +1,20 @@
-import { Controller, Get, Post, Put, Param, Body, Query, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { InventoryRequestsService } from './inventory-requests.service';
+import { CreateInventoryRequestDto } from './dto/create-inventory-request.dto';
+import { ApproveInventoryRequestDto } from './dto/approve-inventory-request.dto';
+import { RejectInventoryRequestDto } from './dto/reject-inventory-request.dto';
+import { UpdateInventoryRequestStatusDto } from './dto/update-inventory-request-status.dto';
 
 @Controller('inventory-requests')
 @UseGuards(JwtAuthGuard)
@@ -23,22 +37,34 @@ export class InventoryRequestsController {
   }
 
   @Post()
-  create(@Req() req: any, @Body() body: Record<string, any>) {
+  create(@Req() req: any, @Body() body: CreateInventoryRequestDto) {
     return this.service.create(body, req.user);
   }
 
   @Put(':id/approve')
-  approve(@Req() req: any, @Param('id') id: string, @Body() body: Record<string, any>) {
+  approve(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() body: ApproveInventoryRequestDto,
+  ) {
     return this.service.approve(id, body, req.user);
   }
 
   @Put(':id/reject')
-  reject(@Req() req: any, @Param('id') id: string, @Body() body: Record<string, any>) {
+  reject(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() body: RejectInventoryRequestDto,
+  ) {
     return this.service.reject(id, body, req.user);
   }
 
   @Put(':id/status')
-  updateStatus(@Req() req: any, @Param('id') id: string, @Body() body: Record<string, any>) {
+  updateStatus(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() body: UpdateInventoryRequestStatusDto,
+  ) {
     return this.service.updateStatus(id, body, req.user);
   }
 }

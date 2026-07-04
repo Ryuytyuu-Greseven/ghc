@@ -1,5 +1,13 @@
 export type PatientGender = 'male' | 'female' | 'other';
-export type PatientBloodGroup = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
+export type PatientBloodGroup =
+  | 'A+'
+  | 'A-'
+  | 'B+'
+  | 'B-'
+  | 'AB+'
+  | 'AB-'
+  | 'O+'
+  | 'O-';
 
 export class CreatePatientDto {
   name: string;
@@ -13,5 +21,6 @@ export class CreatePatientDto {
   hospitalId: string;
   bedRequired: boolean;
   admittedAt?: Date | string;
+  dischargedAt?: Date | string;
   isActive?: boolean;
 }

@@ -25,7 +25,13 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleConnection(@ConnectedSocket() client: Socket) {
     const lang = client.handshake.auth?.lang || 'en';
     const languageCode =
-      lang === 'hi' ? 'hi-IN' : lang === 'te' ? 'te-IN' : lang === 'bn' ? 'bn-IN' : 'en-US';
+      lang === 'hi'
+        ? 'hi-IN'
+        : lang === 'te'
+          ? 'te-IN'
+          : lang === 'bn'
+            ? 'bn-IN'
+            : 'en-US';
 
     this.sessionService.create(
       client.id,
@@ -34,12 +40,16 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
       { languageCode },
     );
     client.emit('session:ready', { sessionId: client.id });
-    console.log(`[voice] connected: ${client.id} | total: ${this.sessionService.size()}`);
+    console.log(
+      `[voice] connected: ${client.id} | total: ${this.sessionService.size()}`,
+    );
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     this.sessionService.delete(client.id);
-    console.log(`[voice] disconnected: ${client.id} | total: ${this.sessionService.size()}`);
+    console.log(
+      `[voice] disconnected: ${client.id} | total: ${this.sessionService.size()}`,
+    );
   }
 
   @SubscribeMessage('audio:chunk')
@@ -68,13 +78,14 @@ export class VoiceGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const session = this.sessionService.get(client.id);
     if (!session || !transcript.trim()) return;
 
-    const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
+    const token =
+      client.handshake.auth?.token || client.handshake.headers?.authorization;
     const lang = client.handshake.auth?.lang || 'en';
 
     httpLocalStorage.run({ token, lang }, () => {
       void this.agentPipeline.processUserMessage(
         (event, data) => client.emit(event, data),
-        session as any,
+        session,
         transcript,
         { synthesizeAudio: true, emitTranscriptFinal: true },
       );

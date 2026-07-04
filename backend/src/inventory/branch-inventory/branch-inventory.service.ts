@@ -24,13 +24,15 @@ export class BranchInventoryService {
 
   async findOne(id: string) {
     const entry = await this.repo.findById(id);
-    if (!entry) throw new NotFoundException(`Branch inventory entry ${id} not found`);
+    if (!entry)
+      throw new NotFoundException(`Branch inventory entry ${id} not found`);
     return entry;
   }
 
   async update(id: string, data: Record<string, any>) {
     const entry = await this.repo.update(id, data);
-    if (!entry) throw new NotFoundException(`Branch inventory entry ${id} not found`);
+    if (!entry)
+      throw new NotFoundException(`Branch inventory entry ${id} not found`);
     return entry;
   }
 
@@ -45,6 +47,12 @@ export class BranchInventoryService {
     batchNo: string,
     expiryDate: Date | null = null,
   ) {
-    return this.repo.upsertBranchStock(branchId, itemId, quantity, batchNo, expiryDate);
+    return this.repo.upsertBranchStock(
+      branchId,
+      itemId,
+      quantity,
+      batchNo,
+      expiryDate,
+    );
   }
 }

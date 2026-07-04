@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, BedDouble, Pill, Users, ChevronRight, AlertOctagon, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, BedDouble, Pill, Users, ChevronRight, AlertOctagon, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { authFetch } from '../../context/AppContext';
+import { authFetch, useApp } from '../../context/AppContext';
 import { environment } from '@env/environment';
 
 interface InterventionAlert {
@@ -30,6 +30,8 @@ interface DistrictInterventionAlertsProps {
 
 export function DistrictInterventionAlerts({ mode = 'banner' }: DistrictInterventionAlertsProps) {
   const { t } = useTranslation();
+  const { currentUser } = useApp();
+  const isAdmin = currentUser?.role === 'Admin';
   const [alerts, setAlerts] = useState<InterventionAlert[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -120,6 +122,20 @@ export function DistrictInterventionAlerts({ mode = 'banner' }: DistrictInterven
   }
 
   return (
+    <div className="space-y-4">
+      {/* Non-admin informational banner */}
+      {!isAdmin && (
+        <div className="flex items-start gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/40 rounded-xl">
+          <div className="mt-0.5 shrink-0 text-blue-500 dark:text-blue-400">
+            <ShieldAlert size={18} />
+          </div>
+          <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
+            {t('dashboard.intervention.staff_info_banner',
+              'Administration has been automatically notified about these critical alerts. Please take immediate corrective actions at your facility level to avoid further escalation by the administrative team.')}
+          </p>
+        </div>
+      )}
+
     <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm relative overflow-hidden">
       {/* Decorative background pulse */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50 dark:bg-rose-950/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none animate-pulse"></div>
@@ -292,6 +308,7 @@ export function DistrictInterventionAlerts({ mode = 'banner' }: DistrictInterven
           );
         })}
       </div>
+    </div>
     </div>
   );
 }

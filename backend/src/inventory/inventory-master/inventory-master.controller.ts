@@ -1,6 +1,18 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { InventoryMasterService } from './inventory-master.service';
+import { CreateInventoryMasterDto } from './dto/create-inventory-master.dto';
+import { UpdateInventoryMasterDto } from './dto/update-inventory-master.dto';
 
 @Controller('inventory-master')
 @UseGuards(JwtAuthGuard)
@@ -28,12 +40,12 @@ export class InventoryMasterController {
   }
 
   @Post()
-  create(@Body() body: Record<string, any>) {
+  create(@Body() body: CreateInventoryMasterDto) {
     return this.service.create(body);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: Record<string, any>) {
+  update(@Param('id') id: string, @Body() body: UpdateInventoryMasterDto) {
     return this.service.update(id, body);
   }
 

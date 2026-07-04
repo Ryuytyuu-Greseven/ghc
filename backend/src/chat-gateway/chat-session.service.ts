@@ -9,7 +9,10 @@ import type { ChatSession } from './chat-session.types';
 export class ChatSessionService {
   private readonly sessions = new Map<string, ChatSession>();
 
-  create(socketId: string, transcribeOptions: TranscribeOptions = {}): ChatSession {
+  create(
+    socketId: string,
+    transcribeOptions: TranscribeOptions = {},
+  ): ChatSession {
     const session: ChatSession = {
       socketId,
       conversationHistory: [],

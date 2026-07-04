@@ -11,7 +11,8 @@ export class EmailService {
   private readonly fromAddress: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.fromAddress = this.configService.get<string>('SMTP_FROM') ?? 'noreply@ghc.health';
+    this.fromAddress =
+      this.configService.get<string>('SMTP_FROM') ?? 'noreply@ghc.health';
     const host = this.configService.get<string>('SMTP_HOST');
     if (host) {
       this.transporter = nodemailer.createTransport({
@@ -30,7 +31,9 @@ export class EmailService {
 
   async send(item: EmailNotificationItem): Promise<boolean> {
     if (!this.transporter) {
-      this.logger.warn(`Email skipped (SMTP not configured): ${item.subject} → ${item.to}`);
+      this.logger.warn(
+        `Email skipped (SMTP not configured): ${item.subject} → ${item.to}`,
+      );
       return false;
     }
 
@@ -43,7 +46,9 @@ export class EmailService {
       });
       return true;
     } catch (err) {
-      this.logger.error(`Failed to send email to ${item.to}: ${err instanceof Error ? err.message : err}`);
+      this.logger.error(
+        `Failed to send email to ${item.to}: ${err instanceof Error ? err.message : err}`,
+      );
       return false;
     }
   }

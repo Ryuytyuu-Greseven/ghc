@@ -2,6 +2,7 @@ export const hi = {
   translation: {
     common: {
       signOut: "साइन आउट",
+      refresh: "ताज़ा करें",
       addFacility: "सुविधा जोड़ें",
       searchFacilities: "सुविधाएं खोजें...",
       all: "सभी",
@@ -57,7 +58,28 @@ export const hi = {
       notifications: "सूचनाएं",
       unknown: "अज्ञात",
       saving: "सहेज रहा है...",
-      saveChanges: "बदलाव सहेजें"
+      saveChanges: "बदलाव सहेजें",
+      changePassword: "पासवर्ड बदलें",
+      oldPassword: "पुराना पासवर्ड",
+      oldPasswordPlaceholder: "पुराना पासवर्ड दर्ज करें",
+      newPassword: "नया पासवर्ड",
+      newPasswordPlaceholder: "नया पासवर्ड दर्ज करें",
+      confirmPassword: "पासवर्ड की पुष्टि करें",
+      confirmPasswordPlaceholder: "नए पासवर्ड की पुष्टि करें",
+      changePasswordSuccess: "पासवर्ड सफलतापूर्वक बदल दिया गया है!",
+      passwordsDoNotMatch: "नए पासवर्ड मेल नहीं खाते।",
+      passwordError: "पासवर्ड बदलने में विफल। कृपया अपने विवरण की जांच करें।",
+      loggingOutIn: "आप {{count}} सेकंड में लॉग आउट हो जाएंगे...",
+      logoutNow: "अभी लॉग आउट करें",
+      logoutConfirmTitle: "लॉग आउट की पुष्टि करें",
+      logoutConfirmMessage: "क्या आप वाकई अपने खाते से लॉग आउट करना चाहते हैं?",
+      logoutConfirmButton: "लॉग आउट करें",
+      time: {
+        justNow: "अभी-अभी",
+        minutesAgo: "{{count}} मिनट पहले",
+        hoursAgo: "{{count}} घंटे पहले",
+        daysAgo: "{{count}} दिन पहले"
+      }
     },
     nav: {
       dashboard: "डैशबोर्ड",
@@ -69,7 +91,8 @@ export const hi = {
       "critical-alerts": "गंभीर अलर्ट",
       availability: "मेरी उपलब्धता",
       transfers: "कवरेज और स्थानांतरण",
-      audits: "ऑडिट लॉग्स"
+      audits: "ऑडिट लॉग्स",
+      reports: "रिपोर्ट"
     },
     roles: {
       Admin: "एडमिन",
@@ -129,7 +152,9 @@ export const hi = {
         banner_desc: "PHCs/CHCs को तत्काल प्रशासनिक हस्तक्षेप की आवश्यकता है।",
         banner_action: "अलर्ट की समीक्षा करें",
         no_alerts_title: "सभी प्रणालियां सामान्य हैं",
-        no_alerts_desc: "सभी प्राथमिक और सामुदायिक स्वास्थ्य केंद्र मानक सीमा के भीतर चल रहे हैं।"
+        no_alerts_desc: "सभी प्राथमिक और सामुदायिक स्वास्थ्य केंद्र मानक सीमा के भीतर चल रहे हैं।",
+        subtitle_staff: "आपकी सुविधा के लिए महत्वपूर्ण संसाधन अलर्ट",
+        staff_info_banner: "प्रशासन को इन महत्वपूर्ण अलर्ट के बारे में स्वतः सूचित कर दिया गया है। कृपया अपनी सुविधा स्तर पर तत्काल सुधारात्मक कार्रवाई करें ताकि प्रशासनिक टीम द्वारा किसी और कार्रवाई से बचा जा सके।"
       }
     },
     hospitals: {
@@ -753,6 +778,71 @@ export const hi = {
         ICU: "आईसीयू",
         "Operation Theatre": "ऑपरेशन थियेटर",
         Administration: "प्रशासन"
+      },
+      reports: {
+        subtitle: "सिस्टम की विफलता, नैदानिक आंकड़े, बिस्तर की उपलब्धता और स्टॉक जांच तक पहुंचें।",
+        allBranches: "सभी शाखाएं",
+        to: "तक",
+        exportReport: "एक्सेल निर्यात करें",
+        tabOccupancy: "बिस्तर अधिभोग क्षमता",
+        tabClinical: "नैदानिक निदान",
+        tabStaffing: "कर्मचारी वितरण",
+        tabInventory: "इन्वेंटरी स्थिति और समाप्ति",
+        loading: "रिपोर्ट विश्लेषण संकलित किया जा रहा है...",
+        error: "एक अप्रत्याशित त्रुटि हुई",
+        totalBeds: "कुल बिस्तर",
+        occupiedBeds: "भरे हुए बिस्तर",
+        availableBeds: "उपलब्ध बिस्तर",
+        averageOccupancy: "औसत अधिभोग",
+        branchBreakdown: "शाखा क्षमता विवरण",
+        colBranchName: "शाखा का नाम",
+        colType: "शाखा प्रकार",
+        colTotalBeds: "कुल बिस्तर",
+        colOccupiedBeds: "भरे हुए बिस्तर",
+        colAvailableBeds: "उपलब्ध बिस्तर",
+        colOccupancyRate: "अधिभोग दर",
+        totalConsultations: "कुल परामर्श",
+        visitsRange: "चयनित तिथि सीमा से मेल खाने वाले दौरे।",
+        livePatient: "लाइव रोगी जुड़ाव",
+        topDiagnoses: "शीर्ष नैदानिक समस्याएं",
+        noDiagnoses: "चयनित फ़िल्टर के लिए कोई नैदानिक रिकॉर्ड नहीं मिला।",
+        cases: "मामले",
+        highlyPrescribed: "अत्यधिक निर्धारित दवाएं",
+        noMedicines: "कोई दवा नुस्खा नहीं मिला।",
+        units: "इकाइयां",
+        totalStaff: "कुल ऑनबोर्डेड कर्मचारी",
+        clinicalAdminBase: "नैदानिक और प्रशासन आधार",
+        staffDept: "विभाग द्वारा कर्मचारियों की संख्या",
+        members: "सदस्य",
+        staffRole: "उपयोगकर्ता भूमिका द्वारा कर्मचारियों की संख्या",
+        expiringSoon: "अगले 90 दिनों में समाप्त होने वाले बैच",
+        noExpiry: "अगले 90 दिनों में कोई भी बैच समाप्त नहीं हो रहा है।",
+        colBranch: "शाखा",
+        medsByBranch: "शाखावार निर्धारित दवाएं",
+        colMedName: "दवा का नाम",
+        colBatchNo: "बैच नंबर",
+        colQty: "मात्रा",
+        colExpiryDate: "समाप्ति तिथि",
+        stockCategory: "श्रेणी के अनुसार स्टॉक",
+        noStock: "कोई इन्वेंटरी स्टॉक प्रविष्टि नहीं मिली।",
+        uniqueItems: "अद्वितीय वस्तुएं",
+        medicineAvailabilityTitle: "दवा स्टॉक उपलब्धता",
+        colBranchesCount: "स्टॉक वाली शाखाएं",
+        colBatchesCount: "बैच"
+      }
+    },
+    notifications: {
+      hospitalOnboardedTitle: "अस्पताल सफलतापूर्वक पंजीकृत किया गया",
+      hospitalOnboardedBody: "सुविधा \"{{name}}\" ({{type}}) को {{city}} में {{performedBy}} द्वारा सफलतापूर्वक पंजीकृत किया गया है।",
+      hospitalUpdatedTitle: "अस्पताल प्रोफ़ाइल अपडेट की गई",
+      hospitalUpdatedBody: "{{performedBy}} द्वारा \"{{name}}\" के लिए सुविधा प्रोफ़ाइल अपडेट की गई है।",
+      staffCreatedTitle: "कर्मचारी सफलतापूर्वक पंजीकृत",
+      staffCreatedBody: "कर्मचारी \"{{name}}\" ({{role}}) को {{performedBy}} द्वारा सफलतापूर्वक पंजीकृत किया गया है।",
+      staffUpdatedTitle: "कर्मचारी प्रोफ़ाइल अपडेट की गई",
+      staffUpdatedBody: "{{performedBy}} द्वारा \"{{name}}\" के लिए कर्मचारी प्रोफ़ाइल अपडेट की गई है।",
+      staffAssignedTitle: "कर्मचारी को सुविधा आवंटित",
+      staffAssignedBody: "कर्मचारी \"{{name}}\" को {{performedBy}} द्वारा {{facility}} में आवंटित किया गया है।",
+      staffDeassignedTitle: "कर्मचारी को सुविधा से हटाया गया",
+      staffDeassignedBody: "कर्मचारी \"{{name}}\" को {{performedBy}} द्वारा {{facility}} से हटा दिया गया है।"
     }
-  }
-};
+  };

@@ -1,4 +1,4 @@
-import { HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { SystemMessage } from '@langchain/core/messages';
 import { HospitalState } from '../states/hospital.state';
 import { llmInstance } from '../../google/vertex.config';
 import { HospitalsService } from '../../hospitals/hospitals.service';
@@ -10,6 +10,7 @@ import {
   HOSPITAL_PATIENTS_PROMPT,
   HOSPITAL_STAFF_PROMPT,
   HOSPITAL_SPECIALISTS_PROMPT,
+  HOSPITAL_DOCTORS_BY_SPECIALIZATION_PROMPT,
 } from '../prompts/hospital.prompt';
 import {
   fetchHospitalByName,
@@ -18,6 +19,7 @@ import {
   fetchPatientsDetails,
   fetchStaffDetails,
   fetchAvailableSpecialists,
+  fetchHospitalsBySpecialization,
 } from '../tools/hospital.tools';
 import { createAgent } from 'langchain';
 import { withGuardrails } from '../prompts/guardrails.prompt';
@@ -30,7 +32,7 @@ export function createHospitalTools(): HospitalTools {
 }
 
 export class HospitalTools {
-  constructor(private readonly hospitalsService: HospitalsService) { }
+  constructor(private readonly hospitalsService: HospitalsService) {}
 
   private async llmClassify(
     messages: any[],
@@ -39,10 +41,7 @@ export class HospitalTools {
   ): Promise<string> {
     const contextMessages = messages.slice(-5);
     const response = await llmInstance.invoke(
-      [
-        new SystemMessage(systemInstruction),
-        ...contextMessages,
-      ],
+      [new SystemMessage(systemInstruction), ...contextMessages],
       {
         tags: ['classification'],
         metadata: { is_classification: true },
@@ -52,7 +51,7 @@ export class HospitalTools {
       .trim()
       .toLowerCase()
       .split(/[\s,]+/)[0];
-    const matched = options.find(opt => opt.toLowerCase() === raw);
+    const matched = options.find((opt) => opt.toLowerCase() === raw);
     return matched ? matched : options[options.length - 1];
   }
 
@@ -67,6 +66,7 @@ export class HospitalTools {
         'patientsDetails',
         'staffDetails',
         'availableSpecialists',
+        'doctorsBySpecialization',
       ],
       `You are a hospitals query classifier for a hospital management system.
 Classify the doctor's request into exactly one of these options:
@@ -76,8 +76,9 @@ Classify the doctor's request into exactly one of these options:
 - patientsDetails → hospital admin or main admin want to know the active patients details/list from a particular hospital.
 - staffDetails → hospital admin or main admin want to know the active staff details/list from a particular hospital.
 - availableSpecialists → hospital admin or main admin want to check lists of available specialists (like surgeon, pediatrician, gynecologist, etc.) in a hospital.
+- doctorsBySpecialization → admin wants to find which hospital(s) have a doctor of a given specialization (e.g. "which hospitals have a cardiologist", "find a pediatrician").
 
-Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medicalInchargeDetails, patientsDetails, staffDetails, availableSpecialists`,
+Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medicalInchargeDetails, patientsDetails, staffDetails, availableSpecialists, doctorsBySpecialization`,
     );
 
     return { intent };
@@ -93,12 +94,15 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const response = await agent.invoke({ messages: state.messages });
     console.log('Fetch Hospitals Response', response);
     const text =
-      typeof response.messages[response.messages.length - 1]?.content === 'string'
+      typeof response.messages[response.messages.length - 1]?.content ===
+      'string'
         ? response.messages[response.messages.length - 1]?.content
-        : JSON.stringify(response.messages[response.messages.length - 1]?.content);
+        : JSON.stringify(
+            response.messages[response.messages.length - 1]?.content,
+          );
     return {
       finalResponse: text,
-      messages: [response.messages[response.messages.length - 1]!],
+      messages: [response.messages[response.messages.length - 1]],
     };
   };
 
@@ -112,12 +116,15 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const response = await agent.invoke({ messages: state.messages });
     console.log('Beds Availability Response', response);
     const text =
-      typeof response.messages[response.messages.length - 1]?.content === 'string'
+      typeof response.messages[response.messages.length - 1]?.content ===
+      'string'
         ? response.messages[response.messages.length - 1]?.content
-        : JSON.stringify(response.messages[response.messages.length - 1]?.content);
+        : JSON.stringify(
+            response.messages[response.messages.length - 1]?.content,
+          );
     return {
       finalResponse: text,
-      messages: [response.messages[response.messages.length - 1]!],
+      messages: [response.messages[response.messages.length - 1]],
     };
   };
 
@@ -131,12 +138,15 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const response = await agent.invoke({ messages: state.messages });
     console.log('Medical Incharge Details Response', response);
     const text =
-      typeof response.messages[response.messages.length - 1]?.content === 'string'
+      typeof response.messages[response.messages.length - 1]?.content ===
+      'string'
         ? response.messages[response.messages.length - 1]?.content
-        : JSON.stringify(response.messages[response.messages.length - 1]?.content);
+        : JSON.stringify(
+            response.messages[response.messages.length - 1]?.content,
+          );
     return {
       finalResponse: text,
-      messages: [response.messages[response.messages.length - 1]!],
+      messages: [response.messages[response.messages.length - 1]],
     };
   };
 
@@ -150,12 +160,15 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const response = await agent.invoke({ messages: state.messages });
     console.log('Patients Details Response', response);
     const text =
-      typeof response.messages[response.messages.length - 1]?.content === 'string'
+      typeof response.messages[response.messages.length - 1]?.content ===
+      'string'
         ? response.messages[response.messages.length - 1]?.content
-        : JSON.stringify(response.messages[response.messages.length - 1]?.content);
+        : JSON.stringify(
+            response.messages[response.messages.length - 1]?.content,
+          );
     return {
       finalResponse: text,
-      messages: [response.messages[response.messages.length - 1]!],
+      messages: [response.messages[response.messages.length - 1]],
     };
   };
 
@@ -169,12 +182,15 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const response = await agent.invoke({ messages: state.messages });
     console.log('Staff Details Response', response);
     const text =
-      typeof response.messages[response.messages.length - 1]?.content === 'string'
+      typeof response.messages[response.messages.length - 1]?.content ===
+      'string'
         ? response.messages[response.messages.length - 1]?.content
-        : JSON.stringify(response.messages[response.messages.length - 1]?.content);
+        : JSON.stringify(
+            response.messages[response.messages.length - 1]?.content,
+          );
     return {
       finalResponse: text,
-      messages: [response.messages[response.messages.length - 1]!],
+      messages: [response.messages[response.messages.length - 1]],
     };
   };
 
@@ -188,12 +204,37 @@ Reply with ONE option only — one of: fetchHospitals, bedsAvailability, medical
     const response = await agent.invoke({ messages: state.messages });
     console.log('Available Specialists Response', response);
     const text =
-      typeof response.messages[response.messages.length - 1]?.content === 'string'
+      typeof response.messages[response.messages.length - 1]?.content ===
+      'string'
         ? response.messages[response.messages.length - 1]?.content
-        : JSON.stringify(response.messages[response.messages.length - 1]?.content);
+        : JSON.stringify(
+            response.messages[response.messages.length - 1]?.content,
+          );
     return {
       finalResponse: text,
-      messages: [response.messages[response.messages.length - 1]!],
+      messages: [response.messages[response.messages.length - 1]],
+    };
+  };
+
+  doctorsBySpecialization = async (state: typeof HospitalState.State) => {
+    console.log('Doctors By Specialization', state.query);
+    const agent = createAgent({
+      model: llmInstance,
+      tools: [fetchHospitalsBySpecialization],
+      systemPrompt: withGuardrails(HOSPITAL_DOCTORS_BY_SPECIALIZATION_PROMPT),
+    });
+    const response = await agent.invoke({ messages: state.messages });
+    console.log('Doctors By Specialization Response', response);
+    const text =
+      typeof response.messages[response.messages.length - 1]?.content ===
+      'string'
+        ? response.messages[response.messages.length - 1]?.content
+        : JSON.stringify(
+            response.messages[response.messages.length - 1]?.content,
+          );
+    return {
+      finalResponse: text,
+      messages: [response.messages[response.messages.length - 1]],
     };
   };
 }

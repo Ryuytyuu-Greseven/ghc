@@ -3,10 +3,22 @@ import { MongooseModule, InjectConnection } from '@nestjs/mongoose';
 import { Connection, Types } from 'mongoose';
 import { QueryService } from '../common/services/query.service';
 
-import { InventoryMaster, InventoryMasterSchema } from '../schemas/inventory-master.schema';
-import { CentralInventory, CentralInventorySchema } from '../schemas/central-inventory.schema';
-import { BranchInventory, BranchInventorySchema } from '../schemas/branch-inventory.schema';
-import { InventoryRequest, InventoryRequestSchema } from '../schemas/inventory-request.schema';
+import {
+  InventoryMaster,
+  InventoryMasterSchema,
+} from '../schemas/inventory-master.schema';
+import {
+  CentralInventory,
+  CentralInventorySchema,
+} from '../schemas/central-inventory.schema';
+import {
+  BranchInventory,
+  BranchInventorySchema,
+} from '../schemas/branch-inventory.schema';
+import {
+  InventoryRequest,
+  InventoryRequestSchema,
+} from '../schemas/inventory-request.schema';
 
 import { InventoryMasterController } from './inventory-master/inventory-master.controller';
 import { CentralInventoryController } from './central-inventory/central-inventory.controller';
@@ -90,34 +102,47 @@ export class InventoryModule implements OnModuleInit {
       if (!db) return;
 
       // Migrate string itemIds to ObjectIds in central stock
-      const centralStockList = await db.collection('centralinventories').find({ itemId: { $type: 'string' } }).toArray();
+      const centralStockList = await db
+        .collection('centralinventories')
+        .find({ itemId: { $type: 'string' } })
+        .toArray();
       for (const entry of centralStockList) {
         if (entry.itemId && entry.itemId.length === 24) {
-          await db.collection('centralinventories').updateOne(
-            { _id: entry._id },
-            { $set: { itemId: new Types.ObjectId(entry.itemId) } }
-          );
+          await db
+            .collection('centralinventories')
+            .updateOne(
+              { _id: entry._id },
+              { $set: { itemId: new Types.ObjectId(entry.itemId) } },
+            );
         }
       }
 
       // Migrate string itemIds in branch stock
-      const branchStockList = await db.collection('branchinventories').find({ itemId: { $type: 'string' } }).toArray();
+      const branchStockList = await db
+        .collection('branchinventories')
+        .find({ itemId: { $type: 'string' } })
+        .toArray();
       for (const entry of branchStockList) {
         if (entry.itemId && entry.itemId.length === 24) {
-          await db.collection('branchinventories').updateOne(
-            { _id: entry._id },
-            { $set: { itemId: new Types.ObjectId(entry.itemId) } }
-          );
+          await db
+            .collection('branchinventories')
+            .updateOne(
+              { _id: entry._id },
+              { $set: { itemId: new Types.ObjectId(entry.itemId) } },
+            );
         }
       }
 
       // Migrate string branchId/itemId in inventory requests
-      const requestsList = await db.collection('inventoryrequests').find({
-        $or: [
-          { branchId: { $type: 'string' } },
-          { 'items.itemId': { $type: 'string' } }
-        ]
-      }).toArray();
+      const requestsList = await db
+        .collection('inventoryrequests')
+        .find({
+          $or: [
+            { branchId: { $type: 'string' } },
+            { 'items.itemId': { $type: 'string' } },
+          ],
+        })
+        .toArray();
       for (const req of requestsList) {
         let needsUpdate = false;
         const updateObj: any = {};
@@ -135,14 +160,16 @@ export class InventoryModule implements OnModuleInit {
           needsUpdate = true;
         }
         if (needsUpdate) {
-          await db.collection('inventoryrequests').updateOne(
-            { _id: req._id },
-            { $set: updateObj }
-          );
+          await db
+            .collection('inventoryrequests')
+            .updateOne({ _id: req._id }, { $set: updateObj });
         }
       }
     } catch (error) {
-      console.error('[InventoryModule] Failed to run database migrations:', error);
+      console.error(
+        '[InventoryModule] Failed to run database migrations:',
+        error,
+      );
     }
   }
 }

@@ -8,9 +8,15 @@ import { Hospital, HospitalSchema } from '../schemas/hospital.schema';
 import { HospitalRepository } from '../repositories/hospital.repository';
 import { QueryService } from '../common/services/query.service';
 import { HospitalsCommonService } from '../common/services/hospitals.service';
-import { BedAllocation, BedAllocationSchema } from '../schemas/bed-allocation.schema';
+import {
+  BedAllocation,
+  BedAllocationSchema,
+} from '../schemas/bed-allocation.schema';
 import { BedAllocationRepository } from '../repositories/bed-allocation.repository';
-import { BranchInventory, BranchInventorySchema } from '../schemas/branch-inventory.schema';
+import {
+  BranchInventory,
+  BranchInventorySchema,
+} from '../schemas/branch-inventory.schema';
 import { BranchInventoryRepository } from '../repositories/branch-inventory.repository';
 import { Staff, StaffSchema } from '../schemas/staff.schema';
 import { StaffRepository } from '../repositories/staff.repository';
@@ -50,5 +56,3 @@ import { UsersModule } from '../users/users.module';
   ],
 })
 export class HospitalsModule {}
-
-

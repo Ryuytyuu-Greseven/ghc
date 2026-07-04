@@ -9,8 +9,14 @@ export const HospitalState = Annotation.Root({
   query: Annotation<string>({ reducer: (_, b) => b, default: () => '' }),
   intent: Annotation<string>({ reducer: (_, b) => b, default: () => '' }),
   hospitals: Annotation<any[]>({ reducer: (_, b) => b, default: () => [] }),
-  bedsAvailability: Annotation<any>({ reducer: (_, b) => b, default: () => null }),
-  medicalIncharge: Annotation<any>({ reducer: (_, b) => b, default: () => null }),
+  bedsAvailability: Annotation<any>({
+    reducer: (_, b) => b,
+    default: () => null,
+  }),
+  medicalIncharge: Annotation<any>({
+    reducer: (_, b) => b,
+    default: () => null,
+  }),
   patients: Annotation<any[]>({ reducer: (_, b) => b, default: () => [] }),
   staff: Annotation<any[]>({ reducer: (_, b) => b, default: () => [] }),
   specialists: Annotation<any[]>({ reducer: (_, b) => b, default: () => [] }),

@@ -1,5 +1,15 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+} from '@nestjs/common';
 import { PatientDataService } from './patient-data.service';
+import { CreatePatientDataDto } from './dto/create-patient-data.dto';
+import { UpdatePatientDataDto } from './dto/update-patient-data.dto';
 
 @Controller('patient-data')
 export class PatientDataController {
@@ -11,12 +21,12 @@ export class PatientDataController {
   }
 
   @Post()
-  create(@Body() body: Record<string, any>) {
+  create(@Body() body: CreatePatientDataDto) {
     return this.patientDataService.create(body);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: Record<string, any>) {
+  update(@Param('id') id: string, @Body() body: UpdatePatientDataDto) {
     return this.patientDataService.update(id, body);
   }
 

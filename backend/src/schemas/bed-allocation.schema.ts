@@ -11,7 +11,11 @@ export class BedAllocation {
   @Prop({ type: Types.ObjectId, ref: 'Patient', required: true })
   patientId: Types.ObjectId;
 
-  @Prop({ required: true, enum: ['ALLOCATED', 'DEALLOCATED'], default: 'ALLOCATED' })
+  @Prop({
+    required: true,
+    enum: ['ALLOCATED', 'DEALLOCATED'],
+    default: 'ALLOCATED',
+  })
   status: string;
 
   @Prop({ type: Date, default: () => new Date() })

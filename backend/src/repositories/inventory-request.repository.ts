@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
-import { InventoryRequest, InventoryRequestDocument } from '../schemas/inventory-request.schema';
+import {
+  InventoryRequest,
+  InventoryRequestDocument,
+} from '../schemas/inventory-request.schema';
 import { QueryService } from '../common/services/query.service';
 
 @Injectable()
@@ -64,7 +67,9 @@ export class InventoryRequestRepository {
     return `${prefix}${seq}`;
   }
 
-  async create(data: Partial<InventoryRequest>): Promise<InventoryRequestDocument> {
+  async create(
+    data: Partial<InventoryRequest>,
+  ): Promise<InventoryRequestDocument> {
     return this.model.create(data);
   }
 
@@ -72,36 +77,40 @@ export class InventoryRequestRepository {
     id: string,
     data: UpdateQuery<InventoryRequestDocument>,
   ): Promise<InventoryRequestDocument | null> {
-    return this.model.findByIdAndUpdate(id, data, { new: true })
+    return this.model
+      .findByIdAndUpdate(id, data, { new: true })
       .populate('branchId', 'name city')
       .populate('fromBranchId', 'name city')
       .exec();
   }
 
-  async findPaginated(options: any): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
+  async findPaginated(
+    options: any,
+  ): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
     const queryOptions = { ...options };
 
-    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
-      searchFields: [
-        'requestNumber',
-        'requestedBy',
-        'branch.name',
-        'matchedItems.itemName',
-      ],
-      exactFilters: ['status', 'branchId'],
-      objectIdFilters: ['branchId'],
-      regexFilters: ['requestedBy'],
-      dateFilters: {
-        createdAt: { fromParam: 'fromDate', toParam: 'toDate' },
-      },
-      sortMapping: {
-        requestNumber: 'requestNumber',
-        requestedBy: 'requestedBy',
-        branchName: 'branch.name',
-        status: 'status',
-      },
-      defaultSort: { field: 'createdAt', order: 'desc' },
-    });
+    const { filter, sort, skip, limit, page, pageSize } =
+      this.queryService.buildQuery(queryOptions, {
+        searchFields: [
+          'requestNumber',
+          'requestedBy',
+          'branch.name',
+          'matchedItems.itemName',
+        ],
+        exactFilters: ['status', 'branchId'],
+        objectIdFilters: ['branchId'],
+        regexFilters: ['requestedBy'],
+        dateFilters: {
+          createdAt: { fromParam: 'fromDate', toParam: 'toDate' },
+        },
+        sortMapping: {
+          requestNumber: 'requestNumber',
+          requestedBy: 'requestedBy',
+          branchName: 'branch.name',
+          status: 'status',
+        },
+        defaultSort: { field: 'createdAt', order: 'desc' },
+      });
 
     const pipeline: any[] = [
       {

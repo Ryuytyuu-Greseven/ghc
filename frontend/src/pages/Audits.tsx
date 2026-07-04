@@ -5,6 +5,7 @@ import { PaginationControls } from '../components/ui/PaginationControls';
 import { Modal } from '../components/ui/Modal';
 import { useTranslation } from 'react-i18next';
 import { authFetch } from '../context/AppContext';
+import { Header } from '../components/layout/Header';
 import type { AuditLog, PaginatedResponse, PaginationMeta } from '../types';
 import { environment } from '@env/environment';
 
@@ -112,21 +113,14 @@ export function Audits() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
-      <div className="max-w-screen-2xl mx-auto space-y-6">
-        
-        {/* Header Title with saffron-white-green premium accent border */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border-t-4 border-t-primary-500 relative overflow-hidden">
-          <div className="absolute top-0 right-0 h-16 w-16 bg-primary-500/10 rounded-bl-full flex items-center justify-center">
-            <ShieldCheck className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
-            {t('nav.audits') || 'System Audit Logs'}
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-            Track and review all user actions, security logs, and updates across the platform.
-          </p>
-        </div>
+    <div className="flex flex-col h-full">
+      <Header
+        title={t('nav.audits') || 'System Audit Logs'}
+        subtitle="Track and review all user actions, security logs, and updates across the platform."
+      />
+
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        <div className="max-w-screen-2xl mx-auto space-y-6">
 
         {/* Filters Toolbar */}
         <div className="bg-white dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm space-y-4">
@@ -362,5 +356,6 @@ export function Audits() {
         </Modal>
       )}
     </div>
+  </div>
   );
 }

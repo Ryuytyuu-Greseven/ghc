@@ -4,7 +4,11 @@ import { RequestStatus } from '../common/enums';
 
 @Schema({ _id: false })
 class RequestItem {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'InventoryMaster', required: true })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'InventoryMaster',
+    required: true,
+  })
   itemId: Types.ObjectId;
 
   @Prop({ required: true, min: 1 })
@@ -26,10 +30,19 @@ export class InventoryRequest {
   @Prop({ required: true, unique: true, trim: true })
   requestNumber: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Hospital', required: true })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Hospital',
+    required: true,
+  })
   branchId: Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Hospital', required: false, default: null })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Hospital',
+    required: false,
+    default: null,
+  })
   fromBranchId?: Types.ObjectId | null;
 
   @Prop({ required: true, trim: true })
@@ -45,7 +58,8 @@ export class InventoryRequest {
   items: RequestItem[];
 }
 
-export const InventoryRequestSchema = SchemaFactory.createForClass(InventoryRequest);
+export const InventoryRequestSchema =
+  SchemaFactory.createForClass(InventoryRequest);
 InventoryRequestSchema.index({ branchId: 1 });
 InventoryRequestSchema.index({ status: 1 });
 InventoryRequestSchema.index({ createdAt: -1 });

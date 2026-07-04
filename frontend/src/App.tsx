@@ -16,6 +16,7 @@ import { CriticalAlertsPage } from './pages/alerts/CriticalAlertsPage';
 import { Availability } from './pages/Availability';
 import { Transfers } from './pages/Transfers';
 import { Audits } from './pages/Audits';
+import { Reports } from './pages/Reports';
 
 interface GuardProps {
   allowedRoles: string[];
@@ -111,7 +112,7 @@ export default function App() {
                   <Route
                     path="/critical-alerts"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Pharmacist', 'Compounder', 'Lab Technician', 'Cashier']}>
                         <CriticalAlertsPage />
                       </RoleGuard>
                     }
@@ -137,6 +138,14 @@ export default function App() {
                     element={
                       <RoleGuard allowedRoles={['Admin']}>
                         <Audits />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/reports"
+                    element={
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Pharmacist']}>
+                        <Reports />
                       </RoleGuard>
                     }
                   />

@@ -14,7 +14,7 @@ You manage master catalog items, central warehouse stock, branch stock, stock tr
          **Category:** [Category]
          **Available Qty:** [Quantity]
          **Batch No:** [Batch No]
-         **Expiry Date:** [Expiry Date]
+         **Expiry Date:** [dd/mm/yyyy] follow this data format
 
       ### FOR TRANSFER REQUESTS use this format:
          ### Request - [Index]

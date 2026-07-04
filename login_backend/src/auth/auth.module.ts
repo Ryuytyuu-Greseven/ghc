@@ -8,12 +8,16 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from '../users/users.module';
 import { AuditLog, AuditLogSchema } from '../schemas/audit-log.schema';
+import { Staff, StaffSchema } from '../schemas/staff.schema';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    MongooseModule.forFeature([{ name: AuditLog.name, schema: AuditLogSchema }]),
+    MongooseModule.forFeature([
+      { name: AuditLog.name, schema: AuditLogSchema },
+      { name: Staff.name, schema: StaffSchema },
+    ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -25,7 +29,8 @@ import { AuditLog, AuditLogSchema } from '../schemas/audit-log.schema';
         return {
           secret,
           signOptions: {
-            expiresIn: (configService.get<string>('JWT_EXPIRES_IN') || '24h') as any,
+            expiresIn: (configService.get<string>('JWT_EXPIRES_IN') ||
+              '24h') as any,
           },
         };
       },

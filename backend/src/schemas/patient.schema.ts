@@ -14,7 +14,10 @@ export class Patient {
   @Prop({ required: true, enum: ['male', 'female', 'other'] })
   gender: string;
 
-  @Prop({ required: true, enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] })
+  @Prop({
+    required: true,
+    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+  })
   bloodGroup: string;
 
   @Prop({ required: true, trim: true })
@@ -37,6 +40,9 @@ export class Patient {
 
   @Prop({ type: Date, default: () => new Date() })
   admittedAt: Date;
+
+  @Prop({ type: Date })
+  dischargedAt: Date;
 
   @Prop({ default: true })
   isActive: boolean;
