@@ -112,7 +112,7 @@ export default function App() {
                   <Route
                     path="/critical-alerts"
                     element={
-                      <RoleGuard allowedRoles={['Admin']}>
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Pharmacist', 'Compounder', 'Lab Technician', 'Cashier']}>
                         <CriticalAlertsPage />
                       </RoleGuard>
                     }

@@ -130,7 +130,32 @@ export const gu = {
     "facilities": "કેન્દ્રો",
     "beds_free": "બેડ ખાલી",
     "unassigned": "અનઅસાઇન્ડ",
-    "requiringBeds": "બેડની જરૂરિયાતવાળા"
+    "requiringBeds": "બેડની જરૂરિયાતવાળા",
+    "intervention": {
+      "title": "ગંભીર ચેતવણીઓ",
+      "subtitle": "ગંભીર સંસાધન અડચણો સૂચવતાં આરોગ્ય કેન્દ્રો",
+      "subtitle_staff": "તમારા કેન્દ્ર માટે ગંભીર સંસાધન ચેતવણીઓ",
+      "severity_high": "ઊંચું",
+      "severity_medium": "મધ્યમ",
+      "bed_shortage": "બેડ અછત",
+      "severe_stockout": "ગંભીર સ્ટોક ખૂટ",
+      "staff_crunch": "સ્ટાફ અછત",
+      "action_transfer": "AI ટ્રાન્સફર શરૂ કરો",
+      "action_staff": "સ્ટાફ ફેરફેગ કરો",
+      "action_view_hospital": "સ્થળોનું સંચાલન",
+      "justification_bed": "ગંભીર ક્ષમતા પ્રાપ્ત. {{occupancy}}% ઓક્યુપન્સી અને ફક્ત {{beds}} બેડ બચ્યા.",
+      "justification_stockout": "{{total}} ચીજોમાંથી {{outOfStock}} સંપૂર્ણ ખૂટી ગઈ. તાત્કાલિક ભરપાઈ અથવા પુનઃ વિતરણ ભલામણ.",
+      "justification_staff": "{{patients}} સક્રિય દર્દીઓ અને ફક્ત {{staff}} સ્ટાફ. તાત્કાલિક સ્ટાફ જોગવાઈ જરૂરી.",
+      "metric_bed": "{{occupancy}}% ઓક્યુપન્સી ({{beds}} બેડ બાકી)",
+      "metric_stockout": "{{ratio}}% દવાઓ ખૂટ",
+      "metric_staff": "{{ratio}}:1 દર્દી-સ્ટાફ ગુણોત્તર",
+      "banner_title": "{{count}} ગંભીર ચેતવણી(ઓ) મળી",
+      "banner_desc": "PHC/CHC ને તાત્કાલિક વહીવટી ક્રિયાની જરૂર.",
+      "banner_action": "ચેતવણીઓ જુઓ",
+      "no_alerts_title": "બધી સિસ્ટમ સામાન્ય",
+      "no_alerts_desc": "તમામ પ્રાથમિક અને સામુદાયિક આરોગ્ય કેન્દ્રો માનક સ્ત્રોત મર્યાદામાં કાર્ય કરે છે.",
+      "staff_info_banner": "આ ગંભીર ચેતવણીઓ અંગે વહીવટ સ્વયંચાલિત રીતે સૂચિત કરવામાં આવ્યો છે. વહીવટી ટીમ દ્વારા ઉત્ક્રમણ ટાળવા, કૃપા કરી તમારા કેન્દ્ર સ્તરે તાત્કાલિક સુધારાત્મક પગલાં ભરો."
+    }
   },
   "hospitals": {
     "title": "હોસ્પિટલો અને ક્લિનિક્સ",

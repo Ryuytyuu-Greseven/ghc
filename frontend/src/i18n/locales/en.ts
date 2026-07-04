@@ -152,7 +152,9 @@ export const en = {
         banner_desc: "PHCs/CHCs require immediate administrative action.",
         banner_action: "Review Alerts",
         no_alerts_title: "All Systems Normal",
-        no_alerts_desc: "All primary and community healthcare facilities are operating within standard resource thresholds."
+        no_alerts_desc: "All primary and community healthcare facilities are operating within standard resource thresholds.",
+        subtitle_staff: "Critical resource alerts for your facility",
+        staff_info_banner: "Administration has been automatically notified about these critical alerts. Please take immediate corrective actions at your facility level to avoid further escalation by the administrative team."
       }
     },
     hospitals: {

@@ -29,12 +29,13 @@ export class HospitalsController {
   ) {}
 
   @Get('district/intervention-alerts')
-  getInterventionAlerts(@Req() req: any) {
+  async getInterventionAlerts(@Req() req: any) {
     const user = req.user;
-    if (user.role !== 'Admin') {
-      throw new ForbiddenException('Access denied. Admins only.');
-    }
-    return this.facilityAlertsService.getInterventionAlerts();
+    // Admins see all facilities; other roles see only their assigned facility
+    const hospitalId = user.role === 'Admin'
+      ? null
+      : await this.usersService.getAssignedHospitalId(user.userId, user.role);
+    return this.facilityAlertsService.getInterventionAlerts(hospitalId ?? undefined);
   }
 
   @Get()

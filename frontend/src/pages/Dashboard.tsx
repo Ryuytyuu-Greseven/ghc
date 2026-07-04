@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { DistrictInterventionAlerts } from '../components/dashboard/DistrictInterventionAlerts';
 
 export function Dashboard() {
-  const { hospitals, staff, patients, medicines, currentUser } = useApp();
+  const { hospitals, staff, patients, medicines } = useApp();
   const { t } = useTranslation();
 
   const totalBeds = hospitals.reduce((s, h) => s + h.totalBeds, 0);
@@ -38,8 +38,8 @@ export function Dashboard() {
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <div className="max-w-screen-2xl mx-auto space-y-6">
 
-          {/* District Intervention Alerts */}
-          {currentUser?.role === 'Admin' && <DistrictInterventionAlerts mode="banner" />}
+          {/* District Intervention Alerts — visible to all roles (filtered by assigned facility for non-admins) */}
+          <DistrictInterventionAlerts mode="banner" />
 
           {/* Stat cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
