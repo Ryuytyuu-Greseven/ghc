@@ -804,7 +804,9 @@ export const gu = {
     "medicineAvailabilityTitle": "દવા સ્ટોક ઉપલબ્ધતા",
     "colBranchesCount": "સ્ટોક ધરાવતી શાખાઓ",
     "colBatchesCount": "બૅચ"
-  "notifications": {
+      }
+    },
+    "notifications": {
     "hospitalOnboardedTitle": "હોસ્પિટલ સફળતાપૂર્વક ઓનબોર્ડ કરવામાં આવી",
     "hospitalOnboardedBody": "સુવિધા \"{{name}}\" ({{type}}) સફળતાપૂર્વક {{city}} માં {{performedBy}} દ્વારા ઓનબોર્ડ કરવામાં આવી છે.",
     "hospitalUpdatedTitle": "હોસ્પિટલ પ્રોફાઇલ અપડેટ કરવામાં આવી",
@@ -817,6 +819,5 @@ export const gu = {
     "staffAssignedBody": "સ્ટಾફ સભ્ય \"{{name}}\" ની {{facility}} માં {{performedBy}} દ્વારા નિમણૂક કરવામાં આવી છે.",
     "staffDeassignedTitle": "સ્ટಾફને સુવિધામાંથી મુક્ત કરવામાં આવ્યા",
     "staffDeassignedBody": "સ્ટಾફ સભ્ય \"{{name}}\" ને {{facility}} માંથી {{performedBy}} દ્વારા મુક્ત કરવામાં આવ્યા છે."
-  }
-}
-};
+    }
+  };
