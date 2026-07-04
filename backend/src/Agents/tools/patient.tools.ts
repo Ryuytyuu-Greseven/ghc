@@ -26,7 +26,7 @@ async function fetch(url: string, init?: any) {
 
 const bloodGroupEnum = z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
 
-const listPatients = tool(
+export const listPatients = tool(
   async ({ hospitalId }) => {
     const res = hospitalId
       ? await fetch(`${BASE}/patients/by-hospital/${hospitalId}`)
@@ -60,19 +60,24 @@ const getPatient = tool(
   },
 );
 
-// const getPatientByName = tool(
-//   async ({ id }) => {
-//     const res = await fetch(`${BASE}/patients/by-name/${name}`);
-//     return JSON.stringify(await res.json());
-//   },
-//   {
-//     name: 'get_patient',
-//     description: 'Get a patient by their MongoDB ObjectId',
-//     schema: z.object({
-//       id: z.string().describe('MongoDB ObjectId of the patient'),
-//     }),
-//   },
-// );
+export const searchPatientsByName = tool(
+  async ({ name, limit }) => {
+    const res = await fetch(`${BASE}/patients`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page: 1, pageSize: limit || 5, search: name }),
+    });
+    return JSON.stringify(await res.json());
+  },
+  {
+    name: 'search_patients_by_name',
+    description: 'Search for patients by name or partial name match',
+    schema: z.object({
+      name: z.string().describe('The name or partial name to search for'),
+      limit: z.number().optional().describe('Maximum number of results to return (default 5)'),
+    }),
+  }
+);
 
 const createPatient = tool(
   async (data) => {
@@ -127,6 +132,7 @@ const updatePatient = tool(
 export const patientTools = [
   listPatients,
   getPatient,
+  searchPatientsByName,
   createPatient,
   updatePatient,
 ];

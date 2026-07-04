@@ -47,6 +47,14 @@ export class PatientRepository {
     return this.patientModel.find({ hospitalId }).populate('hospitalId').exec();
   }
 
+  async findDischarged(filter: object = {}): Promise<PatientDocument[]> {
+    return this.patientModel
+      .find(filter)
+      .populate('hospitalId')
+      .sort({ dischargedAt: -1 })
+      .exec();
+  }
+
   async findByAadhaarNumber(aadhaarNumber: string, excludeId?: string): Promise<PatientDocument | null> {
     const filter: Record<string, unknown> = { aadhaarNumber };
     if (excludeId) filter._id = { $ne: excludeId };

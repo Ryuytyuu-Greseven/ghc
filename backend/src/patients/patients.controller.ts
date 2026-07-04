@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PatientsService } from './patients.service';
@@ -36,6 +36,22 @@ export class PatientsController {
       throw new ForbiddenException('Access denied to other hospital patient list');
     }
     return this.patientsService.findByHospital(hospitalId);
+  }
+
+  @Get('discharged')
+  async findDischarged(
+    @Req() req: any,
+    @Query('from') fromStr?: string,
+    @Query('to') toStr?: string,
+  ) {
+    const hospitalId = await this.getAssignedHospitalId(req);
+    const from = fromStr ? new Date(fromStr) : new Date(new Date().setHours(0, 0, 0, 0));
+    const to = toStr ? new Date(toStr) : new Date(new Date().setHours(23, 59, 59, 999));
+    return this.patientsService.findDischarged({
+      hospitalId: hospitalId ?? undefined,
+      from,
+      to,
+    });
   }
 
   @Get(':id')

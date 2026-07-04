@@ -38,6 +38,9 @@ export class Patient {
   @Prop({ type: Date, default: () => new Date() })
   admittedAt: Date;
 
+  @Prop({ type: Date })
+  dischargedAt: Date;
+
   @Prop({ default: true })
   isActive: boolean;
 }

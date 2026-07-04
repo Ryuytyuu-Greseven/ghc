@@ -1,8 +1,10 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { getModelToken } from '@nestjs/mongoose';
 import { appInstance } from '../../main';
 import { HospitalsService } from '../../hospitals/hospitals.service';
 import { HospitalDocument } from 'src/schemas/hospital.schema';
+import { Staff } from '../../schemas/staff.schema';
 import { HospitalHelperService } from '../services/hospital-helper.service';
 
 function getHospitalsService(): HospitalsService {
@@ -33,7 +35,8 @@ export const getHospital = tool(
   },
   {
     name: 'get_hospital',
-    description: 'Get details of a primary (PHC) or community (CHC) healthcare facility by its MongoDB ObjectId',
+    description:
+      'Get details of a primary (PHC) or community (CHC) healthcare facility by its MongoDB ObjectId',
     schema: z.object({
       id: z.string().describe('MongoDB ObjectId of the facility'),
     }),
@@ -93,9 +96,13 @@ export const fetchBedsAvailability = tool(
   },
   {
     name: 'fetchBedsAvailability',
-    description: 'Fetch total and available beds for hospitals, optionally filtering by hospital name',
+    description:
+      'Fetch total and available beds for hospitals, optionally filtering by hospital name',
     schema: z.object({
-      name: z.string().optional().describe('Name of the hospital to search for'),
+      name: z
+        .string()
+        .optional()
+        .describe('Name of the hospital to search for'),
     }),
   },
 );
@@ -126,9 +133,13 @@ export const fetchMedicalInchargeDetails = tool(
   },
   {
     name: 'fetchMedicalInchargeDetails',
-    description: 'Fetch medical officer incharge details for hospitals, optionally filtering by hospital name',
+    description:
+      'Fetch medical officer incharge details for hospitals, optionally filtering by hospital name',
     schema: z.object({
-      name: z.string().optional().describe('Name of the hospital to search for'),
+      name: z
+        .string()
+        .optional()
+        .describe('Name of the hospital to search for'),
     }),
   },
 );
@@ -148,7 +159,8 @@ export const fetchPatientsDetails = tool(
       const result: any[] = [];
       for (const h of data) {
         const hospitalLogicalId = h.hospitalId || h._id.toString();
-        const patients = await HospitalHelperService.findPatientsByHospital(hospitalLogicalId);
+        const patients =
+          await HospitalHelperService.findPatientsByHospital(hospitalLogicalId);
         result.push({
           hospitalId: h._id,
           hospitalName: h.name,
@@ -190,7 +202,8 @@ export const fetchStaffDetails = tool(
       const result: any[] = [];
       for (const h of data) {
         const hospitalLogicalId = h.hospitalId || h._id.toString();
-        const staff = await HospitalHelperService.findStaffByHospital(hospitalLogicalId);
+        const staff =
+          await HospitalHelperService.findStaffByHospital(hospitalLogicalId);
         result.push({
           hospitalId: h._id,
           hospitalName: h.name,
@@ -240,9 +253,53 @@ export const fetchAvailableSpecialists = tool(
   },
   {
     name: 'fetchAvailableSpecialists',
-    description: 'Fetch lists of available specialists (e.g. surgeon, pediatrician) in hospitals, optionally filtering by hospital name',
+    description:
+      'Fetch lists of available specialists (e.g. surgeon, pediatrician) in hospitals, optionally filtering by hospital name',
     schema: z.object({
       name: z.string().optional().describe('Name of the hospital to filter by'),
+    }),
+  },
+);
+
+export const fetchHospitalsBySpecialization = tool(
+  async ({ specialization }) => {
+    console.log('Fetch Hospitals By Specialization', specialization);
+    const staffModel = appInstance.get(getModelToken(Staff.name));
+    const staff = await staffModel
+      .find({ specialization: { $regex: specialization, $options: 'i' } })
+      .populate('hospitalId')
+      .exec();
+
+    const grouped = new Map<string, any>();
+    for (const s of staff) {
+      const hospital = s.hospitalId;
+      if (!hospital || !hospital.name) continue;
+      const key = hospital._id.toString();
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          hospitalId: hospital._id,
+          hospitalName: hospital.name,
+          doctors: [],
+        });
+      }
+      grouped.get(key).doctors.push({
+        name: s.displayName || `${s.firstName} ${s.lastName || ''}`.trim(),
+        specialization: s.specialization,
+      });
+    }
+
+    return JSON.stringify(Array.from(grouped.values()));
+  },
+  {
+    name: 'fetchHospitalsBySpecialization',
+    description:
+      'Find hospitals that have doctors with a given medical specialization (e.g. cardiologist, pediatrician, gynecologist, surgeon)',
+    schema: z.object({
+      specialization: z
+        .string()
+        .describe(
+          'Medical specialization to search for, e.g. Cardiologist, Pediatrician',
+        ),
     }),
   },
 );
@@ -256,4 +313,5 @@ export const hospitalTools = [
   fetchPatientsDetails,
   fetchStaffDetails,
   fetchAvailableSpecialists,
+  fetchHospitalsBySpecialization,
 ];

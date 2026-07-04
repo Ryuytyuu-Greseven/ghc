@@ -27,6 +27,8 @@ function routeHospitalAfterClassify(state: typeof HospitalState.State): string {
       return 'staffDetailsNode';
     case 'availableSpecialists':
       return 'availableSpecialistsNode';
+    case 'doctorsBySpecialization':
+      return 'doctorsBySpecializationNode';
     default:
       return 'fetchHospitalsNode';
   }
@@ -54,6 +56,9 @@ export const hospitalGraph = new StateGraph(HospitalState)
   .addNode('availableSpecialistsNode', (state) =>
     getHospitalToolsClass().availableSpecialists(state),
   )
+  .addNode('doctorsBySpecializationNode', (state) =>
+    getHospitalToolsClass().doctorsBySpecialization(state),
+  )
   .addEdge(START, 'classify_intent')
   .addConditionalEdges('classify_intent', routeHospitalAfterClassify, {
     fetchHospitalsNode: 'fetchHospitalsNode',
@@ -62,6 +67,7 @@ export const hospitalGraph = new StateGraph(HospitalState)
     patientsDetailsNode: 'patientsDetailsNode',
     staffDetailsNode: 'staffDetailsNode',
     availableSpecialistsNode: 'availableSpecialistsNode',
+    doctorsBySpecializationNode: 'doctorsBySpecializationNode',
   })
   .addEdge('fetchHospitalsNode', END)
   .addEdge('bedsAvailabilityNode', END)
@@ -69,6 +75,7 @@ export const hospitalGraph = new StateGraph(HospitalState)
   .addEdge('patientsDetailsNode', END)
   .addEdge('staffDetailsNode', END)
   .addEdge('availableSpecialistsNode', END)
+  .addEdge('doctorsBySpecializationNode', END)
   .compile();
 
 export async function hospitalNode(state: typeof AgentState.State) {
