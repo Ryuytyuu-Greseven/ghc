@@ -18,9 +18,9 @@ import { PatientDataModule } from './patient-data/patient-data.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { AuditInterceptor } from './audit-logs/audit.interceptor';
+import { ReportsModule } from './reports/reports.module';
 import { config } from 'dotenv';
 config();
-
 
 @Module({
   imports: [
@@ -44,6 +44,7 @@ config();
     PatientDataModule,
     NotificationsModule,
     AuditLogsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -58,5 +59,4 @@ config();
     },
   ],
 })
-export class AppModule { }
-
+export class AppModule {}

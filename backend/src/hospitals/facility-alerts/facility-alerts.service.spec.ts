@@ -25,7 +25,7 @@ describe('FacilityAlertsService', () => {
 
     service = new FacilityAlertsService(
       mockHospitalRepo,
-      mockBedAllocationRepo as any,
+      mockBedAllocationRepo,
       mockBranchInventoryRepo,
       mockStaffRepo,
       mockPatientRepo,
@@ -117,9 +117,7 @@ describe('FacilityAlertsService', () => {
       { _id: 'p-12', isActive: true },
     ]);
     // Only 1 staff assigned (12:1 ratio)
-    mockStaffRepo.findByHospital.mockResolvedValue([
-      { _id: 'staff-1' },
-    ]);
+    mockStaffRepo.findByHospital.mockResolvedValue([{ _id: 'staff-1' }]);
 
     const alerts = await service.getInterventionAlerts();
     expect(alerts).toHaveLength(1);

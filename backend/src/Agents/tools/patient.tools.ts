@@ -24,24 +24,36 @@ async function fetch(url: string, init?: any) {
   };
 }
 
-const bloodGroupEnum = z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
+const bloodGroupEnum = z.enum([
+  'A+',
+  'A-',
+  'B+',
+  'B-',
+  'AB+',
+  'AB-',
+  'O+',
+  'O-',
+]);
 
 export const listPatients = tool(
   async ({ hospitalId }) => {
     const res = hospitalId
       ? await fetch(`${BASE}/patients/by-hospital/${hospitalId}`)
       : await fetch(`${BASE}/patients`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ page: 1, pageSize: 1000 }),
-      });
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page: 1, pageSize: 1000 }),
+        });
     return JSON.stringify(await res.json());
   },
   {
     name: 'list_patients',
     description: 'List all active patients; optionally filter by hospital ID',
     schema: z.object({
-      hospitalId: z.string().optional().describe('Filter by hospital MongoDB ObjectId'),
+      hospitalId: z
+        .string()
+        .optional()
+        .describe('Filter by hospital MongoDB ObjectId'),
     }),
   },
 );

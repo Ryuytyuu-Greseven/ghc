@@ -21,6 +21,15 @@ export class User {
 
   @Prop({ default: true })
   isActive: boolean;
+
+  @Prop({ trim: true, lowercase: true })
+  email?: string;
+
+  @Prop()
+  otpCode?: string;
+
+  @Prop()
+  otpExpires?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

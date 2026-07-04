@@ -13,7 +13,15 @@ export class UsersService {
     return this.userRepository.findOne({ username: username.trim() });
   }
 
+  async findOneByFilter(filter: object): Promise<any> {
+    return this.userRepository.findOne(filter);
+  }
+
   async create(data: Partial<User>): Promise<any> {
     return this.userRepository.create(data);
+  }
+
+  async update(id: string, data: any): Promise<any> {
+    return this.userRepository.update(id, data);
   }
 }

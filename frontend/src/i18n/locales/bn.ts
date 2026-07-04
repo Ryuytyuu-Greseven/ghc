@@ -2,11 +2,12 @@ export const bn = {
   translation: {
     common: {
       signOut: "লগ আউট",
+      refresh: "রিফ্রেশ করুন",
       addFacility: "নতুন কেন্দ্র যোগ করুন",
       searchFacilities: "অনুসন্ধান করুন...",
       all: "সব",
-      phcs: "পিএইচসি",
-      chcs: "সিএইচসি",
+      phcs: "পিএইচসি (PHC)",
+      chcs: "সিএইচসি (CHC)",
       loading: "লোড হচ্ছে...",
       noFacilities: "কোনো স্বাস্থ্য কেন্দ্র পাওয়া যায়নি",
       tryRelaxing: "অনুসন্ধান পরিবর্তন করুন বা নতুন কেন্দ্র যোগ করুন।",
@@ -57,7 +58,28 @@ export const bn = {
       notifications: "বিজ্ঞপ্তি",
       unknown: "অজানা",
       saving: "সংরক্ষণ করা হচ্ছে...",
-      saveChanges: "পরিবর্তন সংরক্ষণ করুন"
+      saveChanges: "পরিবর্তন সংরক্ষণ করুন",
+      changePassword: "পাসওয়ার্ড পরিবর্তন করুন",
+      oldPassword: "পুরানো পাসওয়ার্ড",
+      oldPasswordPlaceholder: "পুরানো পাসওয়ার্ড লিখুন",
+      newPassword: "নতুন পাসওয়ার্ড",
+      newPasswordPlaceholder: "নতুন পাসওয়ার্ড লিখুন",
+      confirmPassword: "পাসওয়ার্ড নিশ্চিত করুন",
+      confirmPasswordPlaceholder: "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+      changePasswordSuccess: "পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!",
+      passwordsDoNotMatch: "নতুন পাসওয়ার্ড মিলছে না।",
+      passwordError: "পাসওয়ার্ড পরিবর্তন করতে ব্যর্থ হয়েছে। আপনার বিবরণ পরীক্ষা করুন।",
+      loggingOutIn: "আপনাকে {{count}} সেকেন্ডের মধ্যে লগ আউট করা হবে...",
+      logoutNow: "এখনই লগ আউট করুন",
+      logoutConfirmTitle: "লগ আউট নিশ্চিত করুন",
+      logoutConfirmMessage: "আপনি কি নিশ্চিত যে আপনার অ্যাকাউন্ট থেকে লগ আউট করতে চান?",
+      logoutConfirmButton: "লোগ আউট করুন",
+      time: {
+        justNow: "এইমাত্র",
+        minutesAgo: "{{count}}মি আগে",
+        hoursAgo: "{{count}}ঘণ্টা আগে",
+        daysAgo: "{{count}}দিন আগে"
+      }
     },
     nav: {
       dashboard: "ড্যাশবোর্ড",
@@ -69,7 +91,8 @@ export const bn = {
       "critical-alerts": "গুরুতর সতর্কতা",
       availability: "আমার প্রাপ্যতা",
       transfers: "কভারেজ ও স্থানান্তর",
-      audits: "অডিট লগ"
+      audits: "অডিট লগ",
+      reports: "প্রতিবেদন"
     },
     roles: {
       Admin: "প্রশাসক",
@@ -129,7 +152,9 @@ export const bn = {
         banner_desc: "PHC/CHC সমূহে তাত্ক্ষণিক প্রশাসনিক ব্যবস্থা গ্রহণ করা প্রয়োজন।",
         banner_action: "সতর্কতা পর্যালোচনা করুন",
         no_alerts_title: "সবকিছু স্বাভাবিক রয়েছে",
-        no_alerts_desc: "সমস্ত প্রাথমিক এবং কমিউনিটি স্বাস্থ্য কেন্দ্র স্বাভাবিক সম্পদ সীমার মধ্যে কাজ করছে।"
+        no_alerts_desc: "সমস্ত প্রাথমিক এবং কমিউনিটি স্বাস্থ্য কেন্দ্র স্বাভাবিক সম্পদ সীমার মধ্যে কাজ করছে।",
+        subtitle_staff: "আপনার সুবিধার জন্য গুরুত্বপূর্ণ সম্পদ সতর্কতা",
+        staff_info_banner: "এই গুরুত্বপূর্ণ সতর্কতা সম্পর্কে প্রশাসন স্বয়ংক্রিয়ভাবে অবহিত হয়েছে। প্রশাসনিক দলের আরও পদক্ষেপ এড়াতে অনুগ্রহ করে আপনার সুবিধা পর্যায়ে তাত্ক্ষণিক সংশোধনী ব্যবস্থা গ্রহণ করুন।"
       }
     },
     hospitals: {
@@ -753,6 +778,71 @@ export const bn = {
         ICU: "আইসিইউ",
         "Operation Theatre": "অপারেশন থিয়েটার",
         Administration: "প্রশাসন"
+      },
+      reports: {
+        subtitle: "সিস্টেমের ত্রুটিসমূহ, চিকিৎসা পরিসংখ্যান, শয্যা প্রাপ্যতা এবং স্টক চেক বিবরণ দেখুন।",
+        allBranches: "সমস্ত শাখা",
+        to: "থেকে",
+        exportReport: "এক্সেল ডাউনলোড",
+        tabOccupancy: "শয্যা দখলের হার ও ক্ষমতা",
+        tabClinical: "চিকিৎসা সংক্রান্ত পরিসংখ্যান",
+        tabStaffing: "কর্মী বণ্টন বিবরণ",
+        tabInventory: "স্টক পরিস্থিতি ও মেয়াদ উত্তীর্ণের তালিকা",
+        loading: "রিপোর্ট বিশ্লেষণ তৈরি হচ্ছে...",
+        error: "একটি অপ্রত্যাশিত ত্রুটি ঘটেছে",
+        totalBeds: "মোট শয্যা",
+        occupiedBeds: "ব্যবহৃত শয্যা",
+        availableBeds: "খালি শয্যা",
+        averageOccupancy: "গড় শয্যা ব্যবহারের হার",
+        branchBreakdown: "শাখা ভিত্তিক শয্যা বিবরণ",
+        colBranchName: "শাখার নাম",
+        colType: "প্রকার",
+        colTotalBeds: "মোট শয্যা",
+        colOccupiedBeds: "ভর্তি শয্যা",
+        colAvailableBeds: "খালি শয্যা",
+        colOccupancyRate: "শয্যা ব্যবহারের হার",
+        totalConsultations: "মোট পরামর্শ",
+        visitsRange: "নির্বাচিত সময়ের মধ্যে রোগীর মোট আগমন।",
+        livePatient: "সক্রিয় রোগী উপস্থিতি",
+        topDiagnoses: "শীর্ষ রোগ ও সমস্যাসমূহ",
+        noDiagnoses: "নির্বাচিত ফিল্টারের জন্য কোনো রেকর্ড পাওয়া যায়নি।",
+        cases: "টি ঘটনা",
+        highlyPrescribed: "সর্বোচ্চ ব্যবহূত ওষুধসমূহ",
+        noMedicines: "কোনো ওষুধের রেকর্ড পাওয়া যায়নি।",
+        units: "টি ইউনিট",
+        totalStaff: "মোট নিবন্ধিত কর্মী",
+        clinicalAdminBase: "চিকিৎসক ও প্রশাসনিক কর্মী",
+        staffDept: "বিভাগ ভিত্তিক কর্মী সংখ্যা",
+        members: "জন কর্মী",
+        staffRole: "পদবী ভিত্তিক কর্মী সংখ্যা",
+        expiringSoon: "আগামী ৯০ দিনে মেয়াদ উত্তীর্ণ হবে এমন ওষুধের তালিকা",
+        noExpiry: "আগামী ৯০ দিনে মেয়াদ শেষ হওয়ার মতো কোনো ওষুধ নেই।",
+        colBranch: "शाखा",
+        medsByBranch: "शाखावार निर्धारित दवाएं",
+        colMedName: "ওষুধের নাম",
+        colBatchNo: "ব্যাচ নম্বর",
+        colQty: "পরিমাণ",
+        colExpiryDate: "মেয়াদ শেষের তারিখ",
+        stockCategory: "শ্রেণী ভিত্তিক স্টক পরিমাণ",
+        noStock: "কোনো স্টকের রেকর্ড পাওয়া যায়নি।",
+        uniqueItems: "ধরণের ওষুধ",
+        medicineAvailabilityTitle: "ওষুধের মজুদ প্রাপ্যতা",
+        colBranchesCount: "মজুদ আছে যে শাখায়",
+        colBatchesCount: "ব্যাচ"
+      }
+    },
+    notifications: {
+      hospitalOnboardedTitle: "হাসপাতাল সফলভাবে অনবোর্ড করা হয়েছে",
+      hospitalOnboardedBody: "সুবিধা \"{{name}}\" ({{type}}) সফলভাবে {{city}}-তে {{performedBy}} দ্বারা অনবোর্ড করা হয়েছে।",
+      hospitalUpdatedTitle: "হাসপাতাল প্রোফাইল আপডেট করা হয়েছে",
+      hospitalUpdatedBody: "সুবিধা প্রোফাইল \"{{name}}\" {{performedBy}} দ্বারা আপডেট করা হয়েছে।",
+      staffCreatedTitle: "কর্মী সফলভাবে নিবন্ধিত হয়েছে",
+      staffCreatedBody: "কর্মী \"{{name}}\" ({{role}}) সফলভাবে {{performedBy}} দ্বারা নিবন্ধিত হয়েছে।",
+      staffUpdatedTitle: "কর্মী প্রোফাইল আপডেট করা হয়েছে",
+      staffUpdatedBody: "কর্মী প্রোফাইল \"{{name}}\" {{performedBy}} দ্বারা আপডেট করা হয়েছে।",
+      staffAssignedTitle: "কর্মী স্বাস্থ্যকেন্দ্রে নিযুক্ত হয়েছে",
+      staffAssignedBody: "কর্মী \"{{name}}\" {{performedBy}} দ্বারা {{facility}}-তে নিযুক্ত হয়েছে।",
+      staffDeassignedTitle: "কর্মী স্বাস্থ্যকেন্দ্র থেকে অপসারিত",
+      staffDeassignedBody: "কর্মী \"{{name}}\" {{performedBy}} দ্বারা {{facility}} থেকে অপসারিত হয়েছে।"
     }
-  }
-};
+  };

@@ -2,11 +2,12 @@ export const en = {
   translation: {
     common: {
       signOut: "Sign Out",
+      refresh: "Refresh",
       addFacility: "Add Facility",
       searchFacilities: "Search facilities...",
       all: "All",
-      phcs: "PHCs",
-      chcs: "CHCs",
+      phcs: "PHC's",
+      chcs: "CHC's",
       loading: "Loading...",
       noFacilities: "No facilities found",
       tryRelaxing: "Try relaxing your search query or add a new facility.",
@@ -57,7 +58,28 @@ export const en = {
       notifications: "Notifications",
       unknown: "Unknown",
       saving: "Saving...",
-      saveChanges: "Save Changes"
+      saveChanges: "Save Changes",
+      changePassword: "Change Password",
+      oldPassword: "Old Password",
+      oldPasswordPlaceholder: "Enter old password",
+      newPassword: "New Password",
+      newPasswordPlaceholder: "Enter new password",
+      confirmPassword: "Confirm Password",
+      confirmPasswordPlaceholder: "Confirm new password",
+      changePasswordSuccess: "Password changed successfully!",
+      passwordsDoNotMatch: "New passwords do not match.",
+      passwordError: "Failed to change password. Please check your credentials.",
+      loggingOutIn: "You will be logged out in {{count}} seconds...",
+      logoutNow: "Logout Now",
+      logoutConfirmTitle: "Confirm Sign Out",
+      logoutConfirmMessage: "Are you sure you want to sign out of your account?",
+      logoutConfirmButton: "Sign Out",
+      time: {
+        justNow: "just now",
+        minutesAgo: "{{count}}m ago",
+        hoursAgo: "{{count}}h ago",
+        daysAgo: "{{count}}d ago"
+      }
     },
     nav: {
       dashboard: "Dashboard",
@@ -69,7 +91,8 @@ export const en = {
       "critical-alerts": "Critical Alerts",
       availability: "My Availability",
       transfers: "Coverage & Transfers",
-      audits: "Audit Logs"
+      audits: "Audit Logs",
+      reports: "Reports"
     },
     roles: {
       Admin: "Admin",
@@ -129,7 +152,9 @@ export const en = {
         banner_desc: "PHCs/CHCs require immediate administrative action.",
         banner_action: "Review Alerts",
         no_alerts_title: "All Systems Normal",
-        no_alerts_desc: "All primary and community healthcare facilities are operating within standard resource thresholds."
+        no_alerts_desc: "All primary and community healthcare facilities are operating within standard resource thresholds.",
+        subtitle_staff: "Critical resource alerts for your facility",
+        staff_info_banner: "Administration has been automatically notified about these critical alerts. Please take immediate corrective actions at your facility level to avoid further escalation by the administrative team."
       }
     },
     hospitals: {
@@ -753,6 +778,72 @@ export const en = {
         ICU: "ICU",
         "Operation Theatre": "Operation Theatre",
         Administration: "Administration"
+      },
+      reports: {
+        subtitle: "Access system breakdowns, clinical statistics, bed availability, and stock checks.",
+        allBranches: "All Branches",
+        to: "to",
+        exportReport: "Export Excel",
+        tabOccupancy: "Bed Occupancy Capacity",
+        tabClinical: "Clinical Diagnostics",
+        tabStaffing: "Staffing Distribution",
+        tabInventory: "Inventory Status & Expiry",
+        loading: "Compiling Report Analytics...",
+        error: "An unexpected error occurred",
+        totalBeds: "Total Beds",
+        occupiedBeds: "Occupied Beds",
+        availableBeds: "Available Beds",
+        averageOccupancy: "Average Occupancy",
+        branchBreakdown: "Branch Capacity breakdown",
+        colBranchName: "Branch Name",
+        colType: "Branch Type",
+        colTotalBeds: "Total Beds",
+        colOccupiedBeds: "Occupied Beds",
+        colAvailableBeds: "Available Beds",
+        colOccupancyRate: "Occupancy Rate",
+        totalConsultations: "Total Consultations",
+        visitsRange: "Visits matching selected date range.",
+        livePatient: "Live Patient Engagement",
+        topDiagnoses: "Top Diagnostic Problems",
+        noDiagnoses: "No diagnostic records found for selected filters.",
+        cases: "cases",
+        highlyPrescribed: "Highly Prescribed Medicines",
+        noMedicines: "No medicine prescriptions found.",
+        units: "units",
+        totalStaff: "Total Onboarded Staff",
+        clinicalAdminBase: "Clinical & Administration Base",
+        staffDept: "Staff count by Department",
+        members: "members",
+        staffRole: "Staff count by User Role",
+        staffBranch: "Staff Assignment by Branch",
+        expiringSoon: "Batches Expiring in Next 90 Days",
+        noExpiry: "No batches expiring in the next 90 days.",
+        colMedName: "Medicine Name",
+        colBranch: "Branch",
+        medsByBranch: "Prescribed Medicines by Branch",
+        colBatchNo: "Batch No",
+        colQty: "Qty",
+        colExpiryDate: "Expiry Date",
+        stockCategory: "Stock by Category",
+        noStock: "No inventory stock entries found.",
+        uniqueItems: "unique items",
+        medicineAvailabilityTitle: "Medicine Stock Availability",
+        colBranchesCount: "Branches with Stock",
+        colBatchesCount: "Batches"
+      }
+    },
+    notifications: {
+      hospitalOnboardedTitle: "Hospital onboarded successfully",
+      hospitalOnboardedBody: "Facility \"{{name}}\" ({{type}}) has been successfully onboarded in {{city}} by {{performedBy}}.",
+      hospitalUpdatedTitle: "Hospital profile updated",
+      hospitalUpdatedBody: "Facility profile for \"{{name}}\" has been updated by {{performedBy}}.",
+      staffCreatedTitle: "Staff registered successfully",
+      staffCreatedBody: "Staff member \"{{name}}\" ({{role}}) has been successfully registered by {{performedBy}}.",
+      staffUpdatedTitle: "Staff profile updated",
+      staffUpdatedBody: "Staff profile for \"{{name}}\" has been updated by {{performedBy}}.",
+      staffAssignedTitle: "Staff assigned to facility",
+      staffAssignedBody: "Staff member \"{{name}}\" has been assigned to {{facility}} by {{performedBy}}.",
+      staffDeassignedTitle: "Staff de-assigned from facility",
+      staffDeassignedBody: "Staff member \"{{name}}\" has been de-assigned from {{facility}} by {{performedBy}}."
     }
-  }
-};
+  };

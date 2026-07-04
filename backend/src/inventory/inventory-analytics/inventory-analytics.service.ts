@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 import { BranchInventoryRepository } from '../../repositories/branch-inventory.repository';
@@ -61,10 +65,16 @@ export class InventoryAnalyticsService {
     private readonly hospitalRepo: HospitalRepository,
   ) {}
 
-  async verifyBranchAccess(assignedHospitalId: string, branchId: string): Promise<boolean> {
+  async verifyBranchAccess(
+    assignedHospitalId: string,
+    branchId: string,
+  ): Promise<boolean> {
     const hospital = await this.hospitalRepo.findById(branchId);
     if (!hospital) return false;
-    return hospital.hospitalId === assignedHospitalId || hospital._id.toString() === assignedHospitalId;
+    return (
+      hospital.hospitalId === assignedHospitalId ||
+      hospital._id.toString() === assignedHospitalId
+    );
   }
 
   async getLowStockWarnings(hospitalId?: string): Promise<StockoutWarning[]> {
@@ -73,21 +83,28 @@ export class InventoryAnalyticsService {
       const activeHospitals = await this.hospitalRepo.findAll({
         $or: [
           { hospitalId: hospitalId },
-          { _id: new Types.ObjectId(hospitalId) }
-        ]
+          { _id: new Types.ObjectId(hospitalId) },
+        ],
       });
-      targetBranchIds = activeHospitals.map(h => h._id.toString());
+      targetBranchIds = activeHospitals.map((h) => h._id.toString());
     }
 
     const filter = targetBranchIds
-      ? { branchId: { $in: targetBranchIds.map(id => new Types.ObjectId(id)) } }
+      ? {
+          branchId: {
+            $in: targetBranchIds.map((id) => new Types.ObjectId(id)),
+          },
+        }
       : {};
     const branchStock = await this.branchRepo.findAll(filter);
     const aggregated = this.aggregateBranchStock(branchStock);
     const warnings: StockoutWarning[] = [];
 
     for (const entry of aggregated) {
-      const dailyRate = await this.getDailyConsumptionRate(entry.itemId, entry.branchId);
+      const dailyRate = await this.getDailyConsumptionRate(
+        entry.itemId,
+        entry.branchId,
+      );
       if (dailyRate <= 0) continue;
 
       const daysOfStock = entry.availableQty / dailyRate;
@@ -112,7 +129,10 @@ export class InventoryAnalyticsService {
     return warnings.sort((a, b) => a.daysOfStock - b.daysOfStock);
   }
 
-  async getDemandForecast(itemId: string, branchId: string): Promise<DemandForecastResult> {
+  async getDemandForecast(
+    itemId: string,
+    branchId: string,
+  ): Promise<DemandForecastResult> {
     const [item, branch] = await Promise.all([
       this.masterRepo.findById(itemId),
       this.hospitalRepo.findById(branchId),
@@ -120,8 +140,14 @@ export class InventoryAnalyticsService {
     if (!item) throw new NotFoundException(`Item ${itemId} not found`);
     if (!branch) throw new NotFoundException(`Branch ${branchId} not found`);
 
-    const historicalDaily = await this.buildHistoricalDailyDistribution(itemId, branchId);
-    const averageDailyConsumption = await this.getDailyConsumptionRate(itemId, branchId);
+    const historicalDaily = await this.buildHistoricalDailyDistribution(
+      itemId,
+      branchId,
+    );
+    const averageDailyConsumption = await this.getDailyConsumptionRate(
+      itemId,
+      branchId,
+    );
     const aiForecast = await this.generateAiForecast(
       item.itemName,
       branch.name,
@@ -142,11 +168,17 @@ export class InventoryAnalyticsService {
     };
   }
 
-  async getRedistributionRecommendations(hospitalId?: string): Promise<RedistributionRecommendation[]> {
+  async getRedistributionRecommendations(
+    hospitalId?: string,
+  ): Promise<RedistributionRecommendation[]> {
     const branchStock = await this.branchRepo.findAll({});
     const aggregated = this.aggregateBranchStock(branchStock);
-    const hospitalNames = await this.buildHospitalNameMap(aggregated.map((e) => e.branchId));
-    const itemNames = await this.buildItemNameMap(aggregated.map((e) => e.itemId));
+    const hospitalNames = await this.buildHospitalNameMap(
+      aggregated.map((e) => e.branchId),
+    );
+    const itemNames = await this.buildItemNameMap(
+      aggregated.map((e) => e.itemId),
+    );
 
     const recipients: {
       branchId: string;
@@ -162,15 +194,24 @@ export class InventoryAnalyticsService {
     }[] = [];
 
     for (const entry of aggregated) {
-      const dailyRate = await this.getDailyConsumptionRate(entry.itemId, entry.branchId);
+      const dailyRate = await this.getDailyConsumptionRate(
+        entry.itemId,
+        entry.branchId,
+      );
       const forecast30Total = dailyRate * SURPLUS_FORECAST_DAYS;
       const forecast7Total = dailyRate * 7;
-      const daysOfStock = dailyRate > 0 ? entry.availableQty / dailyRate : Infinity;
+      const daysOfStock =
+        dailyRate > 0 ? entry.availableQty / dailyRate : Infinity;
 
-      if (daysOfStock < DOS_THRESHOLD_DAYS || entry.availableQty < forecast7Total) {
+      if (
+        daysOfStock < DOS_THRESHOLD_DAYS ||
+        entry.availableQty < forecast7Total
+      ) {
         const needed = Math.max(
           Math.ceil(forecast7Total - entry.availableQty),
-          dailyRate > 0 ? Math.ceil(DOS_THRESHOLD_DAYS * dailyRate - entry.availableQty) : 10,
+          dailyRate > 0
+            ? Math.ceil(DOS_THRESHOLD_DAYS * dailyRate - entry.availableQty)
+            : 10,
         );
         if (needed > 0) {
           recipients.push({
@@ -211,7 +252,8 @@ export class InventoryAnalyticsService {
         const transferQty = Math.min(remainingDeficit, donor.excessQty);
         if (transferQty <= 0) continue;
 
-        const toName = hospitalNames.get(recipient.branchId) ?? recipient.branchId;
+        const toName =
+          hospitalNames.get(recipient.branchId) ?? recipient.branchId;
         const fromName = hospitalNames.get(donor.branchId) ?? donor.branchId;
         const itemName = itemNames.get(recipient.itemId) ?? 'Unknown Item';
 
@@ -236,15 +278,18 @@ export class InventoryAnalyticsService {
       const activeHospitals = await this.hospitalRepo.findAll({
         $or: [
           { hospitalId: hospitalId },
-          { _id: new Types.ObjectId(hospitalId) }
-        ]
+          { _id: new Types.ObjectId(hospitalId) },
+        ],
       });
-      targetBranchIds = activeHospitals.map(h => h._id.toString());
+      targetBranchIds = activeHospitals.map((h) => h._id.toString());
     }
 
-    const filteredRecommendations = recommendations.filter(rec => {
+    const filteredRecommendations = recommendations.filter((rec) => {
       if (!targetBranchIds) return true;
-      return targetBranchIds.includes(rec.fromBranchId) || targetBranchIds.includes(rec.toBranchId);
+      return (
+        targetBranchIds.includes(rec.fromBranchId) ||
+        targetBranchIds.includes(rec.toBranchId)
+      );
     });
 
     return filteredRecommendations;
@@ -258,7 +303,9 @@ export class InventoryAnalyticsService {
     performedBy = 'AI Analytics',
   ) {
     if (fromBranchId === toBranchId) {
-      throw new BadRequestException('Source and destination branches must be different.');
+      throw new BadRequestException(
+        'Source and destination branches must be different.',
+      );
     }
     if (!quantity || quantity <= 0) {
       throw new BadRequestException('Quantity must be a positive number.');
@@ -270,11 +317,19 @@ export class InventoryAnalyticsService {
       this.hospitalRepo.findById(toBranchId),
     ]);
     if (!item) throw new NotFoundException(`Item ${itemId} not found`);
-    if (!fromBranch) throw new NotFoundException(`Source branch ${fromBranchId} not found`);
-    if (!toBranch) throw new NotFoundException(`Destination branch ${toBranchId} not found`);
+    if (!fromBranch)
+      throw new NotFoundException(`Source branch ${fromBranchId} not found`);
+    if (!toBranch)
+      throw new NotFoundException(`Destination branch ${toBranchId} not found`);
 
-    const batches = await this.branchRepo.findByBranchAndItem(fromBranchId, itemId);
-    const totalAvailable = batches.reduce((sum, batch) => sum + batch.availableQty, 0);
+    const batches = await this.branchRepo.findByBranchAndItem(
+      fromBranchId,
+      itemId,
+    );
+    const totalAvailable = batches.reduce(
+      (sum, batch) => sum + batch.availableQty,
+      0,
+    );
     if (totalAvailable < quantity) {
       throw new BadRequestException(
         `Insufficient stock at ${fromBranch.name}. Available: ${totalAvailable}, Requested: ${quantity}`,
@@ -303,7 +358,10 @@ export class InventoryAnalyticsService {
   aggregateBranchStock(
     branchStock: Awaited<ReturnType<BranchInventoryRepository['findAll']>>,
   ): { branchId: string; itemId: string; availableQty: number }[] {
-    const map = new Map<string, { branchId: string; itemId: string; availableQty: number }>();
+    const map = new Map<
+      string,
+      { branchId: string; itemId: string; availableQty: number }
+    >();
 
     for (const row of branchStock) {
       const branchId = ((row.branchId as any)?._id ?? row.branchId)?.toString();
@@ -322,7 +380,10 @@ export class InventoryAnalyticsService {
     return Array.from(map.values());
   }
 
-  async getDailyConsumptionRate(itemId: string, branchId: string): Promise<number> {
+  async getDailyConsumptionRate(
+    itemId: string,
+    branchId: string,
+  ): Promise<number> {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - ANALYSIS_WINDOW_DAYS);
 
@@ -336,7 +397,8 @@ export class InventoryAnalyticsService {
       const branchMatch = from === branchId;
       const isConsumption =
         metadata.transactionType === TransactionType.ISSUE ||
-        (metadata.transactionType === TransactionType.TRANSFER && from !== 'Central');
+        (metadata.transactionType === TransactionType.TRANSFER &&
+          from !== 'Central');
       const createdAt = tx.createdAt ? new Date(tx.createdAt) : null;
       return branchMatch && isConsumption && createdAt && createdAt >= cutoff;
     });
@@ -350,7 +412,10 @@ export class InventoryAnalyticsService {
     }
 
     const batches = await this.branchRepo.findByBranchAndItem(branchId, itemId);
-    const availableQty = batches.reduce((sum, batch) => sum + batch.availableQty, 0);
+    const availableQty = batches.reduce(
+      (sum, batch) => sum + batch.availableQty,
+      0,
+    );
     if (availableQty > 0) {
       return Math.max(availableQty / (ANALYSIS_WINDOW_DAYS * 2), 0.5);
     }
@@ -383,7 +448,8 @@ export class InventoryAnalyticsService {
       const isConsumption =
         from === branchId &&
         (metadata.transactionType === TransactionType.ISSUE ||
-          (metadata.transactionType === TransactionType.TRANSFER && from !== 'Central'));
+          (metadata.transactionType === TransactionType.TRANSFER &&
+            from !== 'Central'));
       const createdAt = tx.createdAt ? new Date(tx.createdAt) : null;
       if (!isConsumption || !createdAt || createdAt < cutoff) continue;
 
@@ -394,7 +460,10 @@ export class InventoryAnalyticsService {
       }
     }
 
-    return Array.from(dailyMap.entries()).map(([date, quantity]) => ({ date, quantity }));
+    return Array.from(dailyMap.entries()).map(([date, quantity]) => ({
+      date,
+      quantity,
+    }));
   }
 
   private async generateAiForecast(
@@ -402,8 +471,15 @@ export class InventoryAnalyticsService {
     branchName: string,
     historicalDaily: DailyDataPoint[],
     averageDailyConsumption: number,
-  ): Promise<{ forecast7Day: DailyDataPoint[]; forecast30Day: DailyDataPoint[]; summary: string }> {
-    const fallback = this.buildStatisticalForecast(historicalDaily, averageDailyConsumption);
+  ): Promise<{
+    forecast7Day: DailyDataPoint[];
+    forecast30Day: DailyDataPoint[];
+    summary: string;
+  }> {
+    const fallback = this.buildStatisticalForecast(
+      historicalDaily,
+      averageDailyConsumption,
+    );
 
     try {
       const prompt = `Analyze this healthcare inventory consumption data and predict demand.
@@ -421,18 +497,31 @@ Return ONLY valid JSON with this exact shape:
 }`;
 
       const response = await llmInstance.invoke([
-        new SystemMessage('You are a healthcare inventory forecasting assistant. Respond with JSON only.'),
+        new SystemMessage(
+          'You are a healthcare inventory forecasting assistant. Respond with JSON only.',
+        ),
         new HumanMessage(prompt),
       ]);
 
-      const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+      const content =
+        typeof response.content === 'string'
+          ? response.content
+          : JSON.stringify(response.content);
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (!jsonMatch) return { ...fallback, summary: fallback.summary };
 
       const parsed = JSON.parse(jsonMatch[0]);
       return {
-        forecast7Day: this.normalizeForecastDates(parsed.forecast7Day, 7, historicalDaily),
-        forecast30Day: this.normalizeForecastDates(parsed.forecast30Day, 30, historicalDaily),
+        forecast7Day: this.normalizeForecastDates(
+          parsed.forecast7Day,
+          7,
+          historicalDaily,
+        ),
+        forecast30Day: this.normalizeForecastDates(
+          parsed.forecast30Day,
+          30,
+          historicalDaily,
+        ),
         summary: parsed.summary ?? fallback.summary,
       };
     } catch {
@@ -440,18 +529,25 @@ Return ONLY valid JSON with this exact shape:
     }
   }
 
-  buildStatisticalForecast(historicalDaily: DailyDataPoint[], averageDailyConsumption: number) {
+  buildStatisticalForecast(
+    historicalDaily: DailyDataPoint[],
+    averageDailyConsumption: number,
+  ) {
     const recentAvg =
       historicalDaily.slice(-7).reduce((sum, d) => sum + d.quantity, 0) /
       Math.max(historicalDaily.slice(-7).length, 1);
-    const projectedDaily = recentAvg > 0 ? recentAvg : averageDailyConsumption || 1;
+    const projectedDaily =
+      recentAvg > 0 ? recentAvg : averageDailyConsumption || 1;
 
     const forecast7Day: DailyDataPoint[] = [];
     const forecast30Day: DailyDataPoint[] = [];
     for (let i = 1; i <= 30; i++) {
       const date = new Date();
       date.setDate(date.getDate() + i);
-      const point = { date: date.toISOString().slice(0, 10), quantity: Math.round(projectedDaily * 10) / 10 };
+      const point = {
+        date: date.toISOString().slice(0, 10),
+        quantity: Math.round(projectedDaily * 10) / 10,
+      };
       if (i <= 7) forecast7Day.push(point);
       forecast30Day.push(point);
     }
@@ -476,11 +572,14 @@ Return ONLY valid JSON with this exact shape:
     }
     return this.buildStatisticalForecast(
       historicalDaily,
-      historicalDaily.reduce((s, d) => s + d.quantity, 0) / Math.max(historicalDaily.length, 1),
+      historicalDaily.reduce((s, d) => s + d.quantity, 0) /
+        Math.max(historicalDaily.length, 1),
     )[count === 7 ? 'forecast7Day' : 'forecast30Day'];
   }
 
-  private async buildHospitalNameMap(branchIds: string[]): Promise<Map<string, string>> {
+  private async buildHospitalNameMap(
+    branchIds: string[],
+  ): Promise<Map<string, string>> {
     const unique = [...new Set(branchIds)];
     const map = new Map<string, string>();
     await Promise.all(
@@ -492,7 +591,9 @@ Return ONLY valid JSON with this exact shape:
     return map;
   }
 
-  private async buildItemNameMap(itemIds: string[]): Promise<Map<string, string>> {
+  private async buildItemNameMap(
+    itemIds: string[],
+  ): Promise<Map<string, string>> {
     const unique = [...new Set(itemIds)];
     const map = new Map<string, string>();
     await Promise.all(

@@ -27,7 +27,9 @@ export class HttpService {
     this.instance.interceptors.request.use((config) => {
       const token = this.extractToken();
       if (token) {
-        config.headers.Authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        config.headers.Authorization = token.startsWith('Bearer ')
+          ? token
+          : `Bearer ${token}`;
       }
       return config;
     });
@@ -99,7 +101,9 @@ export const httpClient = axios.create({
 httpClient.interceptors.request.use((config) => {
   const store = httpLocalStorage.getStore();
   if (store && store.token) {
-    config.headers.Authorization = store.token.startsWith('Bearer ') ? store.token : `Bearer ${store.token}`;
+    config.headers.Authorization = store.token.startsWith('Bearer ')
+      ? store.token
+      : `Bearer ${store.token}`;
   }
   return config;
 });

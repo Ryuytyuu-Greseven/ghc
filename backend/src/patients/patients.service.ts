@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { PatientRepository } from '../repositories/patient.repository';
 import { Patient } from '../schemas/patient.schema';
@@ -33,7 +38,7 @@ export class PatientsService {
     private readonly hospitalsCommonService: HospitalsCommonService,
     private readonly hospitalRepository: HospitalRepository,
     private readonly notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   async findAll(query: SearchPatientsDto = {}) {
     return this.patientRepository.findPaginated({
@@ -71,10 +76,15 @@ export class PatientsService {
   async create(data: CreatePatientDto) {
     const patient = this.prepareCreate(data);
     await this.ensureUniqueAadhaar(patient);
-    const createdPatient = await this.patientRepository.create(this.toPatientPersistence(patient));
+    const createdPatient = await this.patientRepository.create(
+      this.toPatientPersistence(patient),
+    );
     if (patient.bedRequired && patient.hospitalId) {
       try {
-        await this.hospitalsCommonService.allocateBed(patient.hospitalId, createdPatient._id.toString());
+        await this.hospitalsCommonService.allocateBed(
+          patient.hospitalId,
+          createdPatient._id.toString(),
+        );
       } catch (err) {
         // Rollback patient registration if bed allocation fails
         await this.patientRepository.delete(createdPatient._id.toString());
@@ -85,10 +95,13 @@ export class PatientsService {
     const hospital = patient.hospitalId
       ? await this.hospitalRepository.findById(patient.hospitalId)
       : null;
-    void this.notificationsService.dispatch(NotificationType.PATIENT_ONBOARDED, {
-      patient: createdPatient,
-      hospitalName: hospital?.name,
-    });
+    void this.notificationsService.dispatch(
+      NotificationType.PATIENT_ONBOARDED,
+      {
+        patient: createdPatient,
+        hospitalName: hospital?.name,
+      },
+    );
 
     return createdPatient;
   }
@@ -99,16 +112,23 @@ export class PatientsService {
 
     const patient = this.prepareUpdate(data);
     await this.ensureUniqueAadhaar(patient, id);
-    const updated = await this.patientRepository.update(id, this.toPatientPersistence(patient));
+    const updated = await this.patientRepository.update(
+      id,
+      this.toPatientPersistence(patient),
+    );
     if (!updated) throw new NotFoundException(`Patient ${id} not found`);
     return updated;
   }
 
   private prepareCreate(data: CreatePatientDto): CreatePatientDto {
     // DTO classes are typed at compile time; runtime payloads still need explicit checks.
-    requiredCreateFields.forEach(field => {
+    requiredCreateFields.forEach((field) => {
       const value = data[field];
-      if (value === undefined || value === null || (typeof value === 'string' && value.trim() === '')) {
+      if (
+        value === undefined ||
+        value === null ||
+        (typeof value === 'string' && value.trim() === '')
+      ) {
         throw new BadRequestException(`${String(field)} is required`);
       }
     });
@@ -121,17 +141,22 @@ export class PatientsService {
   private prepareUpdate(data: UpdatePatientDto): UpdatePatientDto {
     Object.entries(data).forEach(([field, value]) => {
       if (value === undefined) return;
-      if (value === null || (typeof value === 'string' && value.trim() === '')) {
+      if (
+        value === null ||
+        (typeof value === 'string' && value.trim() === '')
+      ) {
         throw new BadRequestException(`${field} cannot be empty`);
       }
     });
 
-    const normalized = this.normalizePatientData(data) as UpdatePatientDto;
+    const normalized = this.normalizePatientData(data);
     this.validateEnumsAndAge(normalized);
     return normalized;
   }
 
-  private normalizePatientData(data: CreatePatientDto | UpdatePatientDto): CreatePatientDto | UpdatePatientDto {
+  private normalizePatientData(
+    data: CreatePatientDto | UpdatePatientDto,
+  ): CreatePatientDto | UpdatePatientDto {
     return {
       ...data,
       name: data.name?.trim(),
@@ -141,34 +166,59 @@ export class PatientsService {
       address: data.address?.trim(),
       hospitalId: data.hospitalId?.trim(),
       age: data.age === undefined ? undefined : Number(data.age),
-      bedRequired: data.bedRequired === undefined ? undefined : ((data.bedRequired as any) === true || (data.bedRequired as any) === 'true'),
+      bedRequired:
+        data.bedRequired === undefined
+          ? undefined
+          : (data.bedRequired as any) === true ||
+          (data.bedRequired as any) === 'true',
     };
   }
 
   private validateEnumsAndAge(data: CreatePatientDto | UpdatePatientDto) {
-    if (data.age !== undefined && (!Number.isFinite(data.age) || data.age <= 0)) {
+    if (
+      data.age !== undefined &&
+      (!Number.isFinite(data.age) || data.age <= 0)
+    ) {
       throw new BadRequestException('age must be greater than 0');
     }
     if (data.gender !== undefined && !allowedGenders.includes(data.gender)) {
       throw new BadRequestException('gender is invalid');
     }
-    if (data.bloodGroup !== undefined && !allowedBloodGroups.includes(data.bloodGroup)) {
+    if (
+      data.bloodGroup !== undefined &&
+      !allowedBloodGroups.includes(data.bloodGroup)
+    ) {
       throw new BadRequestException('bloodGroup is invalid');
     }
-    if (data.hospitalId !== undefined && !Types.ObjectId.isValid(data.hospitalId)) {
+    if (
+      data.hospitalId !== undefined &&
+      !Types.ObjectId.isValid(data.hospitalId)
+    ) {
       throw new BadRequestException('hospitalId is invalid');
     }
-    if (data.aadhaarNumber !== undefined && !/^\d{12}$/.test(data.aadhaarNumber)) {
+    if (
+      data.aadhaarNumber !== undefined &&
+      !/^\d{12}$/.test(data.aadhaarNumber)
+    ) {
       throw new BadRequestException('aadhaarNumber must be 12 digits');
     }
   }
 
-  private async ensureUniqueAadhaar(data: CreatePatientDto | UpdatePatientDto, excludeId?: string) {
+  private async ensureUniqueAadhaar(
+    data: CreatePatientDto | UpdatePatientDto,
+    excludeId?: string,
+  ) {
     // Aadhaar is the patient identity comparison key; phone/email can be shared or updated.
     if (!data.aadhaarNumber) return;
 
-    const existingPatient = await this.patientRepository.findByAadhaarNumber(data.aadhaarNumber, excludeId);
-    if (existingPatient) throw new ConflictException('Patient with same Aadhaar number already exists');
+    const existingPatient = await this.patientRepository.findByAadhaarNumber(
+      data.aadhaarNumber,
+      excludeId,
+    );
+    if (existingPatient)
+      throw new ConflictException(
+        'Patient with same Aadhaar number already exists',
+      );
   }
 
   private toPatientPersistence(data: CreatePatientDto | UpdatePatientDto): Partial<Patient> {

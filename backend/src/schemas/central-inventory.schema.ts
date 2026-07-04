@@ -5,7 +5,11 @@ export type CentralInventoryDocument = CentralInventory & Document;
 
 @Schema({ timestamps: true })
 export class CentralInventory {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'InventoryMaster', required: true })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'InventoryMaster',
+    required: true,
+  })
   itemId: Types.ObjectId;
 
   @Prop({ required: true, default: 0, min: 0 })
@@ -21,5 +25,6 @@ export class CentralInventory {
   expiryDate: Date;
 }
 
-export const CentralInventorySchema = SchemaFactory.createForClass(CentralInventory);
+export const CentralInventorySchema =
+  SchemaFactory.createForClass(CentralInventory);
 CentralInventorySchema.index({ itemId: 1, batchNo: 1 }, { unique: true });

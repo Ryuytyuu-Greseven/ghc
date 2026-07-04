@@ -2,6 +2,7 @@ export const te = {
   translation: {
     common: {
       signOut: "సైన్ అవుట్",
+      refresh: "రీఫ్రెష్ చేయండి",
       addFacility: "సదుపాయాన్ని జోడించు",
       searchFacilities: "సదుపాయాల కోసం వెతకండి...",
       all: "అన్ని",
@@ -57,7 +58,28 @@ export const te = {
       notifications: "నోటిఫికేషన్లు",
       unknown: "తెలియదు",
       saving: "సేవ్ అవుతోంది...",
-      saveChanges: "మార్పులను సేవ్ చేయి"
+      saveChanges: "మార్పులను సేవ్ చేయి",
+      changePassword: "పాస్‌వర్డ్ మార్చండి",
+      oldPassword: "పాత పాస్‌వర్డ్",
+      oldPasswordPlaceholder: "పాత పాస్‌వర్డ్‌ను నమోదు చేయండి",
+      newPassword: "కొత్త పాస్‌వర్డ్",
+      newPasswordPlaceholder: "కొత్త పాస్‌వర్డ్‌ను నమోదు చేయండి",
+      confirmPassword: "పాస్‌వర్డ్‌ను నిర్ధారించండి",
+      confirmPasswordPlaceholder: "కొత్త పాస్‌వర్డ్‌ను నిర్ధారించండి",
+      changePasswordSuccess: "పాస్‌వర్డ్ విజయవంతంగా మార్చబడింది!",
+      passwordsDoNotMatch: "కొత్త పాస్‌వర్డ్‌లు సరిపోలడం లేదు.",
+      passwordError: "పాస్‌వర్డ్ మార్చడం విఫలమైంది. దయచేసి వివరాలను సరిచూసుకోండి.",
+      loggingOutIn: "మీరు {{count}} సెకన్లలో లాగ్ అవుట్ అవుతారు...",
+      logoutNow: "ఇప్పుడే లాగ్ అవుట్ చేయండి",
+      logoutConfirmTitle: "లాగ్ అవుట్ నిర్ధారించండి",
+      logoutConfirmMessage: "మీరు నిజంగానే మీ ఖాతా నుండి లాగ్ అవుట్ అవ్వాలనుకుంటున్నారా?",
+      logoutConfirmButton: "లాగ్ అవుట్ చేయి",
+      time: {
+        justNow: "ఇప్పుడే",
+        minutesAgo: "{{count}} నిమిషాల క్రితం",
+        hoursAgo: "{{count}} గంటల క్రితం",
+        daysAgo: "{{count}} రోజుల క్రితం"
+      }
     },
     nav: {
       dashboard: "డాష్‌బోర్డ్",
@@ -69,7 +91,8 @@ export const te = {
       "critical-alerts": "కీలక హెచ్చరికలు",
       availability: "నా అందుబాటు",
       transfers: "కవరేజ్ & బదిలీలు",
-      audits: "ఆడిట్ లాగ్స్"
+      audits: "ఆడిట్ లాగ్స్",
+      reports: "నివేదికలు"
     },
     roles: {
       Admin: "అడ్మిన్",
@@ -129,7 +152,9 @@ export const te = {
         banner_desc: "PHC/CHC లపై తక్షణ పరిపాలనా చర్య అవసరం.",
         banner_action: "హెచ్చరికలను సమీక్షించండి",
         no_alerts_title: "అన్నీ సాధారణంగా ఉన్నాయి",
-        no_alerts_desc: "అన్ని ప్రాథమిక మరియు సామాజిక ఆరోగ్య కేంద్రాలు సాధారణ వనరుల పరిమితుల్లోనే పనిచేస్తున్నాయి."
+        no_alerts_desc: "అన్ని ప్రాథమిక మరియు సామాజిక ఆరోగ్య కేంద్రాలు సాధారణ వనరుల పరిమితుల్లోనే పనిచేస్తున్నాయి.",
+        subtitle_staff: "మీ సదుపాయానికి సంబంధించిన క్లిష్టమైన వనరుల హెచ్చరికలు",
+        staff_info_banner: "ఈ క్లిష్టమైన హెచ్చరికల గురించి పరిపాలన స్వయంచాలకంగా తెలియజేయబడింది. పరిపాలనా బృందం ద్వారా మరింత చర్య తీసుకోకుండా ఉండటానికి మీ సదుపాయ స్థాయిలో తక్షణ దిద్దుబాటు చర్యలు తీసుకోండి."
       }
     },
     hospitals: {
@@ -753,6 +778,71 @@ export const te = {
         ICU: "ఐసీయూ",
         "Operation Theatre": "ఆపరేషన్ థియేటర్",
         Administration: "అడ్మినిస్ట్రేషన్"
+      },
+      reports: {
+        subtitle: "సిస్టమ్ పనితీరు, క్లినికల్ గణాంకాలు, బెడ్ల లభ్యత మరియు స్టాక్ తనిఖీలను చూడండి.",
+        allBranches: "అన్ని బ్రాంచీలు",
+        to: "నుండి",
+        exportReport: "ఎక్సెల్ డౌన్‌లోడ్",
+        tabOccupancy: "బెడ్ ఆక్యుపెన్సీ సామర్థ్యం",
+        tabClinical: "క్లినికల్ విశ్లేషణలు",
+        tabStaffing: "సిబ్బంది పంపిణీ",
+        tabInventory: "స్టాక్ లభ్యత & గడువు వివరాలు",
+        loading: "నివేదిక విశ్లేషణను సేకరిస్తోంది...",
+        error: "అనుకోని లోపం సంభవించింది",
+        totalBeds: "మొత్తం బెడ్లు",
+        occupiedBeds: "భర్తీ అయిన బెడ్లు",
+        availableBeds: "అందుబాటులో ఉన్న బెడ్లు",
+        averageOccupancy: "సగటు ఆక్యుపెన్సీ",
+        branchBreakdown: "బ్రాంచ్ సామర్థ్యాల వివరాలు",
+        colBranchName: "బ్రాంచ్ పేరు",
+        colType: "రకం",
+        colTotalBeds: "మొత్తం బెడ్లు",
+        colOccupiedBeds: "నిండిన బెడ్లు",
+        colAvailableBeds: "ఖాళీ బెడ్లు",
+        colOccupancyRate: "ఆక్యుపెన్సీ రేటు",
+        totalConsultations: "మొత్తం సంప్రదింపులు",
+        visitsRange: "ఎంచుకున్న తేదీల మధ్య జరిగిన సందర్శనలు.",
+        livePatient: "లైవ్ రోగి సమాచారం",
+        topDiagnoses: "టాప్ వ్యాధి నిర్ధారణ సమస్యలు",
+        noDiagnoses: "ఎంచుకున్న ఫిల్టర్‌లకు సంబంధించిన రికార్డులు లేవు.",
+        cases: "కేసులు",
+        highlyPrescribed: "ఎక్కువగా సూచించిన మందులు",
+        noMedicines: "మందుల ప్రిస్క్రిప్షన్లు ఏవీ లేవు.",
+        units: "యూనిట్లు",
+        totalStaff: "మొత్తం నమోదైన సిబ్బంది",
+        clinicalAdminBase: "వైద్య మరియు పరిపాలనా సిబ్బంది",
+        staffDept: "విభాగం వారీగా సిబ్బంది సంఖ్య",
+        members: "సభ్యులు",
+        staffRole: "పాత్రల వారీగా సిబ్బంది సంఖ్య",
+        expiringSoon: "తదుపరి 90 రోజుల్లో గడువు ముగిసే స్టాక్",
+        noExpiry: "తదుపరి 90 రోజుల్లో గడువు ముగిసే స్టాక్ ఏదీ లేదు.",
+        colBranch: "शाखा",
+        medsByBranch: "शाखावार निर्धारित दवाएं",
+        colMedName: "మందు పేరు",
+        colBatchNo: "బ్యాచ్ నంబర్",
+        colQty: "పరిమాణం",
+        colExpiryDate: "గడువు తేదీ",
+        stockCategory: "వర్గం వారీగా స్టాక్",
+        noStock: "ఎటువంటి స్టాక్ నమోదు కాలేదు.",
+        uniqueItems: "ప్రత్యేక వస్తువులు",
+        medicineAvailabilityTitle: "మందుల స్టాక్ లభ్యత",
+        colBranchesCount: "స్టాక్ ఉన్న బ్రాంచీలు",
+        colBatchesCount: "బ్యాచ్‌లు"
+      }
+    },
+    notifications: {
+      hospitalOnboardedTitle: "ఆసుపత్రి విజయవంతంగా ఆన్‌బోర్డు చేయబడింది",
+      hospitalOnboardedBody: "సదుపాయం \"{{name}}\" ({{type}}) విజయవంతంగా {{city}} లో {{performedBy}} ద్వారా ఆన్‌బోర్డు చేయబడింది.",
+      hospitalUpdatedTitle: "ఆసుపత్రి ప్రొఫైల్ నవీకరించబడింది",
+      hospitalUpdatedBody: "సదుపాయం ప్రొఫైల్ \"{{name}}\" {{performedBy}} ద్వారా నవీకరించబడింది.",
+      staffCreatedTitle: "సిబ్బంది విజయవంతంగా నమోదయ్యారు",
+      staffCreatedBody: "సిబ్బంది సభ్యుడు \"{{name}}\" ({{role}}) విజయవంతంగా {{performedBy}} ద్వారా నమోదు చేయబడ్డారు.",
+      staffUpdatedTitle: "సిబ్బంది ప్రొఫైల్ నవీకరించబడింది",
+      staffUpdatedBody: "సిబ్బంది ప్రొఫైల్ \"{{name}}\" {{performedBy}} ద్వారా నవీకరించబడింది.",
+      staffAssignedTitle: "సిబ్బంది సదుపాయానికి కేటాయించబడ్డారు",
+      staffAssignedBody: "సిబ్బంది సభ్యుడు \"{{name}}\" {{performedBy}} ద్వారా {{facility}} కి కేటాయించబడ్డారు.",
+      staffDeassignedTitle: "సిబ్బంది సదుపాయం నుండి తొలగించబడ్డారు",
+      staffDeassignedBody: "సిబ్బంది సభ్యుడు \"{{name}}\" {{performedBy}} ద్వారా {{facility}} నుండి తొలగించబడ్డారు."
     }
-  }
-};
+  };

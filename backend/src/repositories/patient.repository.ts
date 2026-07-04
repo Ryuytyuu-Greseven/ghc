@@ -12,23 +12,38 @@ export class PatientRepository {
     @InjectModel(Patient.name)
     private readonly patientModel: Model<PatientDocument>,
     private readonly queryService: QueryService,
-  ) {}
+  ) { }
 
   async findAll(filter: object = {}): Promise<PatientDocument[]> {
     return this.patientModel.find(filter).populate('hospitalId').exec();
   }
 
   async findPaginated(options: Record<string, any> = {}) {
-    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(options, {
-      searchFields: ['name', 'phone', 'email', 'aadhaarNumber', 'address', 'gender', 'bloodGroup'],
-      exactFilters: ['bedRequired'],
-      objectIdFilters: ['hospitalId'],
-      defaultSort: { field: 'admittedAt', order: 'desc' },
-    });
+    const { filter, sort, skip, limit, page, pageSize } =
+      this.queryService.buildQuery(options, {
+        searchFields: [
+          'name',
+          'phone',
+          'email',
+          'aadhaarNumber',
+          'address',
+          'gender',
+          'bloodGroup',
+        ],
+        exactFilters: ['bedRequired'],
+        objectIdFilters: ['hospitalId'],
+        defaultSort: { field: 'admittedAt', order: 'desc' },
+      });
     const finalFilter = { ...filter, isActive: true };
 
     const [data, total] = await Promise.all([
-      this.patientModel.find(finalFilter).populate('hospitalId').sort(sort).skip(skip).limit(limit).exec(),
+      this.patientModel
+        .find(finalFilter)
+        .populate('hospitalId')
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .exec(),
       this.patientModel.countDocuments(finalFilter).exec(),
     ]);
 

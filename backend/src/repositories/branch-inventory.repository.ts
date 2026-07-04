@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
-import { BranchInventory, BranchInventoryDocument } from '../schemas/branch-inventory.schema';
+import {
+  BranchInventory,
+  BranchInventoryDocument,
+} from '../schemas/branch-inventory.schema';
 import { QueryService } from '../common/services/query.service';
 
 @Injectable()
@@ -17,7 +20,10 @@ export class BranchInventoryRepository {
     return this.model.find(filter).populate('itemId').exec();
   }
 
-  async findByBranchAndCategory(branchId: string, category: string): Promise<any[]> {
+  async findByBranchAndCategory(
+    branchId: string,
+    category: string,
+  ): Promise<any[]> {
     const pipeline = [
       {
         $lookup: {
@@ -60,7 +66,11 @@ export class BranchInventoryRepository {
   }
 
   async findByBranch(branchId: string): Promise<BranchInventoryDocument[]> {
-    return this.model.find({ branchId }).populate('itemId').sort({ 'itemId.itemName': 1 }).exec();
+    return this.model
+      .find({ branchId })
+      .populate('itemId')
+      .sort({ 'itemId.itemName': 1 })
+      .exec();
   }
 
   async findByBranchAndItem(
@@ -84,13 +94,18 @@ export class BranchInventoryRepository {
     return this.model
       .findOneAndUpdate(
         { branchId, itemId, batchNo },
-        { $inc: { availableQty: qty }, $setOnInsert: { damagedQty: 0, expiryDate } },
+        {
+          $inc: { availableQty: qty },
+          $setOnInsert: { damagedQty: 0, expiryDate },
+        },
         { new: true, upsert: true },
       )
       .exec() as Promise<BranchInventoryDocument>;
   }
 
-  async create(data: Partial<BranchInventory>): Promise<BranchInventoryDocument> {
+  async create(
+    data: Partial<BranchInventory>,
+  ): Promise<BranchInventoryDocument> {
     return this.model.create(data);
   }
 
@@ -105,31 +120,37 @@ export class BranchInventoryRepository {
     return this.model.findByIdAndDelete(id).exec();
   }
 
-  async findPaginated(options: any): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
+  async findPaginated(
+    options: any,
+  ): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
     const queryOptions = { ...options };
     if (options.category) {
       queryOptions['item.category'] = options.category;
       delete queryOptions.category;
     }
 
-    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
-      searchFields: ['branch.name', 'item.itemName', 'batchNo'],
-      exactFilters: ['item.category', 'branchId'],
-      objectIdFilters: ['branchId'],
-      fuzzySearch: true,
-      sortMapping: {
-        itemName: 'item.itemName',
-        branchName: 'branch.name',
-      },
-      defaultSort: { field: 'createdAt', order: 'desc' },
-    });
+    const { filter, sort, skip, limit, page, pageSize } =
+      this.queryService.buildQuery(queryOptions, {
+        searchFields: ['branch.name', 'item.itemName', 'batchNo'],
+        exactFilters: ['item.category', 'branchId'],
+        objectIdFilters: ['branchId'],
+        fuzzySearch: true,
+        sortMapping: {
+          itemName: 'item.itemName',
+          branchName: 'branch.name',
+        },
+        defaultSort: { field: 'createdAt', order: 'desc' },
+      });
 
     if (options.lowStock === 'true' || options.lowStock === true) {
       filter.availableQty = { $lte: 50 };
     }
     if (options.expired === 'true' || options.expired === true) {
       filter.expiryDate = { $ne: null, $lt: new Date() };
-    } else if (options.expiringSoon === 'true' || options.expiringSoon === true) {
+    } else if (
+      options.expiringSoon === 'true' ||
+      options.expiringSoon === true
+    ) {
       const ninetyDaysFromNow = new Date();
       ninetyDaysFromNow.setDate(ninetyDaysFromNow.getDate() + 90);
       filter.expiryDate = {

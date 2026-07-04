@@ -14,7 +14,10 @@ export class Patient {
   @Prop({ required: true, enum: ['male', 'female', 'other'] })
   gender: string;
 
-  @Prop({ required: true, enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] })
+  @Prop({
+    required: true,
+    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+  })
   bloodGroup: string;
 
   @Prop({ required: true, trim: true })

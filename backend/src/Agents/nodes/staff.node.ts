@@ -6,12 +6,14 @@ import {
   getStaffService,
   staffListingTools,
   mapStaff,
+  staffTools
 } from '../tools/staff.tools';
 import {
   STAFF_MAPPING_PROMPT,
   STAFF_LIST_PROMPT,
   STAFF_ON_LEAVE_PROMPT,
 } from '../prompts/staff.prompt';
+
 import { withGuardrails } from '../prompts/guardrails.prompt';
 import { AgentState } from '../state';
 import { END, START, StateGraph } from '@langchain/langgraph';

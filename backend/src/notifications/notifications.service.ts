@@ -2,10 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { NotificationRepository } from '../repositories/notification.repository';
 import { EmailService } from './email.service';
-import {
-  notificationTypeConfig,
-  NotificationType,
-} from './notification-types';
+import { notificationTypeConfig, NotificationType } from './notification-types';
 import { NotificationDocument } from '../schemas/notification.schema';
 
 @Injectable()
@@ -26,7 +23,7 @@ export class NotificationsService {
     const inAppItems = config.buildInApp(payload);
     if (inAppItems.length > 0) {
       await this.notificationRepository.createMany(
-        inAppItems.map(item => ({
+        inAppItems.map((item) => ({
           userId: new Types.ObjectId(item.userId),
           type,
           category: config.category,
@@ -43,14 +40,16 @@ export class NotificationsService {
       try {
         await this.emailService.send(email);
       } catch (err) {
-        this.logger.error(`Email dispatch failed for ${type}: ${err instanceof Error ? err.message : err}`);
+        this.logger.error(
+          `Email dispatch failed for ${type}: ${err instanceof Error ? err.message : err}`,
+        );
       }
     }
   }
 
   async findByUser(userId: string) {
     const docs = await this.notificationRepository.findByUser(userId);
-    return docs.map(doc => this.toResponse(doc));
+    return docs.map((doc) => this.toResponse(doc));
   }
 
   async getUnreadCount(userId: string) {

@@ -1,6 +1,16 @@
-import { Controller, Get, Put, Param, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { BranchInventoryService } from './branch-inventory.service';
+import { UpdateBranchInventoryStockDto } from './dto/update-branch-inventory-stock.dto';
+import { AdjustBranchInventoryStockDto } from './dto/adjust-branch-inventory-stock.dto';
 
 @Controller('branch-inventory')
 @UseGuards(JwtAuthGuard)
@@ -34,7 +44,7 @@ export class BranchInventoryController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: Record<string, any>) {
+  update(@Param('id') id: string, @Body() body: UpdateBranchInventoryStockDto) {
     return this.service.update(id, body);
   }
 
@@ -49,7 +59,7 @@ export class BranchInventoryController {
   @Put('branch/:branchId/adjust')
   async adjustStock(
     @Param('branchId') branchId: string,
-    @Body() body: { itemId: string; quantity: number; batchNo: string; expiryDate?: string },
+    @Body() body: AdjustBranchInventoryStockDto,
   ) {
     const { itemId, quantity, batchNo, expiryDate } = body;
     return this.service.adjustStock(

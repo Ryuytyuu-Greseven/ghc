@@ -9,10 +9,9 @@ const BRAND = {
   white: '#ffffff',
 };
 
-const DEFAULT_LOGO_URL =
-  process.env.API_BASE_URL?.trim()
-    ? `${process.env.API_BASE_URL.replace(/\/$/, '')}/email-assets/logo-email.png`
-    : 'https://ghc-login.web.app/logo-email.png';
+const DEFAULT_LOGO_URL = process.env.API_BASE_URL?.trim()
+  ? `${process.env.API_BASE_URL.replace(/\/$/, '')}/email-assets/logo-email.png`
+  : 'https://ghc-login.web.app/logo-email.png';
 
 function getLogoUrl(): string {
   return process.env.EMAIL_LOGO_URL?.trim() || DEFAULT_LOGO_URL;
@@ -98,7 +97,10 @@ function infoCard(label: string, value: string): string {
   </table>`;
 }
 
-export function patientOnboardedTemplate(patientName: string, facilityName: string): string {
+export function patientOnboardedTemplate(
+  patientName: string,
+  facilityName: string,
+): string {
   return wrapEmailLayout({
     title: 'Welcome — Registration Successful',
     preheader: `You have been successfully onboarded at ${facilityName}.`,
@@ -113,7 +115,10 @@ export function patientOnboardedTemplate(patientName: string, facilityName: stri
   });
 }
 
-export function doctorAssignedPatientTemplate(patientName: string, doctorName: string): string {
+export function doctorAssignedPatientTemplate(
+  patientName: string,
+  doctorName: string,
+): string {
   return wrapEmailLayout({
     title: 'Your Doctor Has Been Assigned',
     preheader: `${doctorName} has been assigned to your care.`,
@@ -158,14 +163,19 @@ export function medicinesAssignedTemplate(
 ): string {
   const rows = medicines
     .map(
-      (m, index) => `<tr style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+      (
+        m,
+        index,
+      ) => `<tr style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
           <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:${BRAND.slate};">${escapeHtml(m.name)}</td>
           <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:${BRAND.tealDark};font-weight:700;text-align:center;">${m.quantity}</td>
         </tr>`,
     )
     .join('');
 
-  const doctorBlock = doctorName ? infoCard('Prescribing Doctor', doctorName) : '';
+  const doctorBlock = doctorName
+    ? infoCard('Prescribing Doctor', doctorName)
+    : '';
 
   return wrapEmailLayout({
     title: 'Your Prescribed Medicines',
@@ -184,6 +194,54 @@ export function medicinesAssignedTemplate(
       </table>
       ${doctorBlock}
       <p style="margin:12px 0 0;">Please follow your doctor's instructions.</p>
+    `,
+  });
+}
+
+export function hospitalOnboardedTemplate(hospitalName: string, type: string, city: string): string {
+  return wrapEmailLayout({
+    title: 'Welcome to GHC — Registration Successful',
+    preheader: `Facility "${hospitalName}" has been successfully onboarded.`,
+    accentColor: BRAND.green,
+    badgeLabel: 'Hospital Onboarding',
+    bodyHtml: `
+      <p style="margin:0 0 12px;">Dear Administrator,</p>
+      <p style="margin:0 0 12px;">Your facility <strong>${escapeHtml(hospitalName)}</strong> (${escapeHtml(type)}) has been successfully onboarded in <strong>${escapeHtml(city)}</strong>.</p>
+      ${infoCard('Status', 'Active / Registered')}
+      <p style="margin:12px 0 0;">Please log in to the GHC portal to configure your departments and staff.</p>
+    `,
+  });
+}
+
+export function hospitalUpdatedTemplate(hospitalName: string, changes: string): string {
+  return wrapEmailLayout({
+    title: 'Facility Profile Updated — GHC',
+    preheader: `Profile details for "${hospitalName}" have been updated.`,
+    accentColor: BRAND.teal,
+    badgeLabel: 'Facility Profile Update',
+    bodyHtml: `
+      <p style="margin:0 0 12px;">Dear Administrator,</p>
+      <p style="margin:0 0 12px;">The profile details for your facility <strong>${escapeHtml(hospitalName)}</strong> have been updated.</p>
+      ${infoCard('Profile Update', changes)}
+      <p style="margin:12px 0 0;">Review these updates in the GHC Portal management screen.</p>
+    `,
+  });
+}
+
+export function staffAccountCreatedTemplate(name: string, username: string, password?: string): string {
+  const pwdBlock = password ? infoCard('Initial Password', password) : '';
+  return wrapEmailLayout({
+    title: 'Your GHC Staff Account Credentials',
+    preheader: `Your account on GHC has been created.`,
+    accentColor: BRAND.teal,
+    badgeLabel: 'Account Registration',
+    bodyHtml: `
+      <p style="margin:0 0 12px;">Dear <strong>${escapeHtml(name)}</strong>,</p>
+      <p style="margin:0 0 12px;">Your staff account on Government Health Connect (GHC) has been successfully created by the administrator.</p>
+      <p style="margin:0 0 12px;">You can use the following credentials to log in to the portal:</p>
+      ${infoCard('Username', username)}
+      ${pwdBlock}
+      <p style="margin:12px 0 0;">For security reasons, we strongly recommend that you log in and update your password immediately after your first access.</p>
     `,
   });
 }

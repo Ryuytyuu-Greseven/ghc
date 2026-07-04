@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
-import { CentralInventory, CentralInventoryDocument } from '../schemas/central-inventory.schema';
+import {
+  CentralInventory,
+  CentralInventoryDocument,
+} from '../schemas/central-inventory.schema';
 import { QueryService } from '../common/services/query.service';
 
 @Injectable()
@@ -11,10 +14,14 @@ export class CentralInventoryRepository {
     @InjectModel(CentralInventory.name)
     private readonly model: Model<CentralInventoryDocument>,
     private readonly queryService: QueryService,
-  ) { }
+  ) {}
 
   async findAll(filter: object = {}): Promise<CentralInventoryDocument[]> {
-    return this.model.find(filter).populate('itemId').sort({ 'itemId.itemName': 1 }).exec();
+    return this.model
+      .find(filter)
+      .populate('itemId')
+      .sort({ 'itemId.itemName': 1 })
+      .exec();
   }
 
   async findById(id: string): Promise<CentralInventoryDocument | null> {
@@ -26,14 +33,14 @@ export class CentralInventoryRepository {
   }
 
   async findByItem(itemId: string): Promise<CentralInventoryDocument[]> {
-    return this.model
-      .find({ itemId })
-      .sort({ expiryDate: 1 })
-      .exec();
+    return this.model.find({ itemId }).sort({ expiryDate: 1 }).exec();
   }
 
   async findLowStock(threshold: number): Promise<CentralInventoryDocument[]> {
-    return this.model.find({ availableQty: { $lte: threshold } }).populate('itemId').exec();
+    return this.model
+      .find({ availableQty: { $lte: threshold } })
+      .populate('itemId')
+      .exec();
   }
 
   async findPaginated(options: any): Promise<{
@@ -62,17 +69,18 @@ export class CentralInventoryRepository {
       delete queryOptions.batch;
     }
 
-    const { filter, sort, skip, limit, page, pageSize } = this.queryService.buildQuery(queryOptions, {
-      // searchFields: ['item.itemName'],
-      // exactFilters: ['item.category', 'item.status', 'batchNo'],
-      searchFields: [],
-      exactFilters: [],
-      fuzzySearch: true,
-      sortMapping: {
-        itemName: 'item.itemName',
-      },
-      defaultSort: { field: 'createdAt', order: 'desc' },
-    });
+    const { filter, sort, skip, limit, page, pageSize } =
+      this.queryService.buildQuery(queryOptions, {
+        // searchFields: ['item.itemName'],
+        // exactFilters: ['item.category', 'item.status', 'batchNo'],
+        searchFields: [],
+        exactFilters: [],
+        fuzzySearch: true,
+        sortMapping: {
+          itemName: 'item.itemName',
+        },
+        defaultSort: { field: 'createdAt', order: 'desc' },
+      });
 
     // Special handlers for alert types mapping to filter
     if (options.lowStock === 'true' || options.lowStock === true) {
@@ -80,7 +88,10 @@ export class CentralInventoryRepository {
     }
     if (options.expired === 'true' || options.expired === true) {
       filter.expiryDate = { $ne: null, $lt: new Date() };
-    } else if (options.expiringSoon === 'true' || options.expiringSoon === true) {
+    } else if (
+      options.expiringSoon === 'true' ||
+      options.expiringSoon === true
+    ) {
       const ninetyDaysFromNow = new Date();
       ninetyDaysFromNow.setDate(ninetyDaysFromNow.getDate() + 90);
       filter.expiryDate = {
@@ -128,68 +139,76 @@ export class CentralInventoryRepository {
 
     // const deta = await this.model.aggregate(pipeline).exec();
     // console.log('furst query', deta);
-    const [data, statsResult, lowStockCount, expiringCount] = await Promise.all([
-      this.model.aggregate(pipeline).exec(),
-      this.model.aggregate([
-        {
-          $lookup: {
-            from: 'inventorymasters',
-            localField: 'itemId',
-            foreignField: '_id',
-            as: 'item',
-          },
-        },
-        { $unwind: '$item' },
-        { $match: filter },
-        {
-          $group: {
-            _id: null,
-            totalAvailable: { $sum: '$availableQty' },
-            totalDamaged: { $sum: '$damagedQty' },
-          },
-        },
-      ]).exec(),
-      this.model.aggregate([
-        {
-          $lookup: {
-            from: 'inventorymasters',
-            localField: 'itemId',
-            foreignField: '_id',
-            as: 'item',
-          },
-        },
-        { $unwind: '$item' },
-        {
-          $match: {
-            ...filter,
-            availableQty: { $lte: 50 },
-          },
-        },
-        { $count: 'count' },
-      ]).exec(),
-      this.model.aggregate([
-        {
-          $lookup: {
-            from: 'inventorymasters',
-            localField: 'itemId',
-            foreignField: '_id',
-            as: 'item',
-          },
-        },
-        { $unwind: '$item' },
-        {
-          $match: {
-            ...filter,
-            expiryDate: {
-              $ne: null,
-              $gte: new Date(),
-              $lte: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+    const [data, statsResult, lowStockCount, expiringCount] = await Promise.all(
+      [
+        this.model.aggregate(pipeline).exec(),
+        this.model
+          .aggregate([
+            {
+              $lookup: {
+                from: 'inventorymasters',
+                localField: 'itemId',
+                foreignField: '_id',
+                as: 'item',
+              },
             },
-          },
-        },
-        { $count: 'count' },
-      ]).exec(),
-    ]);
+            { $unwind: '$item' },
+            { $match: filter },
+            {
+              $group: {
+                _id: null,
+                totalAvailable: { $sum: '$availableQty' },
+                totalDamaged: { $sum: '$damagedQty' },
+              },
+            },
+          ])
+          .exec(),
+        this.model
+          .aggregate([
+            {
+              $lookup: {
+                from: 'inventorymasters',
+                localField: 'itemId',
+                foreignField: '_id',
+                as: 'item',
+              },
+            },
+            { $unwind: '$item' },
+            {
+              $match: {
+                ...filter,
+                availableQty: { $lte: 50 },
+              },
+            },
+            { $count: 'count' },
+          ])
+          .exec(),
+        this.model
+          .aggregate([
+            {
+              $lookup: {
+                from: 'inventorymasters',
+                localField: 'itemId',
+                foreignField: '_id',
+                as: 'item',
+              },
+            },
+            { $unwind: '$item' },
+            {
+              $match: {
+                ...filter,
+                expiryDate: {
+                  $ne: null,
+                  $gte: new Date(),
+                  $lte: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+                },
+              },
+            },
+            { $count: 'count' },
+          ])
+          .exec(),
+      ],
+    );
 
     const totalAvailable = statsResult[0]?.totalAvailable ?? 0;
     const totalDamaged = statsResult[0]?.totalDamaged ?? 0;
@@ -208,7 +227,9 @@ export class CentralInventoryRepository {
     };
   }
 
-  async create(data: Partial<CentralInventory>): Promise<CentralInventoryDocument> {
+  async create(
+    data: Partial<CentralInventory>,
+  ): Promise<CentralInventoryDocument> {
     return this.model.create(data);
   }
 

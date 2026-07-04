@@ -35,9 +35,14 @@ export class FacilityAlertsService {
     private readonly patientRepository: PatientRepository,
   ) {}
 
-  async getInterventionAlerts(): Promise<InterventionAlert[]> {
+  async getInterventionAlerts(hospitalId?: string): Promise<InterventionAlert[]> {
     const alerts: InterventionAlert[] = [];
-    const hospitals = await this.hospitalRepository.findAll({ isActive: true });
+    const filter: Record<string, any> = { isActive: true };
+    // Non-admin: only load their assigned hospital
+    if (hospitalId) {
+      filter.$or = [{ hospitalId }, { _id: hospitalId }];
+    }
+    const hospitals = await this.hospitalRepository.findAll(filter);
 
     for (const hosp of hospitals) {
       const branchId = hosp._id.toString();
@@ -46,14 +51,19 @@ export class FacilityAlertsService {
 
       // 1. Bed Shortage Flagging
       if (hosp.totalBeds > 0) {
-        const occupancyPct = Math.round(((hosp.totalBeds - hosp.availableBeds) / hosp.totalBeds) * 100);
+        const occupancyPct = Math.round(
+          ((hosp.totalBeds - hosp.availableBeds) / hosp.totalBeds) * 100,
+        );
         if (occupancyPct > 85 || hosp.availableBeds <= 2) {
           alerts.push({
             branchId,
             branchName,
             branchType,
             type: 'Bed Shortage',
-            severity: occupancyPct >= 95 || hosp.availableBeds === 0 ? 'High' : 'Medium',
+            severity:
+              occupancyPct >= 95 || hosp.availableBeds === 0
+                ? 'High'
+                : 'Medium',
             metric: `${occupancyPct}% Occupancy (${hosp.availableBeds} beds left)`,
             justification: `Critical capacity reached. Occupancy is at ${occupancyPct}% with only ${hosp.availableBeds} beds remaining.`,
             timestamp: new Date(),
@@ -66,7 +76,8 @@ export class FacilityAlertsService {
       }
 
       // 2. Severe Stockout Flagging
-      const stockItems = await this.branchInventoryRepository.findByBranch(branchId);
+      const stockItems =
+        await this.branchInventoryRepository.findByBranch(branchId);
       if (stockItems.length > 0) {
         const outOfStock = stockItems.filter((item) => item.availableQty <= 0);
         const stockoutRatio = outOfStock.length / stockItems.length;
@@ -89,8 +100,11 @@ export class FacilityAlertsService {
       }
 
       // 3. Staff Crunch Flagging
-      const activePatients = await this.patientRepository.findByHospital(branchId);
-      const activeCount = activePatients.filter((p) => p.isActive !== false).length;
+      const activePatients =
+        await this.patientRepository.findByHospital(branchId);
+      const activeCount = activePatients.filter(
+        (p) => p.isActive !== false,
+      ).length;
       const staffList = await this.staffRepository.findByHospital(branchId);
       const staffCount = staffList.length;
 

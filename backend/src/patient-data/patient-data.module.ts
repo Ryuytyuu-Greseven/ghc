@@ -11,7 +11,9 @@ import { StaffModule } from '../staff/staff.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: PatientData.name, schema: PatientDataSchema }]),
+    MongooseModule.forFeature([
+      { name: PatientData.name, schema: PatientDataSchema },
+    ]),
     InventoryModule,
     PatientsModule,
     NotificationsModule,

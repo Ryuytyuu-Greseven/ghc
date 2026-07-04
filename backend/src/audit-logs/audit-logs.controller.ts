@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Query, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AuditLogsService } from './audit-logs.service';
 
@@ -12,7 +20,9 @@ export class AuditLogsController {
     // Only Admin can query arbitrary audit logs.
     // Non-admins (like Pharmacists) are only allowed to view 'inventory' module logs.
     if (req.user.role !== 'Admin' && query.module !== 'inventory') {
-      throw new ForbiddenException('Only Administrators are allowed to view general audit logs');
+      throw new ForbiddenException(
+        'Only Administrators are allowed to view general audit logs',
+      );
     }
     return this.service.findAll(query);
   }
@@ -23,7 +33,9 @@ export class AuditLogsController {
       // Non-admins can view a specific log only if it belongs to the inventory module.
       return this.service.findOne(id).then((log) => {
         if (log.module !== 'inventory') {
-          throw new ForbiddenException('Only Administrators are allowed to view this audit log');
+          throw new ForbiddenException(
+            'Only Administrators are allowed to view this audit log',
+          );
         }
         return log;
       });
