@@ -38,7 +38,7 @@ export class PatientsService {
     private readonly hospitalsCommonService: HospitalsCommonService,
     private readonly hospitalRepository: HospitalRepository,
     private readonly notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   async findAll(query: SearchPatientsDto = {}) {
     return this.patientRepository.findPaginated({
@@ -60,6 +60,17 @@ export class PatientsService {
 
   async findByHospital(hospitalId: string) {
     return this.patientRepository.findByHospital(hospitalId);
+  }
+
+  async findDischarged(options: { hospitalId?: string; from: Date; to: Date }) {
+    const filter: Record<string, unknown> = {
+      isActive: false,
+      dischargedAt: { $gte: options.from, $lte: options.to },
+    };
+    if (options.hospitalId) {
+      filter.hospitalId = new Types.ObjectId(options.hospitalId);
+    }
+    return this.patientRepository.findDischarged(filter);
   }
 
   async create(data: CreatePatientDto) {
@@ -159,7 +170,7 @@ export class PatientsService {
         data.bedRequired === undefined
           ? undefined
           : (data.bedRequired as any) === true ||
-            (data.bedRequired as any) === 'true',
+          (data.bedRequired as any) === 'true',
     };
   }
 
@@ -210,17 +221,16 @@ export class PatientsService {
       );
   }
 
-  private toPatientPersistence(
-    data: CreatePatientDto | UpdatePatientDto,
-  ): Partial<Patient> {
-    const { hospitalId, admittedAt, ...rest } = data;
+  private toPatientPersistence(data: CreatePatientDto | UpdatePatientDto): Partial<Patient> {
+    const { hospitalId, admittedAt, dischargedAt, ...rest } = data;
     const patient: Partial<Patient> = { ...rest };
 
     // The API accepts strings, while Mongoose stores hospitalId as an ObjectId and dates as Date.
     if (hospitalId) patient.hospitalId = new Types.ObjectId(hospitalId);
-    if (admittedAt)
-      patient.admittedAt =
-        admittedAt instanceof Date ? admittedAt : new Date(admittedAt);
+    if (admittedAt) patient.admittedAt = admittedAt instanceof Date ? admittedAt : new Date(admittedAt);
+    if (dischargedAt) {
+      patient.dischargedAt = dischargedAt instanceof Date ? dischargedAt : new Date(dischargedAt);
+    }
 
     return patient;
   }

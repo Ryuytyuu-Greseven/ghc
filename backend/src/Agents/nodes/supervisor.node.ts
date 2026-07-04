@@ -8,7 +8,7 @@ const ROUTING_PROMPT = `You are a domain router for a healthcare management syst
 Classify the doctor's spoken request into exactly ONE domain.
 
 Domains:
-- hospital  → hospital facilities, beds, locations, list of hospitals, bed availability/stats for a hospital, medical officer/incharge details of a hospital, active patients list/details of a hospital, active staff list/details of a hospital, available specialists list/details of a hospital
+- hospital  → hospital facilities, beds, locations, list of hospitals, bed availability/stats for a hospital, medical officer/incharge details of a hospital, active patients list/details of a hospital, active staff list/details of a hospital, available specialists list/details of a hospital, finding which hospital(s) have a doctor of a given specialization (e.g. "which hospitals have a cardiologist")
 - patient   → general patient records, clinical admissions, demographics, disease groupings (not specific to a hospital's overall patient list)
 - medicine  → pharmacy drug definitions, clinical drug descriptions, writing prescriptions (NOT for listing available medicines or inventory stock)
 - staff     → general doctors, nurses, departments, personnel (not specific to a hospital's overall staff list)

@@ -1,4 +1,5 @@
 import { HumanMessage, SystemMessage } from 'langchain';
+import type { BaseMessage } from '@langchain/core/messages';
 import { HospitalsService } from '../../hospitals/hospitals.service';
 import { appInstance } from '../../main';
 import { llmInstance } from '../../google/vertex.config';
@@ -21,6 +22,34 @@ export async function llmClassify(
     .toLowerCase()
     .split(/[\s,]+/)[0];
   return options.includes(raw) ? raw : options[options.length - 1];
+}
+
+export function resolveUserQuery(
+  state: { transcript?: string; messages: BaseMessage[] },
+  fallback: string,
+): string {
+  if (state.transcript?.trim()) return state.transcript.trim();
+
+  for (let i = state.messages.length - 1; i >= 0; i--) {
+    const message = state.messages[i];
+    if (message.getType() !== 'human') continue;
+    if (typeof message.content === 'string' && message.content.trim()) {
+      return message.content.trim();
+    }
+  }
+
+  return fallback;
+}
+
+export function latestHumanMessages(
+  messages: BaseMessage[],
+  query: string,
+): BaseMessage[] {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (message.getType() === 'human') return [message];
+  }
+  return [new HumanMessage(query)];
 }
 
 export async function extractBranchId(

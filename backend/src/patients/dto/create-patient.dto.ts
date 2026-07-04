@@ -21,5 +21,6 @@ export class CreatePatientDto {
   hospitalId: string;
   bedRequired: boolean;
   admittedAt?: Date | string;
+  dischargedAt?: Date | string;
   isActive?: boolean;
 }
