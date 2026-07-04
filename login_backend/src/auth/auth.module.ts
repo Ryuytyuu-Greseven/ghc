@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from '../users/users.module';
 import { AuditLog, AuditLogSchema } from '../schemas/audit-log.schema';
+import { Staff, StaffSchema } from '../schemas/staff.schema';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AuditLog, AuditLogSchema } from '../schemas/audit-log.schema';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     MongooseModule.forFeature([
       { name: AuditLog.name, schema: AuditLogSchema },
+      { name: Staff.name, schema: StaffSchema },
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

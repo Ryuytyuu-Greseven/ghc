@@ -6,8 +6,8 @@ export const bn = {
       addFacility: "নতুন কেন্দ্র যোগ করুন",
       searchFacilities: "অনুসন্ধান করুন...",
       all: "সব",
-      phcs: "পিএইচসি",
-      chcs: "সিএইচসি",
+      phcs: "পিএইচসি (PHC)",
+      chcs: "সিএইচসি (CHC)",
       loading: "লোড হচ্ছে...",
       noFacilities: "কোনো স্বাস্থ্য কেন্দ্র পাওয়া যায়নি",
       tryRelaxing: "অনুসন্ধান পরিবর্তন করুন বা নতুন কেন্দ্র যোগ করুন।",
@@ -58,7 +58,28 @@ export const bn = {
       notifications: "বিজ্ঞপ্তি",
       unknown: "অজানা",
       saving: "সংরক্ষণ করা হচ্ছে...",
-      saveChanges: "পরিবর্তন সংরক্ষণ করুন"
+      saveChanges: "পরিবর্তন সংরক্ষণ করুন",
+      changePassword: "পাসওয়ার্ড পরিবর্তন করুন",
+      oldPassword: "পুরানো পাসওয়ার্ড",
+      oldPasswordPlaceholder: "পুরানো পাসওয়ার্ড লিখুন",
+      newPassword: "নতুন পাসওয়ার্ড",
+      newPasswordPlaceholder: "নতুন পাসওয়ার্ড লিখুন",
+      confirmPassword: "পাসওয়ার্ড নিশ্চিত করুন",
+      confirmPasswordPlaceholder: "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+      changePasswordSuccess: "পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!",
+      passwordsDoNotMatch: "নতুন পাসওয়ার্ড মিলছে না।",
+      passwordError: "পাসওয়ার্ড পরিবর্তন করতে ব্যর্থ হয়েছে। আপনার বিবরণ পরীক্ষা করুন।",
+      loggingOutIn: "আপনাকে {{count}} সেকেন্ডের মধ্যে লগ আউট করা হবে...",
+      logoutNow: "এখনই লগ আউট করুন",
+      logoutConfirmTitle: "লগ আউট নিশ্চিত করুন",
+      logoutConfirmMessage: "আপনি কি নিশ্চিত যে আপনার অ্যাকাউন্ট থেকে লগ আউট করতে চান?",
+      logoutConfirmButton: "লোগ আউট করুন",
+      time: {
+        justNow: "এইমাত্র",
+        minutesAgo: "{{count}}মি আগে",
+        hoursAgo: "{{count}}ঘণ্টা আগে",
+        daysAgo: "{{count}}দিন আগে"
+      }
     },
     nav: {
       dashboard: "ড্যাশবোর্ড",
@@ -807,5 +828,19 @@ export const bn = {
         colBranchesCount: "মজুদ আছে যে শাখায়",
         colBatchesCount: "ব্যাচ"
       }
+    },
+    notifications: {
+      hospitalOnboardedTitle: "হাসপাতাল সফলভাবে অনবোর্ড করা হয়েছে",
+      hospitalOnboardedBody: "সুবিধা \"{{name}}\" ({{type}}) সফলভাবে {{city}}-তে {{performedBy}} দ্বারা অনবোর্ড করা হয়েছে।",
+      hospitalUpdatedTitle: "হাসপাতাল প্রোফাইল আপডেট করা হয়েছে",
+      hospitalUpdatedBody: "সুবিধা প্রোফাইল \"{{name}}\" {{performedBy}} দ্বারা আপডেট করা হয়েছে।",
+      staffCreatedTitle: "কর্মী সফলভাবে নিবন্ধিত হয়েছে",
+      staffCreatedBody: "কর্মী \"{{name}}\" ({{role}}) সফলভাবে {{performedBy}} দ্বারা নিবন্ধিত হয়েছে।",
+      staffUpdatedTitle: "কর্মী প্রোফাইল আপডেট করা হয়েছে",
+      staffUpdatedBody: "কর্মী প্রোফাইল \"{{name}}\" {{performedBy}} দ্বারা আপডেট করা হয়েছে।",
+      staffAssignedTitle: "কর্মী স্বাস্থ্যকেন্দ্রে নিযুক্ত হয়েছে",
+      staffAssignedBody: "কর্মী \"{{name}}\" {{performedBy}} দ্বারা {{facility}}-তে নিযুক্ত হয়েছে।",
+      staffDeassignedTitle: "কর্মী স্বাস্থ্যকেন্দ্র থেকে অপসারিত",
+      staffDeassignedBody: "কর্মী \"{{name}}\" {{performedBy}} দ্বারা {{facility}} থেকে অপসারিত হয়েছে।"
     }
   };

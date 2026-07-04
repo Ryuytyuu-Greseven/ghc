@@ -58,7 +58,28 @@ export const te = {
       notifications: "నోటిఫికేషన్లు",
       unknown: "తెలియదు",
       saving: "సేవ్ అవుతోంది...",
-      saveChanges: "మార్పులను సేవ్ చేయి"
+      saveChanges: "మార్పులను సేవ్ చేయి",
+      changePassword: "పాస్‌వర్డ్ మార్చండి",
+      oldPassword: "పాత పాస్‌వర్డ్",
+      oldPasswordPlaceholder: "పాత పాస్‌వర్డ్‌ను నమోదు చేయండి",
+      newPassword: "కొత్త పాస్‌వర్డ్",
+      newPasswordPlaceholder: "కొత్త పాస్‌వర్డ్‌ను నమోదు చేయండి",
+      confirmPassword: "పాస్‌వర్డ్‌ను నిర్ధారించండి",
+      confirmPasswordPlaceholder: "కొత్త పాస్‌వర్డ్‌ను నిర్ధారించండి",
+      changePasswordSuccess: "పాస్‌వర్డ్ విజయవంతంగా మార్చబడింది!",
+      passwordsDoNotMatch: "కొత్త పాస్‌వర్డ్‌లు సరిపోలడం లేదు.",
+      passwordError: "పాస్‌వర్డ్ మార్చడం విఫలమైంది. దయచేసి వివరాలను సరిచూసుకోండి.",
+      loggingOutIn: "మీరు {{count}} సెకన్లలో లాగ్ అవుట్ అవుతారు...",
+      logoutNow: "ఇప్పుడే లాగ్ అవుట్ చేయండి",
+      logoutConfirmTitle: "లాగ్ అవుట్ నిర్ధారించండి",
+      logoutConfirmMessage: "మీరు నిజంగానే మీ ఖాతా నుండి లాగ్ అవుట్ అవ్వాలనుకుంటున్నారా?",
+      logoutConfirmButton: "లాగ్ అవుట్ చేయి",
+      time: {
+        justNow: "ఇప్పుడే",
+        minutesAgo: "{{count}} నిమిషాల క్రితం",
+        hoursAgo: "{{count}} గంటల క్రితం",
+        daysAgo: "{{count}} రోజుల క్రితం"
+      }
     },
     nav: {
       dashboard: "డాష్‌బోర్డ్",
@@ -807,5 +828,19 @@ export const te = {
         colBranchesCount: "స్టాక్ ఉన్న బ్రాంచీలు",
         colBatchesCount: "బ్యాచ్‌లు"
       }
+    },
+    notifications: {
+      hospitalOnboardedTitle: "ఆసుపత్రి విజయవంతంగా ఆన్‌బోర్డు చేయబడింది",
+      hospitalOnboardedBody: "సదుపాయం \"{{name}}\" ({{type}}) విజయవంతంగా {{city}} లో {{performedBy}} ద్వారా ఆన్‌బోర్డు చేయబడింది.",
+      hospitalUpdatedTitle: "ఆసుపత్రి ప్రొఫైల్ నవీకరించబడింది",
+      hospitalUpdatedBody: "సదుపాయం ప్రొఫైల్ \"{{name}}\" {{performedBy}} ద్వారా నవీకరించబడింది.",
+      staffCreatedTitle: "సిబ్బంది విజయవంతంగా నమోదయ్యారు",
+      staffCreatedBody: "సిబ్బంది సభ్యుడు \"{{name}}\" ({{role}}) విజయవంతంగా {{performedBy}} ద్వారా నమోదు చేయబడ్డారు.",
+      staffUpdatedTitle: "సిబ్బంది ప్రొఫైల్ నవీకరించబడింది",
+      staffUpdatedBody: "సిబ్బంది ప్రొఫైల్ \"{{name}}\" {{performedBy}} ద్వారా నవీకరించబడింది.",
+      staffAssignedTitle: "సిబ్బంది సదుపాయానికి కేటాయించబడ్డారు",
+      staffAssignedBody: "సిబ్బంది సభ్యుడు \"{{name}}\" {{performedBy}} ద్వారా {{facility}} కి కేటాయించబడ్డారు.",
+      staffDeassignedTitle: "సిబ్బంది సదుపాయం నుండి తొలగించబడ్డారు",
+      staffDeassignedBody: "సిబ్బంది సభ్యుడు \"{{name}}\" {{performedBy}} ద్వారా {{facility}} నుండి తొలగించబడ్డారు."
     }
   };

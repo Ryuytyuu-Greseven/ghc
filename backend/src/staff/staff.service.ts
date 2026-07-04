@@ -16,6 +16,10 @@ import {
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { UserRole } from '../common/enums';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification-types';
+import { Hospital, HospitalDocument } from '../schemas/hospital.schema';
+import { UserRepository } from '../repositories/user.repository';
 
 function flattenStaff(staff: any) {
   if (!staff) return null;
@@ -37,6 +41,10 @@ export class StaffService {
     private readonly usersService: UsersService,
     @InjectModel(CoverageRequest.name)
     private readonly coverageRequestModel: Model<CoverageRequestDocument>,
+    private readonly notificationsService: NotificationsService,
+    @InjectModel(Hospital.name)
+    private readonly hospitalModel: Model<HospitalDocument>,
+    private readonly userRepository: UserRepository,
   ) {}
 
   async findAll(filter: object = {}) {
@@ -55,7 +63,7 @@ export class StaffService {
     return list.map(flattenStaff);
   }
 
-  async create(data: any) {
+  async create(data: any, userId?: string, performedBy?: string) {
     // Validate username uniqueness in User collection if provided
     let username = data.username;
     if (username) {
@@ -70,6 +78,7 @@ export class StaffService {
 
     // Hash password if provided
     let passwordHash = data.passwordHash;
+    const rawPassword = passwordHash;
     if (passwordHash) {
       passwordHash = await bcrypt.hash(passwordHash, 10);
     }
@@ -97,12 +106,50 @@ export class StaffService {
     const populated = await this.staffRepository.findById(
       (createdStaff._id as any).toString(),
     );
+
+    if (populated && populated.email) {
+      void this.notificationsService.dispatch(NotificationType.STAFF_ACCOUNT_CREATED, {
+        email: populated.email,
+        name: `${populated.firstName || ''} ${populated.lastName || ''}`.trim(),
+        username: username,
+        password: rawPassword || undefined,
+      });
+    }
+
+    if (populated) {
+      const admins = await this.userRepository.findAll({ role: 'Admin' });
+      const targetUserIds = Array.from(new Set([
+        ...admins.map(u => u._id.toString()),
+        userDoc._id.toString(),
+      ]));
+
+      void this.notificationsService.dispatch(NotificationType.STAFF_CREATED, {
+        staff: populated,
+        targetUserIds,
+        performedBy,
+      });
+
+      if (populated.hospitalId) {
+        const hosp = await this.hospitalModel.findById(populated.hospitalId.toString()).exec();
+        const hospitalName = hosp?.name || 'Facility';
+        void this.notificationsService.dispatch(NotificationType.STAFF_ASSIGNED_TO_FACILITY, {
+          staff: populated,
+          hospitalName,
+          targetUserIds,
+          performedBy,
+        });
+      }
+    }
+
     return flattenStaff(populated);
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: any, userId?: string, performedBy?: string) {
     const existingStaff = await this.staffRepository.findById(id);
     if (!existingStaff) throw new NotFoundException(`Staff ${id} not found`);
+
+    const oldHospitalId = existingStaff.hospitalId ? existingStaff.hospitalId.toString() : null;
+    const newHospitalId = data.hospitalId !== undefined ? (data.hospitalId ? data.hospitalId.toString() : null) : oldHospitalId;
 
     const userUpdate: any = {};
 
@@ -176,6 +223,45 @@ export class StaffService {
     if (!staff) throw new NotFoundException(`Staff ${id} not found`);
 
     const populated = await this.staffRepository.findById(id);
+
+    if (populated) {
+      const admins = await this.userRepository.findAll({ role: 'Admin' });
+      const staffUserId = populated.userId ? ((populated.userId as any)._id?.toString() ?? populated.userId.toString()) : null;
+      const targetUserIds = Array.from(new Set([
+        ...admins.map(u => u._id.toString()),
+        ...(staffUserId ? [staffUserId] : []),
+      ]));
+
+      void this.notificationsService.dispatch(NotificationType.STAFF_UPDATED, {
+        staff: populated,
+        targetUserIds,
+        performedBy,
+      });
+
+      if (oldHospitalId !== newHospitalId) {
+        if (oldHospitalId) {
+          const oldHosp = await this.hospitalModel.findById(oldHospitalId).exec();
+          const oldHospName = oldHosp?.name || 'Facility';
+          void this.notificationsService.dispatch(NotificationType.STAFF_DEASSIGNED_FROM_FACILITY, {
+            staff: populated,
+            hospitalName: oldHospName,
+            targetUserIds,
+            performedBy,
+          });
+        }
+        if (newHospitalId) {
+          const newHosp = await this.hospitalModel.findById(newHospitalId).exec();
+          const newHospName = newHosp?.name || 'Facility';
+          void this.notificationsService.dispatch(NotificationType.STAFF_ASSIGNED_TO_FACILITY, {
+            staff: populated,
+            hospitalName: newHospName,
+            targetUserIds,
+            performedBy,
+          });
+        }
+      }
+    }
+
     return flattenStaff(populated);
   }
 

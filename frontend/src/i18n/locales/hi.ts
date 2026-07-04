@@ -58,7 +58,28 @@ export const hi = {
       notifications: "सूचनाएं",
       unknown: "अज्ञात",
       saving: "सहेज रहा है...",
-      saveChanges: "बदलाव सहेजें"
+      saveChanges: "बदलाव सहेजें",
+      changePassword: "पासवर्ड बदलें",
+      oldPassword: "पुराना पासवर्ड",
+      oldPasswordPlaceholder: "पुराना पासवर्ड दर्ज करें",
+      newPassword: "नया पासवर्ड",
+      newPasswordPlaceholder: "नया पासवर्ड दर्ज करें",
+      confirmPassword: "पासवर्ड की पुष्टि करें",
+      confirmPasswordPlaceholder: "नए पासवर्ड की पुष्टि करें",
+      changePasswordSuccess: "पासवर्ड सफलतापूर्वक बदल दिया गया है!",
+      passwordsDoNotMatch: "नए पासवर्ड मेल नहीं खाते।",
+      passwordError: "पासवर्ड बदलने में विफल। कृपया अपने विवरण की जांच करें।",
+      loggingOutIn: "आप {{count}} सेकंड में लॉग आउट हो जाएंगे...",
+      logoutNow: "अभी लॉग आउट करें",
+      logoutConfirmTitle: "लॉग आउट की पुष्टि करें",
+      logoutConfirmMessage: "क्या आप वाकई अपने खाते से लॉग आउट करना चाहते हैं?",
+      logoutConfirmButton: "लॉग आउट करें",
+      time: {
+        justNow: "अभी-अभी",
+        minutesAgo: "{{count}} मिनट पहले",
+        hoursAgo: "{{count}} घंटे पहले",
+        daysAgo: "{{count}} दिन पहले"
+      }
     },
     nav: {
       dashboard: "डैशबोर्ड",
@@ -807,5 +828,19 @@ export const hi = {
         colBranchesCount: "स्टॉक वाली शाखाएं",
         colBatchesCount: "बैच"
       }
+    },
+    notifications: {
+      hospitalOnboardedTitle: "अस्पताल सफलतापूर्वक पंजीकृत किया गया",
+      hospitalOnboardedBody: "सुविधा \"{{name}}\" ({{type}}) को {{city}} में {{performedBy}} द्वारा सफलतापूर्वक पंजीकृत किया गया है।",
+      hospitalUpdatedTitle: "अस्पताल प्रोफ़ाइल अपडेट की गई",
+      hospitalUpdatedBody: "{{performedBy}} द्वारा \"{{name}}\" के लिए सुविधा प्रोफ़ाइल अपडेट की गई है।",
+      staffCreatedTitle: "कर्मचारी सफलतापूर्वक पंजीकृत",
+      staffCreatedBody: "कर्मचारी \"{{name}}\" ({{role}}) को {{performedBy}} द्वारा सफलतापूर्वक पंजीकृत किया गया है।",
+      staffUpdatedTitle: "कर्मचारी प्रोफ़ाइल अपडेट की गई",
+      staffUpdatedBody: "{{performedBy}} द्वारा \"{{name}}\" के लिए कर्मचारी प्रोफ़ाइल अपडेट की गई है।",
+      staffAssignedTitle: "कर्मचारी को सुविधा आवंटित",
+      staffAssignedBody: "कर्मचारी \"{{name}}\" को {{performedBy}} द्वारा {{facility}} में आवंटित किया गया है।",
+      staffDeassignedTitle: "कर्मचारी को सुविधा से हटाया गया",
+      staffDeassignedBody: "कर्मचारी \"{{name}}\" को {{performedBy}} द्वारा {{facility}} से हटा दिया गया है।"
     }
   };

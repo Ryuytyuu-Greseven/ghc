@@ -128,7 +128,7 @@ export class StaffController {
     if (hospitalId) {
       body.hospitalId = hospitalId;
     }
-    return this.staffService.create(body);
+    return this.staffService.create(body, user.userId, user.username);
   }
 
   @Put(':id')
@@ -151,7 +151,7 @@ export class StaffController {
       }
       body.hospitalId = hospitalId;
     }
-    return this.staffService.update(id, body);
+    return this.staffService.update(id, body, user.userId, user.username);
   }
 
   @Delete(':id')

@@ -6,8 +6,8 @@ export const gu = {
     "addFacility": "કેન્દ્ર ઉમેરો",
     "searchFacilities": "કેન્દ્રો શોધો...",
     "all": "બધા",
-    "phcs": "PHCs",
-    "chcs": "CHCs",
+    "phcs": "પીએચસી (PHC)",
+    "chcs": "સીએચસી (CHC)",
     "loading": "લોડ થઈ રહ્યું છે...",
     "noFacilities": "કોઈ કેન્દ્રો મળ્યા નથી",
     "tryRelaxing": "તમારી શોધ ક્વેરી હળવી કરવાનો પ્રયાસ કરો અથવા નવું કેન્દ્ર ઉમેરો.",
@@ -58,7 +58,28 @@ export const gu = {
     "notifications": "નોટિફિકેશન",
     "unknown": "અજ્ઞાત",
     "saving": "સાચવી રહ્યું છે...",
-    "saveChanges": "ફેરફારો સાચવો"
+    "saveChanges": "ફેરફારો સાચવો",
+    "changePassword": "પાસવર્ડ બદલો",
+    "oldPassword": "જૂનો પાસવર્ડ",
+    "oldPasswordPlaceholder": "જૂનો પાસવર્ડ દાખલ કરો",
+    "newPassword": "નવો પાસવર્ડ",
+    "newPasswordPlaceholder": "નવો પાસવર્ડ દાખલ કરો",
+    "confirmPassword": "પાસવર્ડની પુષ્ટિ કરો",
+    "confirmPasswordPlaceholder": "નવા પાસવર્ડની પુષ્ટિ કરો",
+    "changePasswordSuccess": "પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે!",
+    "passwordsDoNotMatch": "નવા પાસવર્ડ્સ મેળ ખાતા નથી.",
+    "passwordError": "પાસવર્ડ બદલવામાં નિષ્ફળ. કૃપા કરીને તમારી ઓળખપત્રો તપાસો.",
+    "loggingOutIn": "તમે {{count}} સેકન્ડમાં લોગ આઉટ થઈ જશો...",
+    "logoutNow": "હમણાં જ લોગ આઉટ કરો",
+    "logoutConfirmTitle": "લોગ આઉટની પુષ્ટિ કરો",
+    "logoutConfirmMessage": "શું તમે ખરેખર તમારા ખાતામાંથી લોગ આઉટ કરવા માંગો છો?",
+    "logoutConfirmButton": "લોગ આઉટ કરો",
+    "time": {
+      "justNow": "હમણાં જ",
+      "minutesAgo": "{{count}}મિ પહેલાં",
+      "hoursAgo": "{{count}}કલાક પહેલાં",
+      "daysAgo": "{{count}}દિવસ પહેલાં"
+    }
   },
   "nav": {
     "dashboard": "ડેશબોર્ડ",
@@ -783,6 +804,19 @@ export const gu = {
     "medicineAvailabilityTitle": "દવા સ્ટોક ઉપલબ્ધતા",
     "colBranchesCount": "સ્ટોક ધરાવતી શાખાઓ",
     "colBatchesCount": "બૅચ"
+  "notifications": {
+    "hospitalOnboardedTitle": "હોસ્પિટલ સફળતાપૂર્વક ઓનબોર્ડ કરવામાં આવી",
+    "hospitalOnboardedBody": "સુવિધા \"{{name}}\" ({{type}}) સફળતાપૂર્વક {{city}} માં {{performedBy}} દ્વારા ઓનબોર્ડ કરવામાં આવી છે.",
+    "hospitalUpdatedTitle": "હોસ્પિટલ પ્રોફાઇલ અપડેટ કરવામાં આવી",
+    "hospitalUpdatedBody": "સુવિધા પ્રોફાઇલ \"{{name}}\" {{performedBy}} દ્વારા અપડેટ કરવામાં આવી છે.",
+    "staffCreatedTitle": "સ્ટાફ સફળતાપૂર્વક રજીસ્ટર કરવામાં આવ્યો",
+    "staffCreatedBody": "સ્ટાફ સભ્ય \"{{name}}\" ({{role}}) સફળતાપૂર્વક {{performedBy}} દ્વારા રજીસ્ટર કરવામાં આવ્યો છે.",
+    "staffUpdatedTitle": "સ્ટાફ પ્રોફાઇલ અપડેટ કરવામાં આવી",
+    "staffUpdatedBody": "સ્ટಾફ પ્રોફાઇલ \"{{name}}\" {{performedBy}} દ્વારા અપડેટ કરવામાં આવી છે.",
+    "staffAssignedTitle": "સ્ટાફની સુવિધામાં નિમણૂક કરવામાં આવી",
+    "staffAssignedBody": "સ્ટಾફ સભ્ય \"{{name}}\" ની {{facility}} માં {{performedBy}} દ્વારા નિમણૂક કરવામાં આવી છે.",
+    "staffDeassignedTitle": "સ્ટಾફને સુવિધામાંથી મુક્ત કરવામાં આવ્યા",
+    "staffDeassignedBody": "સ્ટಾફ સભ્ય \"{{name}}\" ને {{facility}} માંથી {{performedBy}} દ્વારા મુક્ત કરવામાં આવ્યા છે."
   }
 }
 };

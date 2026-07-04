@@ -1,16 +1,28 @@
 import { PatientDocument } from '../schemas/patient.schema';
 import { PatientDataDocument } from '../schemas/patient-data.schema';
+import { HospitalDocument } from '../schemas/hospital.schema';
+import { StaffDocument } from '../schemas/staff.schema';
 import {
   doctorAssignedDoctorTemplate,
   doctorAssignedPatientTemplate,
   medicinesAssignedTemplate,
   patientOnboardedTemplate,
+  hospitalOnboardedTemplate,
+  hospitalUpdatedTemplate,
+  staffAccountCreatedTemplate,
 } from './email-templates';
 
 export enum NotificationType {
   PATIENT_ONBOARDED = 'PATIENT_ONBOARDED',
   PATIENT_ASSIGNED_TO_DOCTOR = 'PATIENT_ASSIGNED_TO_DOCTOR',
   PATIENT_MEDICINES_ASSIGNED = 'PATIENT_MEDICINES_ASSIGNED',
+  HOSPITAL_ONBOARDED = 'HOSPITAL_ONBOARDED',
+  HOSPITAL_UPDATED = 'HOSPITAL_UPDATED',
+  STAFF_ACCOUNT_CREATED = 'STAFF_ACCOUNT_CREATED',
+  STAFF_CREATED = 'STAFF_CREATED',
+  STAFF_UPDATED = 'STAFF_UPDATED',
+  STAFF_ASSIGNED_TO_FACILITY = 'STAFF_ASSIGNED_TO_FACILITY',
+  STAFF_DEASSIGNED_FROM_FACILITY = 'STAFF_DEASSIGNED_FROM_FACILITY',
 }
 
 export type InAppNotificationItem = {
@@ -43,6 +55,52 @@ export type PatientMedicinesAssignedPayload = {
   patient: PatientDocument;
   visit: PatientDataDocument;
   medicines: { name: string; quantity: number }[];
+};
+
+export type HospitalOnboardedPayload = {
+  hospital: HospitalDocument;
+  targetUserIds?: string[];
+  performedBy?: string;
+};
+
+export type HospitalUpdatedPayload = {
+  hospital: HospitalDocument;
+  changes: string;
+  targetUserIds?: string[];
+  performedBy?: string;
+};
+
+export type StaffAccountCreatedPayload = {
+  email: string;
+  name: string;
+  username: string;
+  password?: string;
+};
+
+export type StaffCreatedPayload = {
+  staff: StaffDocument;
+  targetUserIds?: string[];
+  performedBy?: string;
+};
+
+export type StaffUpdatedPayload = {
+  staff: StaffDocument;
+  targetUserIds?: string[];
+  performedBy?: string;
+};
+
+export type StaffAssignedPayload = {
+  staff: StaffDocument;
+  hospitalName: string;
+  targetUserIds?: string[];
+  performedBy?: string;
+};
+
+export type StaffDeassignedPayload = {
+  staff: StaffDocument;
+  hospitalName: string;
+  targetUserIds?: string[];
+  performedBy?: string;
 };
 
 type NotificationTypeConfig = {
@@ -158,5 +216,164 @@ export const notificationTypeConfig: Record<
         },
       ];
     },
+  },
+
+  [NotificationType.HOSPITAL_ONBOARDED]: {
+    category: 'success',
+    buildInApp: (payload: unknown) => {
+      const { hospital, targetUserIds, performedBy } = payload as HospitalOnboardedPayload;
+      if (!targetUserIds || targetUserIds.length === 0) return [];
+      const creator = performedBy ? ` by ${performedBy}` : '';
+      return targetUserIds.map(userId => ({
+        userId,
+        title: 'Hospital onboarded successfully',
+        body: `Facility "${hospital.name}" (${hospital.type}) has been successfully onboarded in ${hospital.city}${creator}.`,
+        metadata: {
+          hospitalId: hospital._id.toString(),
+          name: hospital.name,
+          type: hospital.type,
+          city: hospital.city,
+          performedBy,
+        },
+      }));
+    },
+    buildEmails: (payload: unknown) => {
+      const { hospital } = payload as HospitalOnboardedPayload;
+      if (!hospital.email) return [];
+      return [{
+        to: hospital.email,
+        subject: 'Welcome to GHC — Facility Registration Successful',
+        html: hospitalOnboardedTemplate(hospital.name, hospital.type, hospital.city),
+      }];
+    },
+  },
+
+  [NotificationType.HOSPITAL_UPDATED]: {
+    category: 'info',
+    buildInApp: (payload: unknown) => {
+      const { hospital, targetUserIds, performedBy } = payload as HospitalUpdatedPayload;
+      if (!targetUserIds || targetUserIds.length === 0) return [];
+      const updater = performedBy ? ` by ${performedBy}` : '';
+      return targetUserIds.map(userId => ({
+        userId,
+        title: 'Hospital profile updated',
+        body: `Facility profile for "${hospital.name}" has been updated${updater}.`,
+        metadata: {
+          hospitalId: hospital._id.toString(),
+          name: hospital.name,
+          performedBy,
+        },
+      }));
+    },
+    buildEmails: (payload: unknown) => {
+      const { hospital, changes } = payload as HospitalUpdatedPayload;
+      if (!hospital.email) return [];
+      return [{
+        to: hospital.email,
+        subject: 'Facility Profile Updated — GHC',
+        html: hospitalUpdatedTemplate(hospital.name, changes),
+      }];
+    },
+  },
+
+  [NotificationType.STAFF_ACCOUNT_CREATED]: {
+    category: 'success',
+    buildInApp: () => [],
+    buildEmails: (payload: unknown) => {
+      const { email, name, username, password } = payload as StaffAccountCreatedPayload;
+      if (!email) return [];
+      return [{
+        to: email,
+        subject: 'Welcome to GHC — Your Staff Account Credentials',
+        html: staffAccountCreatedTemplate(name, username, password),
+      }];
+    },
+  },
+
+  [NotificationType.STAFF_CREATED]: {
+    category: 'success',
+    buildInApp: (payload: unknown) => {
+      const { staff, targetUserIds, performedBy } = payload as StaffCreatedPayload;
+      if (!targetUserIds || targetUserIds.length === 0) return [];
+      const staffName = `${staff.firstName || ''} ${staff.lastName || ''}`.trim();
+      const byUser = performedBy ? ` by ${performedBy}` : '';
+      return targetUserIds.map(userId => ({
+        userId,
+        title: 'Staff registered successfully',
+        body: `Staff member "${staffName}" (${staff.designation || 'Staff'}) has been successfully registered${byUser}.`,
+        metadata: {
+          staffId: staff._id.toString(),
+          name: staffName,
+          role: staff.designation || 'Staff',
+          performedBy,
+        },
+      }));
+    },
+    buildEmails: () => [],
+  },
+
+  [NotificationType.STAFF_UPDATED]: {
+    category: 'info',
+    buildInApp: (payload: unknown) => {
+      const { staff, targetUserIds, performedBy } = payload as StaffUpdatedPayload;
+      if (!targetUserIds || targetUserIds.length === 0) return [];
+      const staffName = `${staff.firstName || ''} ${staff.lastName || ''}`.trim();
+      const byUser = performedBy ? ` by ${performedBy}` : '';
+      return targetUserIds.map(userId => ({
+        userId,
+        title: 'Staff profile updated',
+        body: `Staff profile for "${staffName}" has been updated${byUser}.`,
+        metadata: {
+          staffId: staff._id.toString(),
+          name: staffName,
+          performedBy,
+        },
+      }));
+    },
+    buildEmails: () => [],
+  },
+
+  [NotificationType.STAFF_ASSIGNED_TO_FACILITY]: {
+    category: 'success',
+    buildInApp: (payload: unknown) => {
+      const { staff, hospitalName, targetUserIds, performedBy } = payload as StaffAssignedPayload;
+      if (!targetUserIds || targetUserIds.length === 0) return [];
+      const staffName = `${staff.firstName || ''} ${staff.lastName || ''}`.trim();
+      const byUser = performedBy ? ` by ${performedBy}` : '';
+      return targetUserIds.map(userId => ({
+        userId,
+        title: 'Staff assigned to facility',
+        body: `Staff member "${staffName}" has been assigned to ${hospitalName}${byUser}.`,
+        metadata: {
+          staffId: staff._id.toString(),
+          name: staffName,
+          facility: hospitalName,
+          performedBy,
+        },
+      }));
+    },
+    buildEmails: () => [],
+  },
+
+  [NotificationType.STAFF_DEASSIGNED_FROM_FACILITY]: {
+    category: 'warning',
+    buildInApp: (payload: unknown) => {
+      const { staff, hospitalName, targetUserIds, performedBy } = payload as StaffDeassignedPayload;
+      if (!targetUserIds || targetUserIds.length === 0) return [];
+      const staffName = `${staff.firstName || ''} ${staff.lastName || ''}`.trim();
+      const byUser = performedBy ? ` by ${performedBy}` : '';
+      return targetUserIds.map(userId => ({
+        userId,
+        title: 'Staff de-assigned from facility',
+        body: `Staff member "${staffName}" has been de-assigned from ${hospitalName}${byUser}.`,
+        metadata: {
+          staffId: staff._id.toString(),
+          name: staffName,
+          facility: hospitalName,
+          performedBy,
+        },
+      }));
+    },
+    buildEmails: () => [],
   },
 };
