@@ -57,7 +57,28 @@ export const ta = {
       notifications: "அறிவிப்புகள்",
       unknown: "தெரியவில்லை",
       saving: "சேமிக்கப்படுகிறது...",
-      saveChanges: "மாற்றங்களைச் சேமி"
+      saveChanges: "மாற்றங்களைச் சேமி",
+      changePassword: "கடவுச்சொல்லை மாற்று",
+      oldPassword: "பழைய கடவுச்சொல்",
+      oldPasswordPlaceholder: "பழைய கடவுச்சொல்லை உள்ளிடவும்",
+      newPassword: "புதிய கடவுச்சொல்",
+      newPasswordPlaceholder: "புதிய கடவுச்சொல்லை உள்ளிடவும்",
+      confirmPassword: "கடவுச்சொல்லை உறுதிப்படுத்து",
+      confirmPasswordPlaceholder: "புதிய கடவுச்சொல்லை உறுதிப்படுத்தவும்",
+      changePasswordSuccess: "கடவுச்சொல் வெற்றிகரமாக மாற்றப்பட்டது!",
+      passwordsDoNotMatch: "புதிய கடவுச்சொற்கள் பொருந்தவில்லை.",
+      passwordError: "கடவுச்சொல்லை மாற்ற முடியவில்லை. தயவுசெய்து உங்கள் நற்சான்றிதழ்களைச் சரிபார்க்கவும்.",
+      loggingOutIn: "{{count}} வினாடிகளில் நீங்கள் லாக் அவுட் செய்யப்படுவீர்கள்...",
+      logoutNow: "இப்போதே லாக் அவுட் செய்",
+      logoutConfirmTitle: "லாக் அவுட் செய்வதை உறுதிப்படுத்து",
+      logoutConfirmMessage: "உங்கள் கணக்கிலிருந்து வெளியேற விரும்புகிறீர்களா?",
+      logoutConfirmButton: "வெளியேறு",
+      time: {
+        justNow: "இப்போதுதான்",
+        minutesAgo: "{{count}}நிமிடம் முன்பு",
+        hoursAgo: "{{count}}மணிநேரம் முன்பு",
+        daysAgo: "{{count}}நாட்கள் முன்பு"
+      }
     },
     nav: {
       dashboard: "டாஷ்போர்டு",
@@ -729,6 +750,20 @@ export const ta = {
         ICU: "தீவிர சிகிச்சைப் பிரிவு",
         "Operation Theatre": "அறுவை சிகிச்சை அரங்கம்",
         Administration: "நிர்வாகம்"
+    },
+    notifications: {
+      hospitalOnboardedTitle: "மருத்துவமனை வெற்றிகரமாக சேர்க்கப்பட்டது",
+      hospitalOnboardedBody: "வசதி \"{{name}}\" ({{type}}) வெற்றிகரமாக {{city}} இல் {{performedBy}} என்பவரால் சேர்க்கப்பட்டது.",
+      hospitalUpdatedTitle: "மருத்துவமனை சுயவிவரம் புதுப்பிக்கப்பட்டது",
+      hospitalUpdatedBody: "வசதி சுயவிவரம் \"{{name}}\" {{performedBy}} என்பவரால் புதுப்பிக்கப்பட்டது.",
+      staffCreatedTitle: "ஊழியர் வெற்றிகரமாக பதிவு செய்யப்பட்டார்",
+      staffCreatedBody: "ஊழியர் \"{{name}}\" ({{role}}) வெற்றிகரமாக {{performedBy}} என்பவரால் பதிவு செய்யப்பட்டார்.",
+      staffUpdatedTitle: "ஊழியர் சுயவிவரம் புதுப்பிக்கப்பட்டது",
+      staffUpdatedBody: "ஊழியர் சுயவிவரம் \"{{name}}\" {{performedBy}} என்பவரால் புதுப்பிக்கப்பட்டது.",
+      staffAssignedTitle: "ஊழியர் சுகாதார மையத்திற்கு நியமிக்கப்பட்டார்",
+      staffAssignedBody: "ஊழியர் \"{{name}}\" {{performedBy}} என்பவரால் {{facility}} இல் பணிபுரிய நியமிக்கப்பட்டார்.",
+      staffDeassignedTitle: "ஊழியர் சுகாதார மையப் பணியிலிருந்து விடுவிக்கப்பட்டார்",
+      staffDeassignedBody: "ஊழியர் \"{{name}}\" {{performedBy}} என்பவரால் {{facility}} பணியிலிருந்து விடுவிக்கப்பட்டார்."
     }
   }
 };

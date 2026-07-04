@@ -6,6 +6,7 @@ import { StaffService } from './staff.service';
 import { StaffHelperService } from './staff-helper.service';
 import { Staff, StaffSchema } from '../schemas/staff.schema';
 import { CoverageRequest, CoverageRequestSchema } from '../schemas/coverage-request.schema';
+import { Hospital, HospitalSchema } from '../schemas/hospital.schema';
 import { StaffRepository } from '../repositories/staff.repository';
 import { UsersModule } from '../users/users.module';
 
@@ -15,6 +16,7 @@ import { UsersModule } from '../users/users.module';
     MongooseModule.forFeature([
       { name: Staff.name, schema: StaffSchema },
       { name: CoverageRequest.name, schema: CoverageRequestSchema },
+      { name: Hospital.name, schema: HospitalSchema },
     ]),
     UsersModule,
   ],

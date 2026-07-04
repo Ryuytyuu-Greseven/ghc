@@ -4,12 +4,15 @@ import { HospitalRepository } from '../repositories/hospital.repository';
 import { Hospital } from '../schemas/hospital.schema';
 import { buildPaginatedResponse } from '../inventory/utils/pagination.util';
 import { BedAllocationRepository } from '../repositories/bed-allocation.repository';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification-types';
 
 @Injectable()
 export class HospitalsService {
   constructor(
     private readonly hospitalRepository: HospitalRepository,
     private readonly bedAllocationRepository: BedAllocationRepository,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async getAllHospitals(query: Record<string, any> = {}, extraFilter: Record<string, any> = {}) {
@@ -38,7 +41,7 @@ export class HospitalsService {
     return hospital;
   }
 
-  async createHospital(data: Partial<Hospital>) {
+  async createHospital(data: Partial<Hospital>, userId?: string, performedBy?: string) {
     const generatedId = new Types.ObjectId().toString();
     const docData = {
       ...data,
@@ -47,10 +50,16 @@ export class HospitalsService {
       version: 1,
       isCurrent: true,
     };
-    return this.hospitalRepository.create(docData);
+    const created = await this.hospitalRepository.create(docData);
+    void this.notificationsService.dispatch(NotificationType.HOSPITAL_ONBOARDED, {
+      hospital: created,
+      userId,
+      performedBy,
+    });
+    return created;
   }
 
-  async updateHospital(id: string, data: Partial<Hospital>) {
+  async updateHospital(id: string, data: Partial<Hospital>, userId?: string, performedBy?: string) {
     // 1. Find the target version document
     const oldDoc = await this.hospitalRepository.findById(id);
     if (!oldDoc) throw new NotFoundException(`Hospital ${id} not found`);
@@ -81,7 +90,28 @@ export class HospitalsService {
     delete newDocData.createdAt;
     delete newDocData.updatedAt;
 
-    return this.hospitalRepository.create(newDocData);
+    const created = await this.hospitalRepository.create(newDocData);
+
+    const changedFields: string[] = [];
+    Object.keys(data).forEach(key => {
+      const val1 = activeDoc.get(key);
+      const val2 = data[key as keyof Partial<Hospital>];
+      if (val1 !== val2 && val2 !== undefined) {
+        changedFields.push(key);
+      }
+    });
+    const changes = changedFields.length > 0
+      ? `Updated fields: ${changedFields.join(', ')}`
+      : 'Profile information updated';
+
+    void this.notificationsService.dispatch(NotificationType.HOSPITAL_UPDATED, {
+      hospital: created,
+      changes,
+      userId,
+      performedBy,
+    });
+
+    return created;
   }
 
   async deleteHospital(id: string) {
