@@ -93,6 +93,8 @@ export const kn = {
       availability: "ನನ್ನ ಲಭ್ಯತೆ",
       transfers: "ಕರ್ತವ್ಯ ವರ್ಗಾವಣೆಗಳು",
       audits: "ಆಡಿಟ್ ಲಾಗ್ಗಳು",
+      diagnosticTests: "ರೋಗನಿರ್ಣಯ ಪರೀಕ್ಷೆಗಳು",
+      attendance: "ಕರ್ತವ್ಯದ ಹಾಜರಾತಿ",
       reports: "ವರದಿಗಳು"
     },
     roles: {
@@ -839,7 +841,38 @@ export const kn = {
         "Operation Theatre": "ಶಸ್ತ್ರಚಿಕಿತ್ಸಾ ಕೊಠಡಿ",
         Administration: "ಆಡಳಿತ"
       },
-      reports: {
+          "attendance": {
+      "clockedOutTime": "ಚೆಕ್-ಔಟ್ ಸಮಯ:",
+    "clockOutBtn": "ಚೆಕ್-ಔಟ್ ಮಾಡಿ",
+    "shiftCompleted": "ಇಂದಿನ ಕರ್ತವ್ಯ ಮುಗಿದಿದೆ",
+      "modifyTitle": "ಹಾಜರಾತಿ ಸ್ಥಿತಿಯನ್ನು ಬದಲಾಯಿಸಿ:",
+      "modifyPrompt": "ಸ್ಥಿತಿಯನ್ನು ನವೀಕರಿಸಲು 1, 2, 3 ಅಥವಾ 4 ಅನ್ನು ನಮೂದಿಸಿ:",
+      "cancelCheckIn": "ಚೆಕ್-ಇನ್ ರದ್ದುಮಾಡಿ",
+      "confirmUnmarkDay": "ನೀವು ನಿಜವಾಗಿಯೂ ಈ ದಿನದ ಹಾಜರಾತಿಯನ್ನು ರದ್ದುಗೊಳಿಸಲು ಬಯಸುವಿರಾ?",
+      "confirmUnmarkToday": "ನೀವು ನಿಜವಾಗಿಯೂ ಇಂದಿನ ಚೆಕ್-ಇನ್ ರದ್ದುಗೊಳಿಸಲು ಬಯಸುವಿರಾ?",
+      "subtitle": "ದೈನಂದಿನ ಹಾಜರಾತಿಯನ್ನು ದಾಖಲಿಸಿ ಮತ್ತು ಮಾಸಿಕ ಲಾಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.",
+      "loading": "ಹಾಜರಾತಿ ದಾಖಲೆಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+      "selectStaff": "ವೈದ್ಯರು / ಸಿಬ್ಬಂದಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      "noSelectionHeader": "ಯಾವುದೇ ಸಿಬ್ಬಂದಿ ಸದಸ್ಯರನ್ನು ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ",
+      "noSelectionBody": "ಅವರ ಮಾಸಿಕ ಹಾಜರಾತಿಯನ್ನು ಪರಿಶೀಲಿಸಲು ದಯವಿಟ್ಟು ಮೇಲಿನ ಫಿಲ್ಟರ್‌ಗಳಿಂದ ಕ್ಲಿನಿಕ್ ಶಾಖೆ ಮತ್ತು ಉದ್ಯೋಗಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.",
+      "totalDays": "ತಿಂಗಳ ಒಟ್ಟು ದಿನಗಳು",
+      "present": "ಹಾಜರಿದ್ದ ದಿನಗಳು",
+      "leaveDaysCount": "ರಜೆ ದಿನಗಳು",
+      "absent": "ಗೈರುಹಾಜರಾದ ದಿನಗಳು",
+      "rate": "ಹಾಜರಾತಿ ದರ",
+      "clockInCard": "ದೈನಂದಿನ ಕರ್ತವ್ಯದ ಚೆಕ್-ಇನ್",
+      "clockInInfo": "ನಿಮ್ಮ ನಿಯೋಜಿತ ಕ್ಲಿನಿಕ್ ಶಾಖೆಯಲ್ಲಿ ಕರ್ತವ್ಯಕ್ಕೆ ವರದಿ ಮಾಡಿದಾಗ ಪ್ರತಿದಿನ ಒಂದು ಬಾರಿ ಕೆಳಗಿನ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.",
+      "alreadyMarked": "ಇಂದು ಕರ್ತವ್ಯಕ್ಕೆ ಹಾಜರಾತಿ ದಾಖಲಾಗಿದೆ",
+      "clockedTime": "ಚೆಕ್-ಇನ್ ಸಮಯ:",
+      "notClockedToday": "ಇಂದು ಇನ್ನೂ ಚೆಕ್-ಇನ್ ಮಾಡಿಲ್ಲ.",
+      "clockInBtn": "ಹಾಜರಾತಿ ದಾಖಲಿಸಿ",
+      "monthlyCalendar": "ಮಾಸಿಕ ಕರ್ತವ್ಯದ ಕ್ಯಾಲೆಂಡರ್",
+      "loadingLogs": "ಹಾಜರಾತಿ ದಾಖಲೆಗಳನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ...",
+      "presentSmall": "ಹಾ",
+      "offSmall": "ರಜೆ",
+      "absentSmall": "ಗೈ"
+    },
+  reports: {
         subtitle: "ವ್ಯವಸ್ಥೆಯ ಸ್ಥಿತಿಗತಿಗಳು, ವೈದ್ಯಕೀಯ ಅಂಕಿಅಂಶಗಳು, ಹಾಸಿಗೆ ಲಭ್ಯತೆ ಮತ್ತು ದಾಸ್ತಾನು ಪರಿಶೀಲನೆ ವಿವರಗಳನ್ನು ನೋಡಿ.",
         allBranches: "ಎಲ್ಲಾ ಶಾಖೆಗಳು",
         to: "ಇಂದ",
@@ -887,6 +920,7 @@ export const kn = {
         noStock: "ಯಾವುದೇ ದಾಸ್ತಾನು ದಾಖಲೆಗಳಿಲ್ಲ.",
         uniqueItems: "ವಿಶಿಷ್ಟ ವಸ್ತುಗಳು",
         medicineAvailabilityTitle: "ಔಷಧ ದಾಸ್ತಾನು ಲಭ್ಯತೆ",
+        colBranchesCount: "ದಾಸ್ತಾನು ಇರುವ ಶಾಖೆಗಳು",
         colBatchesCount: "ಬ್ಯಾಚ್‌ಗಳು",
         patientFootfallForecast: "ರೋಗಿಗಳ ಆಗಮನ ಮತ್ತು ಭೇಟಿ ಮುನ್ಸೂಚನೆ",
         historicWalkins: "ಐತಿಹಾಸಿಕ ದೈನಂದಿನ ಭೇಟಿಗಳು",
@@ -894,7 +928,18 @@ export const kn = {
         aiForecastSummary: "ಕಾರ್ಯಾಚರಣೆಯ ಒಳನೋಟಗಳು",
         aiForecastNote: "ಹಿಂದಿನ ಕ್ಲಿನಿಕ್ ಭೇಟಿಗಳ ಆಧಾರದ ಮೇಲೆ ಮುನ್ಸೂಚನೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸಂಗ್ರಹಿಸಲಾಗಿದೆ.",
         noBranchCapacityData: "ಯಾವುದೇ ಶಾಖೆಯ ಹಾಸಿಗೆ ಸಾಮರ್ಥ್ಯದ ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ."
-      }
+      },
+    diagnosticTests: {
+      title: "Diagnostic Test Tracking",
+      subtitle: "Manage test catalog and facility availability audits",
+      tabs: { catalog: "Test Catalog", availability: "Facility Availability", audit: "Audit History" },
+      categories: { Lab: "Lab", Imaging: "Imaging", Pathology: "Pathology", Other: "Other" },
+      status: { Active: "Active", Inactive: "Inactive" },
+      availabilityStatus: { Available: "Available", Unavailable: "Unavailable", Partial: "Partial", OutOfOrder: "Out of Order", NotAudited: "Not Audited" },
+      fields: { testName: "Test Name", testNamePlaceholder: "e.g. Complete Blood Count", testCode: "Test Code", testCodePlaceholder: "e.g. CBC", category: "Category", sampleType: "Sample Type", sampleTypePlaceholder: "e.g. Blood, Urine", status: "Status", reason: "Reason", reasonPlaceholder: "e.g. Reagent stockout, machine broken" },
+      catalog: { addTest: "Add Test", editTest: "Edit Test", searchPlaceholder: "Search tests...", empty: "No tests in catalog yet.", deactivate: "Deactivate", deactivateConfirm: "Deactivate \"{{name}}\" from the catalog?", loadError: "Failed to load test catalog.", saveError: "Failed to save test.", fieldRequired: "{{field}} is required", facilityAvailability: "Facility Availability", facilityAvailabilityHint: "Optionally set initial availability per facility when saving this test.", addFacility: "Add Facility", selectFacility: "Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityRequired: "Please select a facility for each row.", duplicateFacility: "Each facility can only be added once.", reasonRequired: "Reason is required when status is not Available.", reasonNotRequired: "No reason needed when available.", noFacilitiesAdded: "No facilities added. Use Add Facility to set availability." },
+      availability: { infoBanner: "Audit diagnostic test availability at your facility. Changes are logged for district administrators.", selectFacility: "Select Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityHint: "Select a facility to view and audit test availability.", loadError: "Failed to load availability.", saveError: "Failed to update availability.", saved: "Availability updated successfully.", reasonRequired: "Please enter a reason when status is not Available." },
+      audit: { filterFacility: "Filter by Facility", scopedToFacility: "Showing audit history for your assigned facility.", empty: "No availability changes recorded yet.", loadError: "Failed to load audit history.", when: "When", facility: "Facility", change: "Change" }
     },
     notifications: {
       hospitalOnboardedTitle: "ಆಸ್ಪತ್ರೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಆನ್‌ಬೋರ್ಡ್ ಮಾಡಲಾಗಿದೆ",
@@ -910,4 +955,5 @@ export const kn = {
       staffDeassignedTitle: "ಸಿಬ್ಬಂದಿಯನ್ನು ಕೇಂದ್ರದಿಂದ ಮುಕ್ತಗೊಳಿಸಲಾಗಿದೆ",
       staffDeassignedBody: "ಸಿಬ್ಬಂದಿ ಸದಸ್ಯ \"{{name}}\" ರವರನ್ನು {{performedBy}} ರವರಿಂದ {{facility}} ನಿಂದ ಮುಕ್ತಗೊಳಿಸಲಾಗಿದೆ."
     }
-  };
+  }
+};

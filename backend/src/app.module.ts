@@ -19,8 +19,10 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { AuditInterceptor } from './audit-logs/audit.interceptor';
 import { ReportsModule } from './reports/reports.module';
+import { DiagnosticTestsModule } from './diagnostic-tests/diagnostic-tests.module';
 import { TwilioModule } from './twilio/twilio.module';
 import { LocationsModule } from './locations/locations.module';
+import { AttendanceModule } from './attendance/attendance.module';
 import { config } from 'dotenv';
 config();
 
@@ -47,8 +49,10 @@ config();
     NotificationsModule,
     AuditLogsModule,
     ReportsModule,
+    DiagnosticTestsModule,
     TwilioModule,
     LocationsModule,
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [

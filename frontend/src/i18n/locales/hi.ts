@@ -93,6 +93,8 @@ export const hi = {
       availability: "मेरी उपलब्धता",
       transfers: "कवरेज और स्थानांतरण",
       audits: "ऑडिट लॉग्स",
+      diagnosticTests: "डायग्नोस्टिक परीक्षण",
+      attendance: "ड्यूटी उपस्थिति",
       reports: "रिपोर्ट"
     },
     roles: {
@@ -840,7 +842,38 @@ export const hi = {
         "Operation Theatre": "ऑपरेशन थियेटर",
         Administration: "प्रशासन"
       },
-      reports: {
+          "attendance": {
+      "clockedOutTime": "चेक-आउट का समय:",
+      "clockOutBtn": "चेक-आउट करें",
+      "shiftCompleted": "आज की ड्यूटी पूरी हुई",
+      "modifyTitle": "उपस्थिति स्थिति बदलें:",
+      "modifyPrompt": "स्थिति अपडेट करने के लिए 1, 2, 3 या 4 दर्ज करें:",
+      "cancelCheckIn": "चेक-इन रद्द करें",
+      "confirmUnmarkDay": "क्या आप वाकई इस दिन की उपस्थिति हटाना चाहते हैं?",
+      "confirmUnmarkToday": "क्या आप वाकई आज का चेक-इन रद्द करना चाहते हैं?",
+      "subtitle": "दैनिक उपस्थिति दर्ज करें और मासिक लॉग की जांच करें।",
+      "loading": "उपस्थिति रिकॉर्ड सिंक किए जा रहे हैं...",
+      "selectStaff": "डॉक्टर / स्टाफ चुनें",
+      "noSelectionHeader": "कोई स्टाफ सदस्य नहीं चुना गया",
+      "noSelectionBody": "मासिक उपस्थिति देखने के लिए कृपया ऊपर दिए गए फ़िल्टर से क्लिनिक शाखा और कर्मचारी चुनें।",
+      "totalDays": "महीने के कुल दिन",
+      "present": "उपस्थित दिन",
+      "leaveDaysCount": "छुट्टी के दिन",
+      "absent": "अनुपस्थित दिन",
+      "rate": "उपस्थिति दर",
+      "clockInCard": "दैनिक ड्यूटी चेक-इन",
+      "clockInInfo": "अपने असाइन किए गए क्लिनिक शाखा में ड्यूटी पर रिपोर्ट करने पर प्रतिदिन एक बार नीचे दिए गए बटन पर क्लिक करें।",
+      "alreadyMarked": "आज की उपस्थिति दर्ज है",
+      "clockedTime": "चेक-इन समय:",
+      "notClockedToday": "आज अभी तक चेक-इन नहीं किया गया है।",
+      "clockInBtn": "उपस्थिति दर्ज करें",
+      "monthlyCalendar": "मासिक ड्यूटी कैलेंडर",
+      "loadingLogs": "उपस्थिति रिकॉर्ड प्राप्त किए जा रहे हैं...",
+      "presentSmall": "उ",
+      "offSmall": "बंद",
+      "absentSmall": "अ"
+    },
+  reports: {
         subtitle: "सिस्टम की विफलता, नैदानिक आंकड़े, बिस्तर की उपलब्धता और स्टॉक जांच तक पहुंचें।",
         allBranches: "सभी शाखाएं",
         to: "तक",
@@ -888,6 +921,7 @@ export const hi = {
         noStock: "कोई इन्वेंटरी स्टॉक प्रविष्टि नहीं मिली।",
         uniqueItems: "अद्वितीय वस्तुएं",
         medicineAvailabilityTitle: "दवा स्टॉक उपलब्धता",
+        colBranchesCount: "स्टॉक वाली शाखाएं",
         colBatchesCount: "बैच",
         patientFootfallForecast: "रोगी आवागमन और फुटफॉल पूर्वानुमान",
         historicWalkins: "ऐतिहासिक दैनिक वॉक-इन",
@@ -895,6 +929,83 @@ export const hi = {
         aiForecastSummary: "परिचालन अंतर्दृष्टि",
         aiForecastNote: "पूर्वानुमान ऐतिहासिक क्लिनिक दौरों का उपयोग करके स्वचालित रूप से संकलित किया जाता है।",
         noBranchCapacityData: "कोई शाखा क्षमता डेटा उपलब्ध नहीं है।"
+      },
+    diagnosticTests: {
+      title: "Diagnostic Test Tracking",
+      subtitle: "Manage test catalog and facility availability audits",
+      tabs: {
+        catalog: "Test Catalog",
+        availability: "Facility Availability",
+        audit: "Audit History"
+      },
+      categories: {
+        Lab: "Lab",
+        Imaging: "Imaging",
+        Pathology: "Pathology",
+        Other: "Other"
+      },
+      status: {
+        Active: "Active",
+        Inactive: "Inactive"
+      },
+      availabilityStatus: {
+        Available: "Available",
+        Unavailable: "Unavailable",
+        Partial: "Partial",
+        OutOfOrder: "Out of Order",
+        NotAudited: "Not Audited"
+      },
+      fields: {
+        testName: "Test Name",
+        testNamePlaceholder: "e.g. Complete Blood Count",
+        testCode: "Test Code",
+        testCodePlaceholder: "e.g. CBC",
+        category: "Category",
+        sampleType: "Sample Type",
+        sampleTypePlaceholder: "e.g. Blood, Urine",
+        status: "Status",
+        reason: "Reason",
+        reasonPlaceholder: "e.g. Reagent stockout, machine broken"
+      },
+      catalog: {
+        addTest: "Add Test",
+        editTest: "Edit Test",
+        searchPlaceholder: "Search tests...",
+        empty: "No tests in catalog yet.",
+        deactivate: "Deactivate",
+        deactivateConfirm: "Deactivate \"{{name}}\" from the catalog?",
+        loadError: "Failed to load test catalog.",
+        saveError: "Failed to save test.",
+        fieldRequired: "{{field}} is required",
+        facilityAvailability: "Facility Availability",
+        facilityAvailabilityHint: "Optionally set initial availability per facility when saving this test.",
+        addFacility: "Add Facility",
+        selectFacility: "Facility",
+        selectFacilityPlaceholder: "Choose a facility...",
+        selectFacilityRequired: "Please select a facility for each row.",
+        duplicateFacility: "Each facility can only be added once.",
+        reasonRequired: "Reason is required when status is not Available.",
+        reasonNotRequired: "No reason needed when available.",
+        noFacilitiesAdded: "No facilities added. Use Add Facility to set availability."
+      },
+      availability: {
+        infoBanner: "Audit diagnostic test availability at your facility. Changes are logged for district administrators.",
+        selectFacility: "Select Facility",
+        selectFacilityPlaceholder: "Choose a facility...",
+        selectFacilityHint: "Select a facility to view and audit test availability.",
+        loadError: "Failed to load availability.",
+        saveError: "Failed to update availability.",
+        saved: "Availability updated successfully.",
+        reasonRequired: "Please enter a reason when status is not Available."
+      },
+      audit: {
+        filterFacility: "Filter by Facility",
+        scopedToFacility: "Showing audit history for your assigned facility.",
+        empty: "No availability changes recorded yet.",
+        loadError: "Failed to load audit history.",
+        when: "When",
+        facility: "Facility",
+        change: "Change"
       }
     },
     notifications: {
@@ -911,4 +1022,5 @@ export const hi = {
       staffDeassignedTitle: "कर्मचारी को सुविधा से हटाया गया",
       staffDeassignedBody: "कर्मचारी \"{{name}}\" को {{performedBy}} द्वारा {{facility}} से हटा दिया गया है।"
     }
-  };
+  }
+};

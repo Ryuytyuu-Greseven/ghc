@@ -93,6 +93,8 @@ export const gu = {
     "availability": "મારી ઉપલબ્ધતા",
     "transfers": "કવરેજ અને ટ્રાન્સફર",
     "audits": "ઑડિટ લૉગ્સ",
+    "diagnosticTests": "ડાયગ્નોસ્ટિક ટેસ્ટ",
+    "attendance": "હાજરી પત્રક",
     "reports": "રિપોર્ટ્સ"
   },
   "roles": {
@@ -888,6 +890,7 @@ export const gu = {
     "noStock": "સ્ટોકનો કોઈ રેકોર્ડ મળ્યો નથી.",
     "uniqueItems": "યુનિક આઇટમ્સ",
     "medicineAvailabilityTitle": "દવા સ્ટોક ઉપલબ્ધતા",
+    "colBranchesCount": "સ્ટોક ધરાવતી શાખાઓ",
     "colBatchesCount": "બૅચ",
     "patientFootfallForecast": "દર્દીઓનું આગમન અને ફૂટફોલ પૂર્વાનુમાન",
     "historicWalkins": "ઐતિહાસિક દૈનિક મુલાકાતો",
@@ -895,7 +898,49 @@ export const gu = {
     "aiForecastSummary": "કાર્યાત્મક સમજણ",
     "aiForecastNote": "પૂર્વાનુમાન ઐતિહાસિક ક્લિનિક મુલાકાતોના આધારે આપમેળે સંકલિત કરવામાં આવ્યું છે.",
     "noBranchCapacityData": "કોઈ શાખાની ક્ષમતાનો ડેટા ઉપલબ્ધ નથી."
-      }
+      },
+    "diagnosticTests": {
+      "title": "Diagnostic Test Tracking",
+      "subtitle": "Manage test catalog and facility availability audits",
+      "tabs": { "catalog": "Test Catalog", "availability": "Facility Availability", "audit": "Audit History" },
+      "categories": { "Lab": "Lab", "Imaging": "Imaging", "Pathology": "Pathology", "Other": "Other" },
+      "status": { "Active": "Active", "Inactive": "Inactive" },
+      "availabilityStatus": { "Available": "Available", "Unavailable": "Unavailable", "Partial": "Partial", "OutOfOrder": "Out of Order", "NotAudited": "Not Audited" },
+      "fields": { "testName": "Test Name", "testNamePlaceholder": "e.g. Complete Blood Count", "testCode": "Test Code", "testCodePlaceholder": "e.g. CBC", "category": "Category", "sampleType": "Sample Type", "sampleTypePlaceholder": "e.g. Blood, Urine", "status": "Status", "reason": "Reason", "reasonPlaceholder": "e.g. Reagent stockout, machine broken" },
+      "catalog": { "addTest": "Add Test", "editTest": "Edit Test", "searchPlaceholder": "Search tests...", "empty": "No tests in catalog yet.", "deactivate": "Deactivate", "deactivateConfirm": "Deactivate \"{{name}}\" from the catalog?", "loadError": "Failed to load test catalog.", "saveError": "Failed to save test.", "fieldRequired": "{{field}} is required", "facilityAvailability": "Facility Availability", "facilityAvailabilityHint": "Optionally set initial availability per facility when saving this test.", "addFacility": "Add Facility", "selectFacility": "Facility", "selectFacilityPlaceholder": "Choose a facility...", "selectFacilityRequired": "Please select a facility for each row.", "duplicateFacility": "Each facility can only be added once.", "reasonRequired": "Reason is required when status is not Available.", "reasonNotRequired": "No reason needed when available.", "noFacilitiesAdded": "No facilities added. Use Add Facility to set availability." },
+      "availability": { "infoBanner": "Audit diagnostic test availability at your facility. Changes are logged for district administrators.", "selectFacility": "Select Facility", "selectFacilityPlaceholder": "Choose a facility...", "selectFacilityHint": "Select a facility to view and audit test availability.", "loadError": "Failed to load availability.", "saveError": "Failed to update availability.", "saved": "Availability updated successfully.", "reasonRequired": "Please enter a reason when status is not Available." },
+      "audit": { "filterFacility": "Filter by Facility", "scopedToFacility": "Showing audit history for your assigned facility.", "empty": "No availability changes recorded yet.", "loadError": "Failed to load audit history.", "when": "When", "facility": "Facility", "change": "Change" }
+    },
+    "attendance": {
+      "clockedOutTime": "ચેક-આઉટ સમય:",
+      "clockOutBtn": "ચેક-આઉટ કરો",
+      "shiftCompleted": "આજની ફરજ પૂરી થઈ",
+      "modifyTitle": "હાજરીની સ્થિતિ સુધારો:",
+      "modifyPrompt": "સ્થિતિ અપડેટ કરવા માટે 1, 2, 3 અથવા 4 દાખલ કરો:",
+      "cancelCheckIn": "ચેક-ઇન રદ કરો",
+      "confirmUnmarkDay": "શું તમે ખરેખર આ દિવસની હાજરી રદ કરવા માંગો છો?",
+      "confirmUnmarkToday": "શું તમે ખરેખર આજનું ચેક-ઇન રદ કરવા માંગો છો?",
+      "subtitle": "દૈનિક હાજરી નોંધો અને માસિક લૉગ્સ તપાસો.",
+      "loading": "હાજરી રેકોર્ડ સિંક થઈ રહ્યા છે...",
+      "selectStaff": "ડૉક્ટર / સ્ટાફ પસંદ કરો",
+      "noSelectionHeader": "કોઈ સ્ટાફ સભ્ય પસંદ કરેલ નથી",
+      "noSelectionBody": "માસિક હાજરી તપાસવા માટે કૃપા કરીને ઉપરના ફિલ્ટરમાંથી ક્લિનિક શાખા અને કર્મચારી પસંદ કરો.",
+      "totalDays": "મહિનાના કુલ દિવસો",
+      "present": "હાજર દિવસો",
+      "leaveDaysCount": "રજાના દિવસો",
+      "absent": "ગેરહાજર દિવસો",
+      "rate": "હાજરી દર",
+      "clockInCard": "દૈનિક ફરજ ચેક-ઈન",
+      "clockInInfo": "તમારી સોંપાયેલ ક્લિનિક શાખા પર ફરજ માટે રિપોર્ટ કરો ત્યારે દરરોજ એકવાર નીચેના બટન પર ક્લિક કરો.",
+      "alreadyMarked": "આજે હાજરી નોંધાઈ ગઈ છે",
+      "clockedTime": "check-ઈન સમય:",
+      "notClockedToday": "આજે હજી સુધી ચેક-ઈન કર્યું નથી.",
+      "clockInBtn": "હાજરી નોંધો",
+      "monthlyCalendar": "માસિક ફરજ કેલેન્ડર",
+      "loadingLogs": "હાજરીના રેકોર્ડ મેળવી રહ્યા છીએ...",
+      "presentSmall": "હા",
+      "offSmall": "રજા",
+      "absentSmall": "ગેર"
     },
     "notifications": {
     "hospitalOnboardedTitle": "હોસ્પિટલ સફળતાપૂર્વક ઓનબોર્ડ કરવામાં આવી",
@@ -911,4 +956,5 @@ export const gu = {
     "staffDeassignedTitle": "સ્ટಾફને સુવિધામાંથી મુક્ત કરવામાં આવ્યા",
     "staffDeassignedBody": "સ્ટಾફ સભ્ય \"{{name}}\" ને {{facility}} માંથી {{performedBy}} દ્વારા મુક્ત કરવામાં આવ્યા છે."
     }
-  };
+  }
+};

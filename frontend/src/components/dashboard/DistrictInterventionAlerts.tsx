@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, BedDouble, Pill, Users, ChevronRight, AlertOctagon, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, BedDouble, Pill, Users, ChevronRight, AlertOctagon, CheckCircle2, ShieldAlert, FlaskConical } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authFetch, useApp } from '../../context/AppContext';
@@ -9,7 +9,7 @@ interface InterventionAlert {
   branchId: string;
   branchName: string;
   branchType: string;
-  type: 'Bed Shortage' | 'Severe Stockout' | 'Staff Crunch';
+  type: 'Bed Shortage' | 'Severe Stockout' | 'Staff Crunch' | 'Test Unavailable';
   severity: 'High' | 'Medium';
   metric: string;
   justification: string;
@@ -21,6 +21,8 @@ interface InterventionAlert {
     totalItemsCount?: number;
     patientCount?: number;
     staffCount?: number;
+    unavailableTestCount?: number;
+    totalTestCount?: number;
   };
 }
 
@@ -192,6 +194,13 @@ export function DistrictInterventionAlerts({ mode = 'banner' }: DistrictInterven
                 defaultValue: alert.justification,
               });
             }
+            if (alert.type === 'Test Unavailable') {
+              return t('dashboard.intervention.justification_tests', {
+                unavailable: alert.details.unavailableTestCount,
+                total: alert.details.totalTestCount,
+                defaultValue: alert.justification,
+              });
+            }
             return alert.justification;
           };
 
@@ -256,17 +265,21 @@ export function DistrictInterventionAlerts({ mode = 'banner' }: DistrictInterven
                       ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600' 
                       : alert.type === 'Severe Stockout' 
                       ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-600' 
+                      : alert.type === 'Test Unavailable'
+                      ? 'bg-cyan-50 dark:bg-cyan-950/20 text-cyan-600'
                       : 'bg-violet-50 dark:bg-violet-950/20 text-violet-600'
                   }`}>
                     {alert.type === 'Bed Shortage' && <BedDouble size={14} />}
                     {alert.type === 'Severe Stockout' && <Pill size={14} />}
                     {alert.type === 'Staff Crunch' && <Users size={14} />}
+                    {alert.type === 'Test Unavailable' && <FlaskConical size={14} />}
                   </div>
                   
                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                     {alert.type === 'Bed Shortage' && t('dashboard.intervention.bed_shortage', 'Bed Shortage')}
                     {alert.type === 'Severe Stockout' && t('dashboard.intervention.severe_stockout', 'Severe Stockout')}
                     {alert.type === 'Staff Crunch' && t('dashboard.intervention.staff_crunch', 'Staff Crunch')}
+                    {alert.type === 'Test Unavailable' && t('dashboard.intervention.test_unavailable', 'Test Unavailable')}
                   </span>
                 </div>
 
@@ -306,6 +319,16 @@ export function DistrictInterventionAlerts({ mode = 'banner' }: DistrictInterven
                     className="w-full flex items-center justify-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-900/30 py-2 rounded-lg transition-colors"
                   >
                     {t('dashboard.intervention.action_view_hospital', 'Manage Facilities')}
+                    <ChevronRight size={14} />
+                  </Link>
+                )}
+
+                {alert.type === 'Test Unavailable' && (
+                  <Link
+                    to="/diagnostic-tests"
+                    className="w-full flex items-center justify-center gap-1 text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 bg-cyan-50 dark:bg-cyan-950/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 py-2 rounded-lg transition-colors"
+                  >
+                    {t('dashboard.intervention.action_tests', 'Review Test Availability')}
                     <ChevronRight size={14} />
                   </Link>
                 )}

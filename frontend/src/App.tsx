@@ -17,6 +17,8 @@ import { Availability } from './pages/Availability';
 import { Transfers } from './pages/Transfers';
 import { Audits } from './pages/Audits';
 import { Reports } from './pages/Reports';
+import { DiagnosticTestsPage } from './pages/diagnostic-tests/DiagnosticTestsPage';
+import { Attendance } from './pages/Attendance';
 
 interface GuardProps {
   allowedRoles: string[];
@@ -126,6 +128,14 @@ export default function App() {
                     }
                   />
                   <Route
+                    path="/attendance"
+                    element={
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Pharmacist', 'Compounder', 'Lab Technician', 'Cashier']}>
+                        <Attendance />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
                     path="/transfers"
                     element={
                       <RoleGuard allowedRoles={['Admin']}>
@@ -138,6 +148,14 @@ export default function App() {
                     element={
                       <RoleGuard allowedRoles={['Admin']}>
                         <Audits />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/diagnostic-tests"
+                    element={
+                      <RoleGuard allowedRoles={['Admin', 'Lab Technician', 'Doctor', 'Nurse']}>
+                        <DiagnosticTestsPage />
                       </RoleGuard>
                     }
                   />

@@ -93,6 +93,8 @@ export const te = {
       availability: "నా అందుబాటు",
       transfers: "కవరేజ్ & బదిలీలు",
       audits: "ఆడిట్ లాగ్స్",
+      diagnosticTests: "డయాగ్నాస్టిక్ టెస్ట్‌లు",
+      attendance: "డ్యూటీ హాజరు",
       reports: "నివేదికలు"
     },
     roles: {
@@ -840,7 +842,38 @@ export const te = {
         "Operation Theatre": "ఆపరేషన్ థియేటర్",
         Administration: "అడ్మినిస్ట్రేషన్"
       },
-      reports: {
+          "attendance": {
+      "clockedOutTime": "చెక్-అవుట్ సమయం:",
+      "clockOutBtn": "చెక్-అవుట్ చేయి",
+      "shiftCompleted": "నేటి డ్యూటీ పూర్తయింది",
+      "modifyTitle": "హాజరు స్థితిని సవరించండి:",
+      "modifyPrompt": "స్థితిని నవీకరించడానికి 1, 2, 3 లేదా 4ని నమోదు చేయండి:",
+      "cancelCheckIn": "చెక్-ఇన్ రద్దు చేయి",
+      "confirmUnmarkDay": "మీరు నిజంగా ఈ రోజు హాజరును రద్దు చేయాలనుకుంటున్నారా?",
+      "confirmUnmarkToday": "మీరు నిజంగా ఈ రోజు చెక్-ఇన్‌ను రద్దు చేయాలనుకుంటున్నారా?",
+      "subtitle": "రోజువారీ హాజరును నమోదు చేయండి మరియు నెలవారీ లాగ్‌లను తనిఖీ చేయండి.",
+      "loading": "హాజరు రికార్డులను సమకాలీకరిస్తోంది...",
+      "selectStaff": "వైద్యుడు / సిబ్బందిని ఎంచుకోండి",
+      "noSelectionHeader": "సిబ్బంది సభ్యులు ఎవరూ ఎంపిక కాలేదు",
+      "noSelectionBody": "వారి నెలవారీ హాజరును తనిఖీ చేయడానికి దయచేసి పైన ఉన్న ఫిల్టర్‌ల నుండి క్లినిక్ శాఖ మరియు ఉద్యోగిని ఎంచుకోండి.",
+      "totalDays": "నెల మొత్తం రోజులు",
+      "present": "హాజరైన రోజులు",
+      "leaveDaysCount": "సెలవు రోజులు",
+      "absent": "హాజరుకాని రోజులు",
+      "rate": "హాజరు శాతం",
+      "clockInCard": "రోజువారీ డ్యూటీ చెక్-ఇన్",
+      "clockInInfo": "మీరు మీ కేటాయించిన క్లినిక్ శాఖలో విధికి నివేదించినప్పుడు రోజుకు ఒకసారి దిగువ బటన్‌ను క్లిక్ చేయండి.",
+      "alreadyMarked": "ఈ రోజు విధికి హాజరు నమోదైంది",
+      "clockedTime": "చెక్-ఇన్ సమయం:",
+      "notClockedToday": "ఈ రోజు ఇంకా చెక్-ఇన్ చేయలేదు.",
+      "clockInBtn": "హాజరు నమోదు చేయి",
+      "monthlyCalendar": "నెలవారీ డ్యూటీ క్యాలెండర్",
+      "loadingLogs": "హాజరు రికార్డులను పొందుతోంది...",
+      "presentSmall": "హా",
+      "offSmall": "ఆఫ్",
+      "absentSmall": "హా.లే"
+    },
+  reports: {
         subtitle: "సిస్టమ్ పనితీరు, క్లినికల్ గణాంకాలు, బెడ్ల లభ్యత మరియు స్టాక్ తనిఖీలను చూడండి.",
         allBranches: "అన్ని బ్రాంచీలు",
         to: "నుండి",
@@ -888,6 +921,7 @@ export const te = {
         noStock: "ఎటువంటి స్టాక్ నమోదు కాలేదు.",
         uniqueItems: "ప్రత్యేక వస్తువులు",
         medicineAvailabilityTitle: "మందుల స్టాక్ లభ్యత",
+        colBranchesCount: "స్టాక్ ఉన్న బ్రాంచీలు",
         colBatchesCount: "బ్యాచ్‌లు",
         patientFootfallForecast: "రోగుల రాక మరియు ఫుట్‌ఫాల్ అంచనా",
         historicWalkins: "చారిత్రక రోజువారీ సందర్శనలు",
@@ -895,7 +929,18 @@ export const te = {
         aiForecastSummary: "కార్యాచరణ అంతర్దృష్టులు",
         aiForecastNote: "గత క్లినిక్ సందర్శనల ఆధారంగా అంచనా స్వయంచాలకంగా రూపొందించబడింది.",
         noBranchCapacityData: "ఎటువంటి బ్రాంచ్ సామర్థ్య డేటా అందుబాటులో లేదు."
-      }
+      },
+    diagnosticTests: {
+      title: "Diagnostic Test Tracking",
+      subtitle: "Manage test catalog and facility availability audits",
+      tabs: { catalog: "Test Catalog", availability: "Facility Availability", audit: "Audit History" },
+      categories: { Lab: "Lab", Imaging: "Imaging", Pathology: "Pathology", Other: "Other" },
+      status: { Active: "Active", Inactive: "Inactive" },
+      availabilityStatus: { Available: "Available", Unavailable: "Unavailable", Partial: "Partial", OutOfOrder: "Out of Order", NotAudited: "Not Audited" },
+      fields: { testName: "Test Name", testNamePlaceholder: "e.g. Complete Blood Count", testCode: "Test Code", testCodePlaceholder: "e.g. CBC", category: "Category", sampleType: "Sample Type", sampleTypePlaceholder: "e.g. Blood, Urine", status: "Status", reason: "Reason", reasonPlaceholder: "e.g. Reagent stockout, machine broken" },
+      catalog: { addTest: "Add Test", editTest: "Edit Test", searchPlaceholder: "Search tests...", empty: "No tests in catalog yet.", deactivate: "Deactivate", deactivateConfirm: "Deactivate \"{{name}}\" from the catalog?", loadError: "Failed to load test catalog.", saveError: "Failed to save test.", fieldRequired: "{{field}} is required", facilityAvailability: "Facility Availability", facilityAvailabilityHint: "Optionally set initial availability per facility when saving this test.", addFacility: "Add Facility", selectFacility: "Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityRequired: "Please select a facility for each row.", duplicateFacility: "Each facility can only be added once.", reasonRequired: "Reason is required when status is not Available.", reasonNotRequired: "No reason needed when available.", noFacilitiesAdded: "No facilities added. Use Add Facility to set availability." },
+      availability: { infoBanner: "Audit diagnostic test availability at your facility. Changes are logged for district administrators.", selectFacility: "Select Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityHint: "Select a facility to view and audit test availability.", loadError: "Failed to load availability.", saveError: "Failed to update availability.", saved: "Availability updated successfully.", reasonRequired: "Please enter a reason when status is not Available." },
+      audit: { filterFacility: "Filter by Facility", scopedToFacility: "Showing audit history for your assigned facility.", empty: "No availability changes recorded yet.", loadError: "Failed to load audit history.", when: "When", facility: "Facility", change: "Change" }
     },
     notifications: {
       hospitalOnboardedTitle: "ఆసుపత్రి విజయవంతంగా ఆన్‌బోర్డు చేయబడింది",
@@ -911,4 +956,5 @@ export const te = {
       staffDeassignedTitle: "సిబ్బంది సదుపాయం నుండి తొలగించబడ్డారు",
       staffDeassignedBody: "సిబ్బంది సభ్యుడు \"{{name}}\" {{performedBy}} ద్వారా {{facility}} నుండి తొలగించబడ్డారు."
     }
-  };
+  }
+};

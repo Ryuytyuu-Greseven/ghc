@@ -93,6 +93,8 @@ export const bn = {
       availability: "আমার প্রাপ্যতা",
       transfers: "কভারেজ ও স্থানান্তর",
       audits: "অডিট লগ",
+      diagnosticTests: "ডায়াগনস্টিক টেস্ট",
+      attendance: "ডিউটি উপস্থিতি",
       reports: "প্রতিবেদন"
     },
     roles: {
@@ -840,7 +842,38 @@ export const bn = {
         "Operation Theatre": "অপারেশন থিয়েটার",
         Administration: "প্রশাসন"
       },
-      reports: {
+          "attendance": {
+      "clockedOutTime": "চেক-আউট সময়:",
+      "clockOutBtn": "চেক-আউট করুন",
+      "shiftCompleted": "আজকের শিফট সম্পন্ন হয়েছে",
+      "modifyTitle": "উপস্থিতির স্থিতি পরিবর্তন করুন:",
+      "modifyPrompt": "স্থিতি আপডেট করতে ১, ২, ৩ অথবা ৪ লিখুন:",
+      "cancelCheckIn": "চেক-ইন বাতিল করুন",
+      "confirmUnmarkDay": "আপনি কি নিশ্চিত যে এই দিনের উপস্থিতি বাতিল করতে চান?",
+      "confirmUnmarkToday": "আপনি কি নিশ্চিত যে আজকের চেক-ইন বাতিল করতে চান?",
+      "subtitle": "দৈনিক উপস্থিতি রেকর্ড করুন এবং মাসিক লগ পরীক্ষা করুন।",
+      "loading": "উপস্থিতি রেকর্ড সিঙ্ক করা হচ্ছে...",
+      "selectStaff": "ডাক্তার / স্টাফ নির্বাচন করুন",
+      "noSelectionHeader": "কোন কর্মী সদস্য নির্বাচিত হয়নি",
+      "noSelectionBody": "মাসিক উপস্থিতি পরীক্ষা করতে দয়া করে উপরের ফিল্টারগুলি থেকে ক্লিনিক শাখা এবং কর্মচারী নির্বাচন করুন।",
+      "totalDays": "মাসের মোট দিন",
+      "present": "উপস্থিত দিন",
+      "leaveDaysCount": "ছুটির দিন",
+      "absent": "অনুপস্থিত দিন",
+      "rate": "উপস্থিতির হার",
+      "clockInCard": "দৈনিক ডিউটি চেক-ইন",
+      "clockInInfo": "আপনার নির্ধারিত ক্লিনিক শাখায় ডিউটিতে রিপোর্ট করার সময় প্রতিদিন একবার নীচের বোতামটি ক্লিক করুন।",
+      "alreadyMarked": "আজ ডিউটির জন্য উপস্থিতি নথিভুক্ত করা হয়েছে",
+      "clockedTime": "চেক-ইন সময়:",
+      "notClockedToday": "আজ এখনও চেক-ইন করা হয়নি।",
+      "clockInBtn": "উপস্থিতি নথিভুক্ত করুন",
+      "monthlyCalendar": "মাসিক ডিউটি ক্যালেন্ডার",
+      "loadingLogs": "উপস্থিতি রেকর্ড সংগ্রহ করা হচ্ছে...",
+      "presentSmall": "উ",
+      "offSmall": "বন্ধ",
+      "absentSmall": "অন"
+    },
+  reports: {
         subtitle: "সিস্টেমের ত্রুটিসমূহ, চিকিৎসা পরিসংখ্যান, শয্যা প্রাপ্যতা এবং স্টক চেক বিবরণ দেখুন।",
         allBranches: "সমস্ত শাখা",
         to: "থেকে",
@@ -888,6 +921,7 @@ export const bn = {
         noStock: "কোনো স্টকের রেকর্ড পাওয়া যায়নি।",
         uniqueItems: "ধরণের ওষুধ",
         medicineAvailabilityTitle: "ওষুধের মজুদ প্রাপ্যতা",
+        colBranchesCount: "মজুদ আছে যে শাখায়",
         colBatchesCount: "ব্যাচ",
         patientFootfallForecast: "রোগীর আগমন ও উপস্থিতি পূর্বাভাস",
         historicWalkins: "ঐতিহাসিক দৈনিক উপস্থিতি",
@@ -895,7 +929,18 @@ export const bn = {
         aiForecastSummary: "পরিচালনাগত অন্তর্দৃষ্টি",
         aiForecastNote: "পূর্ববর্তী ক্লিনিক পরিদর্শনের তথ্যের ভিত্তিতে পূর্বাভাসটি স্বয়ংক্রিয়ভাবে তৈরি হয়েছে।",
         noBranchCapacityData: "কোনো শাখার ধারণক্ষমতার তথ্য পাওয়া যায়নি।"
-      }
+      },
+    diagnosticTests: {
+      title: "Diagnostic Test Tracking",
+      subtitle: "Manage test catalog and facility availability audits",
+      tabs: { catalog: "Test Catalog", availability: "Facility Availability", audit: "Audit History" },
+      categories: { Lab: "Lab", Imaging: "Imaging", Pathology: "Pathology", Other: "Other" },
+      status: { Active: "Active", Inactive: "Inactive" },
+      availabilityStatus: { Available: "Available", Unavailable: "Unavailable", Partial: "Partial", OutOfOrder: "Out of Order", NotAudited: "Not Audited" },
+      fields: { testName: "Test Name", testNamePlaceholder: "e.g. Complete Blood Count", testCode: "Test Code", testCodePlaceholder: "e.g. CBC", category: "Category", sampleType: "Sample Type", sampleTypePlaceholder: "e.g. Blood, Urine", status: "Status", reason: "Reason", reasonPlaceholder: "e.g. Reagent stockout, machine broken" },
+      catalog: { addTest: "Add Test", editTest: "Edit Test", searchPlaceholder: "Search tests...", empty: "No tests in catalog yet.", deactivate: "Deactivate", deactivateConfirm: "Deactivate \"{{name}}\" from the catalog?", loadError: "Failed to load test catalog.", saveError: "Failed to save test.", fieldRequired: "{{field}} is required", facilityAvailability: "Facility Availability", facilityAvailabilityHint: "Optionally set initial availability per facility when saving this test.", addFacility: "Add Facility", selectFacility: "Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityRequired: "Please select a facility for each row.", duplicateFacility: "Each facility can only be added once.", reasonRequired: "Reason is required when status is not Available.", reasonNotRequired: "No reason needed when available.", noFacilitiesAdded: "No facilities added. Use Add Facility to set availability." },
+      availability: { infoBanner: "Audit diagnostic test availability at your facility. Changes are logged for district administrators.", selectFacility: "Select Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityHint: "Select a facility to view and audit test availability.", loadError: "Failed to load availability.", saveError: "Failed to update availability.", saved: "Availability updated successfully.", reasonRequired: "Please enter a reason when status is not Available." },
+      audit: { filterFacility: "Filter by Facility", scopedToFacility: "Showing audit history for your assigned facility.", empty: "No availability changes recorded yet.", loadError: "Failed to load audit history.", when: "When", facility: "Facility", change: "Change" }
     },
     notifications: {
       hospitalOnboardedTitle: "হাসপাতাল সফলভাবে অনবোর্ড করা হয়েছে",
@@ -911,4 +956,5 @@ export const bn = {
       staffDeassignedTitle: "কর্মী স্বাস্থ্যকেন্দ্র থেকে অপসারিত",
       staffDeassignedBody: "কর্মী \"{{name}}\" {{performedBy}} দ্বারা {{facility}} থেকে অপসারিত হয়েছে।"
     }
-  };
+  }
+};
