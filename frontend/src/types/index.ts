@@ -134,6 +134,7 @@ export interface PatientData {
   category: string;
   medicines: PatientMedicine[];
   doctor?: string;
+  nurse?: string;
   nurseUserId?: string;
   notes?: string;
   recommendedTests?: string[];

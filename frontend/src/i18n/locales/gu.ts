@@ -93,7 +93,8 @@ export const gu = {
     "availability": "મારી ઉપલબ્ધતા",
     "transfers": "કવરેજ અને ટ્રાન્સફર",
     "audits": "ઑડિટ લૉગ્સ",
-    "reports": "રિપોર્ટ્સ"
+    "reports": "રિપોર્ટ્સ",
+    "attendance": "હાજરી પત્રક",
   },
   "roles": {
     "Admin": "એડમિન",
@@ -882,6 +883,37 @@ export const gu = {
     "aiForecastNote": "પૂર્વાનુમાન ઐતિહાસિક ક્લિનિક મુલાકાતોના આધારે આપમેળે સંકલિત કરવામાં આવ્યું છે.",
     "noBranchCapacityData": "કોઈ શાખાની ક્ષમતાનો ડેટા ઉપલબ્ધ નથી."
       }
+    },
+    "attendance": {
+      "clockedOutTime": "ચેક-આઉટ સમય:",
+      "clockOutBtn": "ચેક-આઉટ કરો",
+      "shiftCompleted": "આજની ફરજ પૂરી થઈ",
+      "modifyTitle": "હાજરીની સ્થિતિ સુધારો:",
+      "modifyPrompt": "સ્થિતિ અપડેટ કરવા માટે 1, 2, 3 અથવા 4 દાખલ કરો:",
+      "cancelCheckIn": "ચેક-ઇન રદ કરો",
+      "confirmUnmarkDay": "શું તમે ખરેખર આ દિવસની હાજરી રદ કરવા માંગો છો?",
+      "confirmUnmarkToday": "શું તમે ખરેખર આજનું ચેક-ઇન રદ કરવા માંગો છો?",
+      "subtitle": "દૈનિક હાજરી નોંધો અને માસિક લૉગ્સ તપાસો.",
+      "loading": "હાજરી રેકોર્ડ સિંક થઈ રહ્યા છે...",
+      "selectStaff": "ડૉક્ટર / સ્ટાફ પસંદ કરો",
+      "noSelectionHeader": "કોઈ સ્ટાફ સભ્ય પસંદ કરેલ નથી",
+      "noSelectionBody": "માસિક હાજરી તપાસવા માટે કૃપા કરીને ઉપરના ફિલ્ટરમાંથી ક્લિનિક શાખા અને કર્મચારી પસંદ કરો.",
+      "totalDays": "મહિનાના કુલ દિવસો",
+      "present": "હાજર દિવસો",
+      "leaveDaysCount": "રજાના દિવસો",
+      "absent": "ગેરહાજર દિવસો",
+      "rate": "હાજરી દર",
+      "clockInCard": "દૈનિક ફરજ ચેક-ઈન",
+      "clockInInfo": "તમારી સોંપાયેલ ક્લિનિક શાખા પર ફરજ માટે રિપોર્ટ કરો ત્યારે દરરોજ એકવાર નીચેના બટન પર ક્લિક કરો.",
+      "alreadyMarked": "આજે હાજરી નોંધાઈ ગઈ છે",
+      "clockedTime": "check-ઈન સમય:",
+      "notClockedToday": "આજે હજી સુધી ચેક-ઈન કર્યું નથી.",
+      "clockInBtn": "હાજરી નોંધો",
+      "monthlyCalendar": "માસિક ફરજ કેલેન્ડર",
+      "loadingLogs": "હાજરીના રેકોર્ડ મેળવી રહ્યા છીએ...",
+      "presentSmall": "હા",
+      "offSmall": "રજા",
+      "absentSmall": "ગેર"
     },
     "notifications": {
     "hospitalOnboardedTitle": "હોસ્પિટલ સફળતાપૂર્વક ઓનબોર્ડ કરવામાં આવી",
