@@ -23,6 +23,7 @@ export const bn = {
       delete: "মুছুন",
       save: "সংরক্ষণ",
       cancel: "বাতিল",
+      close: "বন্ধ করুন",
       available: "উপলব্ধ",
       total: "মোট",
       parentChc: "মূল সিএইচসি",
@@ -86,12 +87,14 @@ export const bn = {
       hospitals: "হাসপাতাল ও ক্লিনিক",
       staff: "কর্মী",
       patients: "রোগী",
-      medicines: "ওষুধ ও চিকিৎসা সরবরাহ",
+      medicines: "ইনভেন্টরি এবং সরবরাহ",
       "ai-analytics": "এআই ইনভেন্টরি অ্যানালিটিক্স",
       "critical-alerts": "গুরুতর সতর্কতা",
       availability: "আমার প্রাপ্যতা",
       transfers: "কভারেজ ও স্থানান্তর",
       audits: "অডিট লগ",
+      diagnosticTests: "ডায়াগনস্টিক টেস্ট",
+      attendance: "ডিউটি উপস্থিতি",
       reports: "প্রতিবেদন"
     },
     roles: {
@@ -108,6 +111,11 @@ export const bn = {
     dashboard: {
       title: "ড্যাশবোর্ড",
       subtitle: "জিএইচসি স্বাস্থ্য ব্যবস্থাপনা ওভারভিউ",
+      organization_view: "সংগঠন ভিউ",
+      viewing_hospital: "বরাদ্দকৃত হাসপাতাল: {{name}}",
+      in_facility_inventory: "সুবিধা ইনভেন্টরিতে",
+      in_hospital_inventory: "{{name}} ইনভেন্টরিতে",
+      in_this_facility: "এই সুবিধা কেন্দ্রে",
       totalPatients: "মোট রোগী",
       activeStaff: "সক্রিয় কর্মী",
       bedsAvailable: "উপলব্ধ শয্যা",
@@ -131,9 +139,18 @@ export const bn = {
       beds_free: "শয্যা খালি",
       unassigned: "কর্মী বরাদ্দহীন",
       requiringBeds: "শয্যা প্রয়োজন",
+      pending_requests_title: "অপেক্ষমান ইনভেন্টরি অনুরোধসমূহ",
+      no_pending_requests: "কোন অপেক্ষমান ইনভেন্টরি অনুরোধ নেই",
+      view_all_requests: "সমস্ত অনুরোধ পরিচালনা করুন",
+      view_my_requests: "আমার অনুরোধ দেখুন",
+      raise_request: "অনুরোধ উত্থাপন করুন",
+      action: "পদক্ষেপ",
+      review: "পর্যালোচনা",
       intervention: {
         title: "গুরুতর সতর্কতা",
+        title_facility: "আপনার সুবিধার জন্য গুরুতর সতর্কতা",
         subtitle: "গুরুতর সম্পদ সংকটের মুখোমুখি হওয়া স্বাস্থ্য কেন্দ্রসমূহ",
+        subtitle_facility: "আপনার বরাদ্দকৃত সুবিধার জন্য সংস্থান স্থিতি সতর্কতা",
         severity_high: "উচ্চ",
         severity_medium: "মাঝারি",
         bed_shortage: "শয্যা সংকট",
@@ -238,7 +255,7 @@ export const bn = {
         registered: "নিবন্ধিত",
         occupancyRate: "অধিভোগের হার",
         roleTypes: "{{count}}টি ভূমিকা",
-        needBeds: "{{count}} জনের শয্যা প্রয়োজন",
+        needBeds: "{{count}} টি শয্যা বরাদ্দ করা হয়েছে",
         noStaff: "এই কেন্দ্রে এখনও কোনো কর্মী নিয়োগ করা হয়নি",
         noMedicines: "এই কেন্দ্রে এখনও কোনো ওষুধ বরাদ্দ করা হয়নি",
         noPatients: "বর্তমানে কোনো রোগী ভর্তি নেই",
@@ -301,7 +318,7 @@ export const bn = {
       healthAI: "জিএইচসি স্বাস্থ্য এআই"
     },
     inventory: {
-      title: "ওষুধ ও চিকিৎসা সরবরাহ",
+      title: "ইনভেন্টরি এবং সরবরাহ",
       subtitle: "ইনভেন্টরি, স্টক, অনুরোধ এবং অডিট ট্রেইল পরিচালনা করুন",
       tabs: {
         master: "ইনভেন্টরি মাস্টার",
@@ -447,6 +464,8 @@ export const bn = {
         applyTransfer: "স্থানান্তর কার্যকর করুন",
         applyingTransfer: "কার্যকর করা হচ্ছে...",
         applySuccess: "স্থানান্তর অনুরোধ সফলভাবে তৈরি করা হয়েছে",
+        alreadyRequested: "অনুরোধ করা হয়েছে",
+        redistributionRequestName: "স্মার্ট পুনঃবন্টন অনুরোধ",
         noRecommendations: "কোনো পুনঃবন্টন সুপারিশ নেই",
         noRecommendationsDesc: "বর্তমান পূর্বাভাসের জন্য সমস্ত শাখায় স্টক স্তর সুষম রয়েছে।",
         fromFacility: "প্রেরণকারী কেন্দ্র",
@@ -567,6 +586,12 @@ export const bn = {
         },
         detail: {
           loadingSubtitle: "রোগীর পরিদর্শনের ইতিহাস লোড করা হচ্ছে",
+          clinicalOnboardingAnalysis: "ক্লিনিকাল অনবোর্ডিং বিশ্লেষণ",
+          guidelinesCareProtocol: "নির্দেশিকা ও যত্ন প্রোটোকল",
+          analyzingSymptoms: "লক্ষণ বিশ্লেষণ করা হচ্ছে...",
+          diagnosticAssistant: "রোগ নির্ণয় সহকারী",
+          checkingPrescriptionSafety: "প্রেসক্রিপশনের নিরাপত্তা পরীক্ষা করা হচ্ছে...",
+          prescriptionSafetyValidator: "প্রেসক্রিপশন নিরাপত্তা পরীক্ষক",
           loadError: "রোগীর ইতিহাস লোড করতে ব্যর্থ",
           loadDoctorsError: "উপলব্ধ ডাক্তারদের তালিকা লোড করতে ব্যর্থ",
           saveVisitError: "রোগীর পরিদর্শন সংরক্ষণ করতে ব্যর্থ",
@@ -592,6 +617,10 @@ export const bn = {
           loadingDoctors: "ডাক্তার লোড হচ্ছে...",
           selectDoctor: "— ডাক্তার নির্বাচন করুন —",
           noDoctors: "এই তারিখে কোনো উপলব্ধ ডাক্তার পাওয়া যায়নি।",
+          nurseLabel: "নার্স নিযুক্ত করুন",
+          selectNurse: "— নার্স নির্বাচন করুন —",
+          loadingNurses: "নার্স লোড হচ্ছে...",
+          noNurses: "এই তারিখে কোনো উপলব্ধ নার্স পাওয়া যায়নি।",
           saveVisit: "পরিদর্শন সংরক্ষণ করুন",
           medicineDetails: "ওষুধের বিবরণ",
           medicineDetailsWithProblem: "ওষুধের বিবরণ - {{problem}}",
@@ -603,7 +632,41 @@ export const bn = {
           selectCategoryToView: "ওষুধ দেখতে একটি বিভাগ নির্বাচন করুন।",
           notesLabel: "মন্তব্য",
           notesPlaceholder: "লক্ষণ, পরামর্শ বা পরবর্তী পদক্ষেপ",
-          saveMedicineDetails: "ওষুধের বিবরণ সংরক্ষণ করুন"
+          recommendedTestsLabel: "প্রস্তাবিত ডায়াগনস্টিক পরীক্ষা",
+          recommendedTestsHeader: "প্রস্তাবিত পরীক্ষা",
+          selectTestPlaceholder: "ডায়াগনস্টিক পরীক্ষা নির্বাচন করুন...",
+          customTestPlaceholder: "কাস্টম ডায়াগনস্টিক পরীক্ষার নাম লিখুন...",
+          otherCustomTest: "অন্যান্য / কাস্টম পরীক্ষা",
+          addTest: "যোগ করুন",
+          doneEditing: "সম্পন্ন",
+          saveMedicineDetails: "ওষুধের বিবরণ সংরক্ষণ করুন",
+          sessions: {
+            mng: "সকাল",
+            afternoon: "দুপুর",
+            evening: "সন্ধ্যা",
+            night: "রাত",
+            midnight: "মধ্যরাত"
+          },
+          prescription: {
+            viewButton: "প্রেসক্রিপশন",
+            viewTitle: "প্রেসক্রিপশন — {{problem}}",
+            viewButtonTitle: "প্রেসক্রিপশন দেখুন",
+            prescriptionDetails: "প্রেসক্রিপশনের বিবরণ",
+            previouslyPrescribed: "আগে নির্ধারিত",
+            batchAvailable: "ব্যাচ {{batchNo}} · পাওয়া যাচ্ছে {{qty}}",
+            removeFromPrescription: "প্রেসক্রিপশন থেকে সরান",
+            daysToTake: "নেওয়ার দিনগুলি",
+            qtyPerSession: "প্রতি সেশনে পরিমাণ",
+            sessionsTimings: "সেশন / সময়",
+            calculatedTotalQty: "গণনা করা মোট পরিমাণ:",
+            exceedsAvailable: "(পাওয়া যাওয়ার চেয়ে বেশি: {{qty}})",
+            day_one: "{{count}} দিন",
+            day_other: "{{count}} দিন",
+            perDose: "প্রতি ডোজে {{count}}",
+            noTimingSpecified: "সময় নির্দিষ্ট করা হয়নি",
+            qtyLabel: "প",
+            notesHeading: "নোট"
+          }
         }
       },
       staff: {
@@ -779,7 +842,38 @@ export const bn = {
         "Operation Theatre": "অপারেশন থিয়েটার",
         Administration: "প্রশাসন"
       },
-      reports: {
+          "attendance": {
+      "clockedOutTime": "চেক-আউট সময়:",
+      "clockOutBtn": "চেক-আউট করুন",
+      "shiftCompleted": "আজকের শিফট সম্পন্ন হয়েছে",
+      "modifyTitle": "উপস্থিতির স্থিতি পরিবর্তন করুন:",
+      "modifyPrompt": "স্থিতি আপডেট করতে ১, ২, ৩ অথবা ৪ লিখুন:",
+      "cancelCheckIn": "চেক-ইন বাতিল করুন",
+      "confirmUnmarkDay": "আপনি কি নিশ্চিত যে এই দিনের উপস্থিতি বাতিল করতে চান?",
+      "confirmUnmarkToday": "আপনি কি নিশ্চিত যে আজকের চেক-ইন বাতিল করতে চান?",
+      "subtitle": "দৈনিক উপস্থিতি রেকর্ড করুন এবং মাসিক লগ পরীক্ষা করুন।",
+      "loading": "উপস্থিতি রেকর্ড সিঙ্ক করা হচ্ছে...",
+      "selectStaff": "ডাক্তার / স্টাফ নির্বাচন করুন",
+      "noSelectionHeader": "কোন কর্মী সদস্য নির্বাচিত হয়নি",
+      "noSelectionBody": "মাসিক উপস্থিতি পরীক্ষা করতে দয়া করে উপরের ফিল্টারগুলি থেকে ক্লিনিক শাখা এবং কর্মচারী নির্বাচন করুন।",
+      "totalDays": "মাসের মোট দিন",
+      "present": "উপস্থিত দিন",
+      "leaveDaysCount": "ছুটির দিন",
+      "absent": "অনুপস্থিত দিন",
+      "rate": "উপস্থিতির হার",
+      "clockInCard": "দৈনিক ডিউটি চেক-ইন",
+      "clockInInfo": "আপনার নির্ধারিত ক্লিনিক শাখায় ডিউটিতে রিপোর্ট করার সময় প্রতিদিন একবার নীচের বোতামটি ক্লিক করুন।",
+      "alreadyMarked": "আজ ডিউটির জন্য উপস্থিতি নথিভুক্ত করা হয়েছে",
+      "clockedTime": "চেক-ইন সময়:",
+      "notClockedToday": "আজ এখনও চেক-ইন করা হয়নি।",
+      "clockInBtn": "উপস্থিতি নথিভুক্ত করুন",
+      "monthlyCalendar": "মাসিক ডিউটি ক্যালেন্ডার",
+      "loadingLogs": "উপস্থিতি রেকর্ড সংগ্রহ করা হচ্ছে...",
+      "presentSmall": "উ",
+      "offSmall": "বন্ধ",
+      "absentSmall": "অন"
+    },
+  reports: {
         subtitle: "সিস্টেমের ত্রুটিসমূহ, চিকিৎসা পরিসংখ্যান, শয্যা প্রাপ্যতা এবং স্টক চেক বিবরণ দেখুন।",
         allBranches: "সমস্ত শাখা",
         to: "থেকে",
@@ -828,8 +922,25 @@ export const bn = {
         uniqueItems: "ধরণের ওষুধ",
         medicineAvailabilityTitle: "ওষুধের মজুদ প্রাপ্যতা",
         colBranchesCount: "মজুদ আছে যে শাখায়",
-        colBatchesCount: "ব্যাচ"
-      }
+        colBatchesCount: "ব্যাচ",
+        patientFootfallForecast: "রোগীর আগমন ও উপস্থিতি পূর্বাভাস",
+        historicWalkins: "ঐতিহাসিক দৈনিক উপস্থিতি",
+        projectedWalkins: "আনুমানিক দৈনিক উপস্থিতি",
+        aiForecastSummary: "পরিচালনাগত অন্তর্দৃষ্টি",
+        aiForecastNote: "পূর্ববর্তী ক্লিনিক পরিদর্শনের তথ্যের ভিত্তিতে পূর্বাভাসটি স্বয়ংক্রিয়ভাবে তৈরি হয়েছে।",
+        noBranchCapacityData: "কোনো শাখার ধারণক্ষমতার তথ্য পাওয়া যায়নি।"
+      },
+    diagnosticTests: {
+      title: "Diagnostic Test Tracking",
+      subtitle: "Manage test catalog and facility availability audits",
+      tabs: { catalog: "Test Catalog", availability: "Facility Availability", audit: "Audit History" },
+      categories: { Lab: "Lab", Imaging: "Imaging", Pathology: "Pathology", Other: "Other" },
+      status: { Active: "Active", Inactive: "Inactive" },
+      availabilityStatus: { Available: "Available", Unavailable: "Unavailable", Partial: "Partial", OutOfOrder: "Out of Order", NotAudited: "Not Audited" },
+      fields: { testName: "Test Name", testNamePlaceholder: "e.g. Complete Blood Count", testCode: "Test Code", testCodePlaceholder: "e.g. CBC", category: "Category", sampleType: "Sample Type", sampleTypePlaceholder: "e.g. Blood, Urine", status: "Status", reason: "Reason", reasonPlaceholder: "e.g. Reagent stockout, machine broken" },
+      catalog: { addTest: "Add Test", editTest: "Edit Test", searchPlaceholder: "Search tests...", empty: "No tests in catalog yet.", deactivate: "Deactivate", deactivateConfirm: "Deactivate \"{{name}}\" from the catalog?", loadError: "Failed to load test catalog.", saveError: "Failed to save test.", fieldRequired: "{{field}} is required", facilityAvailability: "Facility Availability", facilityAvailabilityHint: "Optionally set initial availability per facility when saving this test.", addFacility: "Add Facility", selectFacility: "Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityRequired: "Please select a facility for each row.", duplicateFacility: "Each facility can only be added once.", reasonRequired: "Reason is required when status is not Available.", reasonNotRequired: "No reason needed when available.", noFacilitiesAdded: "No facilities added. Use Add Facility to set availability." },
+      availability: { infoBanner: "Audit diagnostic test availability at your facility. Changes are logged for district administrators.", selectFacility: "Select Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityHint: "Select a facility to view and audit test availability.", loadError: "Failed to load availability.", saveError: "Failed to update availability.", saved: "Availability updated successfully.", reasonRequired: "Please enter a reason when status is not Available." },
+      audit: { filterFacility: "Filter by Facility", scopedToFacility: "Showing audit history for your assigned facility.", empty: "No availability changes recorded yet.", loadError: "Failed to load audit history.", when: "When", facility: "Facility", change: "Change" }
     },
     notifications: {
       hospitalOnboardedTitle: "হাসপাতাল সফলভাবে অনবোর্ড করা হয়েছে",
@@ -845,4 +956,5 @@ export const bn = {
       staffDeassignedTitle: "কর্মী স্বাস্থ্যকেন্দ্র থেকে অপসারিত",
       staffDeassignedBody: "কর্মী \"{{name}}\" {{performedBy}} দ্বারা {{facility}} থেকে অপসারিত হয়েছে।"
     }
-  };
+  }
+};

@@ -20,8 +20,11 @@ export class Hospital {
   @Prop({ required: true, trim: true })
   address: string;
 
-  @Prop({ required: true, trim: true })
-  city: string;
+  @Prop({ required: true, type: Number })
+  city: number;
+
+  @Prop({ type: Number, default: null })
+  state: number | null;
 
   @Prop({ trim: true })
   phone: string;

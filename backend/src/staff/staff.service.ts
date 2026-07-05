@@ -19,6 +19,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-types';
 import { Hospital, HospitalDocument } from '../schemas/hospital.schema';
 import { UserRepository } from '../repositories/user.repository';
+import { LocationsService } from '../locations/locations.service';
 
 function flattenStaff(staff: any) {
   if (!staff) return null;
@@ -44,22 +45,40 @@ export class StaffService {
     @InjectModel(Hospital.name)
     private readonly hospitalModel: Model<HospitalDocument>,
     private readonly userRepository: UserRepository,
+    private readonly locationsService: LocationsService,
   ) { }
+
+  private mapLocationNames(staff: any) {
+    if (!staff) return staff;
+    const doc = flattenStaff(staff);
+    if (!doc) return doc;
+
+    const stateCode = doc.state;
+    const cityCode = doc.city;
+
+    doc.stateCode = stateCode;
+    doc.cityCode = cityCode;
+
+    doc.state = this.locationsService.getStateName(stateCode) || doc.state;
+    doc.city = this.locationsService.getDistrictName(cityCode) || doc.city;
+
+    return doc;
+  }
 
   async findAll(filter: object = {}) {
     const list = await this.staffRepository.findAll(filter);
-    return list.map(flattenStaff);
+    return list.map(s => this.mapLocationNames(s));
   }
 
   async findOne(id: string) {
     const staff = await this.staffRepository.findById(id);
     if (!staff) throw new NotFoundException(`Staff ${id} not found`);
-    return flattenStaff(staff);
+    return this.mapLocationNames(staff);
   }
 
   async findByHospital(hospitalId: string) {
     const list = await this.staffRepository.findByHospital(hospitalId);
-    return list.map(flattenStaff);
+    return list.map(s => this.mapLocationNames(s));
   }
 
   async findFiltered(options: {
@@ -71,7 +90,7 @@ export class StaffService {
     const filter: Record<string, unknown> = {};
     if (options.hospitalId) filter.hospitalId = options.hospitalId;
 
-    let staffList = (await this.staffRepository.findAll(filter)).map(flattenStaff);
+    let staffList = (await this.staffRepository.findAll(filter)).map(s => this.mapLocationNames(s));
 
     if (options.role) {
       staffList = staffList.filter(
@@ -173,7 +192,7 @@ export class StaffService {
       }
     }
 
-    return flattenStaff(populated);
+    return this.mapLocationNames(populated);
   }
 
   async update(id: string, data: any, userId?: string, performedBy?: string) {
@@ -294,7 +313,7 @@ export class StaffService {
       }
     }
 
-    return flattenStaff(populated);
+    return this.mapLocationNames(populated);
   }
 
   async remove(id: string) {
@@ -751,6 +770,50 @@ export class StaffService {
           : s.userId.toString();
       return {
         doctorName: `${doctorName} - ${s.department}`,
+        userId,
+      };
+    });
+  }
+
+  async getAvailableNurses(date: string) {
+    if (!date) {
+      throw new BadRequestException('Date is required');
+    }
+
+    let dateStr = date;
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      // Date is already in YYYY-MM-DD format
+    } else {
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        throw new BadRequestException(
+          'Invalid date format. Expected YYYY-MM-DD.',
+        );
+      }
+      const yyyy = parsedDate.getFullYear();
+      const mm = String(parsedDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(parsedDate.getDate()).padStart(2, '0');
+      dateStr = `${yyyy}-${mm}-${dd}`;
+    }
+
+    const staffList = await this.staffRepository.findAll({
+      unavailableOnDays: { $ne: dateStr },
+    });
+
+    const availableNurses = staffList.filter((s) => {
+      const user = s.userId as any;
+      return user && user.role === UserRole.NURSE;
+    });
+
+    return availableNurses.map((s) => {
+      const nurseName =
+        s.displayName || `${s.firstName} ${s.lastName || ''}`.trim();
+      const userId =
+        s.userId && (s.userId as any)._id
+          ? (s.userId as any)._id.toString()
+          : s.userId.toString();
+      return {
+        nurseName: `${nurseName} - ${s.department}`,
         userId,
       };
     });

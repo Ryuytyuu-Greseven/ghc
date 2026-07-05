@@ -99,6 +99,8 @@ export function HospitalList() {
               version: item.version ?? 1,
               isCurrent: item.isCurrent ?? true,
               updatedAt: item.updatedAt ? new Date(item.updatedAt).toLocaleString() : undefined,
+              stateCode: item.stateCode,
+              cityCode: item.cityCode,
             })));
             setTotalRecords(result.pagination.totalRecords);
           } else {

@@ -23,6 +23,7 @@ export const hi = {
       delete: "हटाएं",
       save: "सहेजें",
       cancel: "रद्द करें",
+      close: "बंद करें",
       available: "उपलब्ध",
       total: "कुल",
       parentChc: "मूल सीएचसी",
@@ -86,12 +87,14 @@ export const hi = {
       hospitals: "अस्पताल और क्लीनिक",
       staff: "कर्मचारी",
       patients: "मरीज",
-      medicines: "दवाएं और आपूर्ति",
+      medicines: "इन्वेंटरी और आपूर्ति",
       "ai-analytics": "एआई इन्वेंटरी एनालिटिक्स",
       "critical-alerts": "गंभीर अलर्ट",
       availability: "मेरी उपलब्धता",
       transfers: "कवरेज और स्थानांतरण",
       audits: "ऑडिट लॉग्स",
+      diagnosticTests: "डायग्नोस्टिक परीक्षण",
+      attendance: "ड्यूटी उपस्थिति",
       reports: "रिपोर्ट"
     },
     roles: {
@@ -108,6 +111,11 @@ export const hi = {
     dashboard: {
       title: "डैशबोर्ड",
       subtitle: "जीएचसी स्वास्थ्य सेवा प्रबंधन अवलोकन",
+      organization_view: "संगठन दृश्य",
+      viewing_hospital: "आवंटित अस्पताल: {{name}}",
+      in_facility_inventory: "सुविधा इन्वेंट्री में",
+      in_hospital_inventory: "{{name}} इन्वेंट्री में",
+      in_this_facility: "इस सुविधा में",
       totalPatients: "कुल मरीज",
       activeStaff: "सक्रिय कर्मचारी",
       bedsAvailable: "उपलब्ध बिस्तर",
@@ -131,9 +139,18 @@ export const hi = {
       beds_free: "बिस्तर खाली",
       unassigned: "बिना आवंटन के",
       requiringBeds: "बिस्तर की आवश्यकता",
+      pending_requests_title: "लंबित इन्वेंट्री अनुरोध",
+      no_pending_requests: "कोई लंबित इन्वेंट्री अनुरोध नहीं",
+      view_all_requests: "सभी अनुरोध प्रबंधित करें",
+      view_my_requests: "मेरे अनुरोध देखें",
+      raise_request: "अनुरोध दर्ज करें",
+      action: "कार्रवाई",
+      review: "समीक्षा",
       intervention: {
         title: "गंभीर अलर्ट",
+        title_facility: "आपकी सुविधा के लिए गंभीर अलर्ट",
         subtitle: "गंभीर संसाधन संकट का सामना कर रहे स्वास्थ्य केंद्र",
+        subtitle_facility: "आपकी आवंटित सुविधा के लिए संसाधन स्थिति अलर्ट",
         severity_high: "उच्च",
         severity_medium: "मध्यम",
         bed_shortage: "बिस्तरों की कमी",
@@ -238,7 +255,7 @@ export const hi = {
         registered: "पंजीकृत",
         occupancyRate: "अधिभोग दर",
         roleTypes: "{{count}} भूमिका प्रकार",
-        needBeds: "{{count}} को बिस्तरों की आवश्यकता है",
+        needBeds: "{{count}} बिस्तर आवंटित",
         noStaff: "इस सुविधा में अभी तक कोई कर्मचारी आवंटित नहीं किया गया है",
         noMedicines: "इस सुविधा में अभी तक कोई दवा आवंटित नहीं की गई है",
         noPatients: "वर्तमान में कोई मरीज भर्ती नहीं है",
@@ -301,7 +318,7 @@ export const hi = {
       healthAI: "जीएचसी स्वास्थ्य एआई"
     },
     inventory: {
-      title: "दवाएं और आपूर्ति",
+      title: "इन्वेंटरी और आपूर्ति",
       subtitle: "इन्वेंट्री, स्टॉक, अनुरोध और ऑडिट ट्रेल प्रबंधित करें",
       tabs: {
         master: "इन्वेंट्री मास्टर",
@@ -447,6 +464,8 @@ export const hi = {
         applyTransfer: "स्थानांतरण लागू करें",
         applyingTransfer: "लागू किया जा रहा है...",
         applySuccess: "स्थानांतरण अनुरोध सफलतापूर्वक बनाया गया",
+        alreadyRequested: "अनुरोधित",
+        redistributionRequestName: "स्मार्ट पुनर्वितरण अनुरोध",
         noRecommendations: "कोई पुनर्वितरण अनुशंसा नहीं",
         noRecommendationsDesc: "वर्तमान पूर्वानुमानों के लिए शाखाओं में स्टॉक स्तर संतुलित हैं।",
         fromFacility: "स्रोत सुविधा",
@@ -575,6 +594,12 @@ export const hi = {
           backToPatients: "मरीजों पर वापस जाएं",
           patientNotFound: "मरीज नहीं मिला",
           subtitle: "रोगी के दौरे का इतिहास और निर्धारित दवाएं",
+          clinicalOnboardingAnalysis: "क्लिनिकल ऑनबोर्डिंग विश्लेषण",
+          guidelinesCareProtocol: "दिशानिर्देश और देखभाल प्रोटोकॉल",
+          analyzingSymptoms: "लक्षणों का विश्लेषण किया जा रहा है...",
+          diagnosticAssistant: "नैदानिक सहायक",
+          checkingPrescriptionSafety: "दवा सुरक्षा की जांच की जा रही है...",
+          prescriptionSafetyValidator: "दवा पर्ची सुरक्षा सत्यापनकर्ता",
           visitHeading: "दौरा #{{count}} ({{problem}})",
           medicinePending: "दवा विवरण लंबित",
           clickToAdd: "दवाएं जोड़ने के लिए क्लिक करें",
@@ -592,6 +617,10 @@ export const hi = {
           loadingDoctors: "डॉक्टरों लोड हो रहा है...",
           selectDoctor: "— डॉक्टर चुनें —",
           noDoctors: "इस तारीख के लिए कोई उपलब्ध डॉक्टर नहीं मिले।",
+          nurseLabel: "नर्स आवंटित करें",
+          selectNurse: "— नर्स चुनें —",
+          loadingNurses: "नर्सों लोड हो रहा है...",
+          noNurses: "इस तारीख के लिए कोई उपलब्ध नर्स नहीं मिलीं।",
           saveVisit: "दौरा सहेजें",
           medicineDetails: "दवा विवरण",
           medicineDetailsWithProblem: "दवा विवरण - {{problem}}",
@@ -603,7 +632,41 @@ export const hi = {
           selectCategoryToView: "दवाएं देखने के लिए एक श्रेणी चुनें।",
           notesLabel: "नोट्स",
           notesPlaceholder: "लक्षण, सलाह, या अनुवर्ती कार्रवाई",
-          saveMedicineDetails: "दवा विवरण सहेजें"
+          recommendedTestsLabel: "अनुशंसित नैदानिक परीक्षण",
+          recommendedTestsHeader: "अनुशंसित परीक्षण",
+          selectTestPlaceholder: "नैदानिक परीक्षण चुनें...",
+          customTestPlaceholder: "कस्टम नैदानिक परीक्षण का नाम दर्ज करें...",
+          otherCustomTest: "अन्य / कस्टम परीक्षण",
+          addTest: "जोड़ें",
+          doneEditing: "पूर्ण",
+          saveMedicineDetails: "दवा विवरण सहेजें",
+          sessions: {
+            mng: "सुबह",
+            afternoon: "दोपहर",
+            evening: "शाम",
+            night: "रात",
+            midnight: "मध्यरात्रि"
+          },
+          prescription: {
+            viewButton: "नुस्खा",
+            viewTitle: "नुस्खा — {{problem}}",
+            viewButtonTitle: "नुस्खा देखें",
+            prescriptionDetails: "नुस्खे का विवरण",
+            previouslyPrescribed: "पहले से निर्धारित",
+            batchAvailable: "बैच {{batchNo}} · उपलब्ध {{qty}}",
+            removeFromPrescription: "नुस्खे से हटाएं",
+            daysToTake: "लेने के दिन",
+            qtyPerSession: "प्रति सत्र मात्रा",
+            sessionsTimings: "सत्र / समय",
+            calculatedTotalQty: "गणना की गई कुल मात्रा:",
+            exceedsAvailable: "(उपलब्ध से अधिक: {{qty}})",
+            day_one: "{{count}} दिन",
+            day_other: "{{count}} दिन",
+            perDose: "प्रति खुराक {{count}}",
+            noTimingSpecified: "समय निर्दिष्ट नहीं",
+            qtyLabel: "मा",
+            notesHeading: "नोट्स"
+          }
         }
       },
       staff: {
@@ -779,7 +842,38 @@ export const hi = {
         "Operation Theatre": "ऑपरेशन थियेटर",
         Administration: "प्रशासन"
       },
-      reports: {
+          "attendance": {
+      "clockedOutTime": "चेक-आउट का समय:",
+      "clockOutBtn": "चेक-आउट करें",
+      "shiftCompleted": "आज की ड्यूटी पूरी हुई",
+      "modifyTitle": "उपस्थिति स्थिति बदलें:",
+      "modifyPrompt": "स्थिति अपडेट करने के लिए 1, 2, 3 या 4 दर्ज करें:",
+      "cancelCheckIn": "चेक-इन रद्द करें",
+      "confirmUnmarkDay": "क्या आप वाकई इस दिन की उपस्थिति हटाना चाहते हैं?",
+      "confirmUnmarkToday": "क्या आप वाकई आज का चेक-इन रद्द करना चाहते हैं?",
+      "subtitle": "दैनिक उपस्थिति दर्ज करें और मासिक लॉग की जांच करें।",
+      "loading": "उपस्थिति रिकॉर्ड सिंक किए जा रहे हैं...",
+      "selectStaff": "डॉक्टर / स्टाफ चुनें",
+      "noSelectionHeader": "कोई स्टाफ सदस्य नहीं चुना गया",
+      "noSelectionBody": "मासिक उपस्थिति देखने के लिए कृपया ऊपर दिए गए फ़िल्टर से क्लिनिक शाखा और कर्मचारी चुनें।",
+      "totalDays": "महीने के कुल दिन",
+      "present": "उपस्थित दिन",
+      "leaveDaysCount": "छुट्टी के दिन",
+      "absent": "अनुपस्थित दिन",
+      "rate": "उपस्थिति दर",
+      "clockInCard": "दैनिक ड्यूटी चेक-इन",
+      "clockInInfo": "अपने असाइन किए गए क्लिनिक शाखा में ड्यूटी पर रिपोर्ट करने पर प्रतिदिन एक बार नीचे दिए गए बटन पर क्लिक करें।",
+      "alreadyMarked": "आज की उपस्थिति दर्ज है",
+      "clockedTime": "चेक-इन समय:",
+      "notClockedToday": "आज अभी तक चेक-इन नहीं किया गया है।",
+      "clockInBtn": "उपस्थिति दर्ज करें",
+      "monthlyCalendar": "मासिक ड्यूटी कैलेंडर",
+      "loadingLogs": "उपस्थिति रिकॉर्ड प्राप्त किए जा रहे हैं...",
+      "presentSmall": "उ",
+      "offSmall": "बंद",
+      "absentSmall": "अ"
+    },
+  reports: {
         subtitle: "सिस्टम की विफलता, नैदानिक आंकड़े, बिस्तर की उपलब्धता और स्टॉक जांच तक पहुंचें।",
         allBranches: "सभी शाखाएं",
         to: "तक",
@@ -828,7 +922,90 @@ export const hi = {
         uniqueItems: "अद्वितीय वस्तुएं",
         medicineAvailabilityTitle: "दवा स्टॉक उपलब्धता",
         colBranchesCount: "स्टॉक वाली शाखाएं",
-        colBatchesCount: "बैच"
+        colBatchesCount: "बैच",
+        patientFootfallForecast: "रोगी आवागमन और फुटफॉल पूर्वानुमान",
+        historicWalkins: "ऐतिहासिक दैनिक वॉक-इन",
+        projectedWalkins: "अनुमानित दैनिक वॉक-इन",
+        aiForecastSummary: "परिचालन अंतर्दृष्टि",
+        aiForecastNote: "पूर्वानुमान ऐतिहासिक क्लिनिक दौरों का उपयोग करके स्वचालित रूप से संकलित किया जाता है।",
+        noBranchCapacityData: "कोई शाखा क्षमता डेटा उपलब्ध नहीं है।"
+      },
+    diagnosticTests: {
+      title: "Diagnostic Test Tracking",
+      subtitle: "Manage test catalog and facility availability audits",
+      tabs: {
+        catalog: "Test Catalog",
+        availability: "Facility Availability",
+        audit: "Audit History"
+      },
+      categories: {
+        Lab: "Lab",
+        Imaging: "Imaging",
+        Pathology: "Pathology",
+        Other: "Other"
+      },
+      status: {
+        Active: "Active",
+        Inactive: "Inactive"
+      },
+      availabilityStatus: {
+        Available: "Available",
+        Unavailable: "Unavailable",
+        Partial: "Partial",
+        OutOfOrder: "Out of Order",
+        NotAudited: "Not Audited"
+      },
+      fields: {
+        testName: "Test Name",
+        testNamePlaceholder: "e.g. Complete Blood Count",
+        testCode: "Test Code",
+        testCodePlaceholder: "e.g. CBC",
+        category: "Category",
+        sampleType: "Sample Type",
+        sampleTypePlaceholder: "e.g. Blood, Urine",
+        status: "Status",
+        reason: "Reason",
+        reasonPlaceholder: "e.g. Reagent stockout, machine broken"
+      },
+      catalog: {
+        addTest: "Add Test",
+        editTest: "Edit Test",
+        searchPlaceholder: "Search tests...",
+        empty: "No tests in catalog yet.",
+        deactivate: "Deactivate",
+        deactivateConfirm: "Deactivate \"{{name}}\" from the catalog?",
+        loadError: "Failed to load test catalog.",
+        saveError: "Failed to save test.",
+        fieldRequired: "{{field}} is required",
+        facilityAvailability: "Facility Availability",
+        facilityAvailabilityHint: "Optionally set initial availability per facility when saving this test.",
+        addFacility: "Add Facility",
+        selectFacility: "Facility",
+        selectFacilityPlaceholder: "Choose a facility...",
+        selectFacilityRequired: "Please select a facility for each row.",
+        duplicateFacility: "Each facility can only be added once.",
+        reasonRequired: "Reason is required when status is not Available.",
+        reasonNotRequired: "No reason needed when available.",
+        noFacilitiesAdded: "No facilities added. Use Add Facility to set availability."
+      },
+      availability: {
+        infoBanner: "Audit diagnostic test availability at your facility. Changes are logged for district administrators.",
+        selectFacility: "Select Facility",
+        selectFacilityPlaceholder: "Choose a facility...",
+        selectFacilityHint: "Select a facility to view and audit test availability.",
+        loadError: "Failed to load availability.",
+        saveError: "Failed to update availability.",
+        saved: "Availability updated successfully.",
+        reasonRequired: "Please enter a reason when status is not Available."
+      },
+      audit: {
+        filterFacility: "Filter by Facility",
+        scopedToFacility: "Showing audit history for your assigned facility.",
+        empty: "No availability changes recorded yet.",
+        loadError: "Failed to load audit history.",
+        when: "When",
+        facility: "Facility",
+        change: "Change"
       }
     },
     notifications: {
@@ -845,4 +1022,5 @@ export const hi = {
       staffDeassignedTitle: "कर्मचारी को सुविधा से हटाया गया",
       staffDeassignedBody: "कर्मचारी \"{{name}}\" को {{performedBy}} द्वारा {{facility}} से हटा दिया गया है।"
     }
-  };
+  }
+};

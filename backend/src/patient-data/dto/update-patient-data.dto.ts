@@ -9,5 +9,6 @@ export class UpdatePatientDataDto implements Partial<CreatePatientDataDto> {
   doctor?: string;
   doctorUserId?: string;
   notes?: string;
+  recommendedTests?: string[];
   isActive?: boolean;
 }

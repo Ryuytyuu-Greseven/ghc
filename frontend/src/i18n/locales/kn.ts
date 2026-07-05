@@ -23,6 +23,7 @@ export const kn = {
       delete: "ಅಳಿಸಿ",
       save: "ಉಳಿಸಿ",
       cancel: "ರದ್ದುಮಾಡಿ",
+      close: "ಮುಚ್ಚಿ",
       available: "ಲಭ್ಯವಿದೆ",
       total: "ಒಟ್ಟು",
       parentChc: "ಮೂಲ ಸಿಎಚ್‌ಸಿ (CHC)",
@@ -86,12 +87,14 @@ export const kn = {
       hospitals: "ಆಸ್ಪತ್ರೆಗಳು ಮತ್ತು ಕ್ಲಿನಿಕ್‌ಗಳು",
       staff: "ಸಿಬ್ಬಂದಿ ನಿರ್ವಹಣೆ",
       patients: "ರೋಗಿಗಳು",
-      medicines: "ಔಷಧಿಗಳು ಮತ್ತು ಸರಬರಾಜು",
+      medicines: "ದಾಸ್ತಾನು ಮತ್ತು ಸರಬರಾಜು",
       "ai-analytics": "AI ಇನ್ವೆಂಟರಿ ಅನಾಲಿಟಿಕ್ಸ್",
       "critical-alerts": "ನಿರ್ಣಾಯಕ ಎಚ್ಚರಿಕೆಗಳು",
       availability: "ನನ್ನ ಲಭ್ಯತೆ",
       transfers: "ಕರ್ತವ್ಯ ವರ್ಗಾವಣೆಗಳು",
       audits: "ಆಡಿಟ್ ಲಾಗ್ಗಳು",
+      diagnosticTests: "ರೋಗನಿರ್ಣಯ ಪರೀಕ್ಷೆಗಳು",
+      attendance: "ಕರ್ತವ್ಯದ ಹಾಜರಾತಿ",
       reports: "ವರದಿಗಳು"
     },
     roles: {
@@ -108,6 +111,11 @@ export const kn = {
     dashboard: {
       title: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
       subtitle: "GHC ಆರೋಗ್ಯ ನಿರ್ವಹಣೆಯ ಅವಲೋಕನ",
+      organization_view: "ಸಂಸ್ಥೆಯ ನೋಟ",
+      viewing_hospital: "ನಿಯೋಜಿತ ಆಸ್ಪತ್ರೆ: {{name}}",
+      in_facility_inventory: "ಕೇಂದ್ರದ ದಾಸ್ತಾನಿನಲ್ಲಿ",
+      in_hospital_inventory: "{{name}} ದಾಸ್ತಾನಿನಲ್ಲಿ",
+      in_this_facility: "ಈ ಕೇಂದ್ರದಲ್ಲಿ",
       totalPatients: "ಒಟ್ಟು ರೋಗಿಗಳು",
       activeStaff: "ಸಕ್ರಿಯ ಸಿಬ್ಬಂದಿ",
       bedsAvailable: "ಲಭ್ಯವಿರುವ ಹಾಸಿಗೆಗಳು",
@@ -131,9 +139,18 @@ export const kn = {
       beds_free: "ಹಾಸಿಗೆಗಳು ಖಾಲಿ ಇವೆ",
       unassigned: "ನಿಯೋಜಿಸದ",
       requiringBeds: "ಹಾಸಿಗೆಗಳ ಅವಶ್ಯಕತೆ ಇರುವವರು",
+      pending_requests_title: "ಬಾಕಿ ಉಳಿದಿರುವ ಇನ್ವೆಂಟರಿ ವಿನಂತಿಗಳು",
+      no_pending_requests: "ಯಾವುದೇ ಇನ್ವೆಂಟರಿ ವಿನಂತಿಗಳು ಬಾಕಿ ಇಲ್ಲ",
+      view_all_requests: "ಎಲ್ಲಾ ವಿನಂತಿಗಳನ್ನು ನಿರ್ವಹಿಸಿ",
+      view_my_requests: "ನನ್ನ ವಿನಂತಿಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
+      raise_request: "ವಿನಂತಿ ಸಲ್ಲಿಸಿ",
+      action: "ಕ್ರಮ",
+      review: "ಪರಿಶೀಲಿಸಿ",
       intervention: {
         title: "ತೀವ್ರ ಎಚ್ಚರಿಕೆಗಳು",
+        title_facility: "ನಿಮ್ಮ ಕೇಂದ್ರಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ತೀವ್ರ ಎಚ್ಚರಿಕೆಗಳು",
         subtitle: "ತೀವ್ರ ಸಂಪನ್ಮೂಲ ತೊಂದರೆಗಳನ್ನು ಸೂಚಿಸುವ ಆರೋಗ್ಯ ಕೇಂದ್ರಗಳು",
+        subtitle_facility: "ನಿಮ್ಮ ನಿಯೋಜಿತ ಕೇಂದ್ರಕ್ಕಾಗಿ ಸಂಪನ್ಮೂಲ ಸ್ಥಿತಿ ಎಚ್ಚರಿಕೆಗಳು",
         subtitle_staff: "ನಿಮ್ಮ ಕೇಂದ್ರಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ತೀವ್ರ ಸಂಪನ್ಮೂಲ ಎಚ್ಚರಿಕೆಗಳು",
         severity_high: "ಹೆಚ್ಚು",
         severity_medium: "ಮಧ್ಯಮ",
@@ -238,7 +255,7 @@ export const kn = {
         registered: "ನೋಂದಾಯಿಸಲಾಗಿದೆ",
         occupancyRate: "ಭರ್ತಿ ದರ",
         roleTypes: "{{count}} ಕರ್ತವ್ಯದ ವಿಧಗಳು",
-        needBeds: "{{count}} ಹಾಸಿಗೆ ಅಗತ್ಯವಿದೆ",
+        needBeds: "{{count}} ಹಾಸಿಗೆಗಳನ್ನು ಹಂಚಲಾಗಿದೆ",
         noStaff: "ಈ ಕೇಂದ್ರಕ್ಕೆ ಇನ್ನು ಯಾವುದೇ ಸಿಬ್ಬಂದಿಯನ್ನು ನಿಯೋಜಿಸಲಾಗಿಲ್ಲ",
         noMedicines: "ಈ ಕೇಂದ್ರಕ್ಕೆ ಯಾವುದೇ ಔಷಧಿಗಳನ್ನು ಇನ್ನು ಹಂಚಿಕೆ ಮಾಡಲಾಗಿಲ್ಲ",
         noPatients: "ಪ್ರಸ್ತುತ ಯಾವುದೇ ರೋಗಿಗಳು ದಾಖಲಾಗಿಲ್ಲ",
@@ -301,7 +318,7 @@ export const kn = {
       healthAI: "GHC ಹೆಲ್ತ್ AI"
     },
     inventory: {
-      title: "ಔಷಧಿಗಳು ಮತ್ತು ಸರಬರಾಜು",
+      title: "ದಾಸ್ತಾನು ಮತ್ತು ಸರಬರಾಜು",
       subtitle: "ದಾಸ್ತಾನು, ಕೋರಿಕೆಗಳು ಮತ್ತು ವಹಿವಾಟು ಇತಿಹಾಸವನ್ನು ನಿರ್ವಹಿಸಿ",
       tabs: {
         master: "ದಾಸ್ತಾನು ಮಾಸ್ಟರ್",
@@ -446,6 +463,8 @@ export const kn = {
         applyTransfer: "ವರ್ಗಾವಣೆ ಅನ್ವಯಿಸಿ",
         applyingTransfer: "ಅನ್ವಯಿಸಲಾಗುತ್ತಿದೆ...",
         applySuccess: "ವರ್ಗಾವಣೆ ವಿನಂತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ",
+        alreadyRequested: "ವಿನಂತಿಸಲಾಗಿದೆ",
+        redistributionRequestName: "ಸ್ಮಾರ್ಟ್ ಪುನರ್ ವಿತರಣೆ ವಿನಂತಿ",
         noRecommendations: "ಯಾವುದೇ ಪುನರ್ ವಿತರಣೆ ಶಿಫಾರಸುಗಳಿಲ್ಲ",
         noRecommendationsDesc: "ಪ್ರಸ್ತುತ ಮುನ್ಸೂಚನೆಗಳಿಗಾಗಿ ಎಲ್ಲಾ ಶಾಖೆಗಳಲ್ಲಿ ದಾಸ್ತಾನು ಮಟ್ಟಗಳು ಸಮತೋಲನದಲ್ಲಿವೆ.",
         fromFacility: "ಯಾರಿಂದ",
@@ -566,6 +585,12 @@ export const kn = {
         },
         detail: {
           loadingSubtitle: "ರೋಗಿಯ ಸಂದರ್ಶನದ ಇತಿಹಾಸವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ",
+          clinicalOnboardingAnalysis: "ಕ್ಲಿನಿಕಲ್ ಆನ್‌ಬೋರ್ಡಿಂಗ್ ವಿಶ್ಲೇಷಣೆ",
+          guidelinesCareProtocol: "ಮಾರ್გಸೂಚಿಗಳು ಮತ್ತು ಕಾಳಜಿ ಪ್ರೋಟೋಕಾಲ್",
+          analyzingSymptoms: "ಲಕ್ಷಣಗಳನ್ನು ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತಿದೆ...",
+          diagnosticAssistant: "ರೋಗನಿರ್ಣಯ ಸಹಾಯಕ",
+          checkingPrescriptionSafety: "ಔಷಧಿ ಚీಟಿ ಸುರಕ್ಷತೆಯನ್ನು ಪರಿశೀಲಿಸಲಾಗುತ್ತಿದೆ...",
+          prescriptionSafetyValidator: "ಔಷಧಿ ಚీಟಿ ಸುರಕ್ಷತೆ ಪರಿశೀಲಕ",
           loadError: "ರೋಗಿಯ ಇತಿಹಾಸವನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ",
           loadDoctorsError: "ಲಭ್ಯವಿರುವ ವೈದ್ಯರನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ",
           saveVisitError: "ಸಂದರ್ಶನವನ್ನು ಉಳಿಸಲು ವಿಫಲವಾಗಿದೆ",
@@ -591,6 +616,10 @@ export const kn = {
           loadingDoctors: "ವೈದ್ಯರನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
           selectDoctor: "— ವೈದ್ಯರನ್ನು ಆಯ್ಕೆಮಾಡಿ —",
           noDoctors: "ಈ ದಿನಾಂಕಕ್ಕೆ ಯಾವುದೇ ಲಭ್ಯವಿರುವ ವೈದ್ಯರು ಕಂಡುಬಂದಿಲ್ಲ.",
+          nurseLabel: "ನರ್ಸ್ ನಿಯೋಜಿಸಿ",
+          selectNurse: "— ನರ್ಸ್ ಆಯ್ಕೆಮಾಡಿ —",
+          loadingNurses: "ನರ್ಸ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+          noNurses: "ಈ ದಿನಾಂಕಕ್ಕೆ ಯಾವುದೇ ಲಭ್ಯವಿರುವ ನರ್ಸ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
           saveVisit: "ಸಂದರ್ಶನವನ್ನು ಉಳಿಸಿ",
           medicineDetails: "ಔಷಧಿಯ ವಿವರಗಳು",
           medicineDetailsWithProblem: "ಔಷಧಿಯ ವಿವರಗಳು - {{problem}}",
@@ -602,7 +631,41 @@ export const kn = {
           selectCategoryToView: "ಔಷಧಿಗಳನ್ನು ನೋಡಲು ಒಂದು ವರ್ಗವನ್ನು ಆಯ್ಕೆಮಾಡಿ.",
           notesLabel: "ಟಿಪ್ಪಣಿಗಳು",
           notesPlaceholder: "ಲಕ್ಷಣಗಳು, ಸಲಹೆ ಅಥವಾ ಮುಂದಿನ ಸಂದರ್ಶನದ ವಿವರಗಳು",
-          saveMedicineDetails: "ಔಷಧಿಯ ವಿವರಗಳನ್ನು ಉಳಿಸಿ"
+          recommendedTestsLabel: "ಶಿಫಾರಸು ಮಾಡಿದ ರೋಗನಿರ್ಣಯ ಪರೀಕ್ಷೆಗಳು",
+          recommendedTestsHeader: "ಶಿಫಾರಸು ಮಾಡಿದ ಪರೀಕ್ಷೆಗಳು",
+          selectTestPlaceholder: "ರೋಗನಿರ್ಣಯ ಪರೀಕ್ಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ...",
+          customTestPlaceholder: "ಕಸ್ಟಮ್ ರೋಗನಿರ್ಣಯ ಪರೀಕ್ಷೆಯ ಹೆಸರನ್ನು ನಮೂದಿಸಿ...",
+          otherCustomTest: "ಇತರ / ಕಸ್ಟಮ್ ಪರೀಕ್ಷೆ",
+          addTest: "ಸೇರಿಸಿ",
+          doneEditing: "ಮುಗಿದಿದೆ",
+          saveMedicineDetails: "ಔಷಧಿಯ ವಿವರಗಳನ್ನು ಉಳಿಸಿ",
+          sessions: {
+            mng: "ಬೆಳಿಗ್ಗೆ",
+            afternoon: "ಮಧ್ಯಾಹ್ನ",
+            evening: "ಸಾಯಂಕಾಲ",
+            night: "ರಾತ್ರಿ",
+            midnight: "ಮಧ್ಯರಾತ್ರಿ"
+          },
+          prescription: {
+            viewButton: "ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್",
+            viewTitle: "ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್ — {{problem}}",
+            viewButtonTitle: "ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್ ವೀಕ್ಷಿಸಿ",
+            prescriptionDetails: "ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್ ವಿವರಗಳು",
+            previouslyPrescribed: "ಮೊದಲು ಸೂಚಿಸಲಾಗಿದೆ",
+            batchAvailable: "ಬ್ಯಾಚ್ {{batchNo}} · ಲಭ್ಯ {{qty}}",
+            removeFromPrescription: "ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್‌ನಿಂದ ತೆಗೆದುಹಾಕಿ",
+            daysToTake: "ತೆಗೆದುಕೊಳ್ಳಬೇಕಾದ ದಿನಗಳು",
+            qtyPerSession: "ಸೆಶನ್‌ಗೆ ಪ್ರಮಾಣ",
+            sessionsTimings: "ಸೆಶನ್‌ಗಳು / ಸಮಯಗಳು",
+            calculatedTotalQty: "ಲೆಕ್ಕಿಸಿದ ಒಟ್ಟು ಪ್ರಮಾಣ:",
+            exceedsAvailable: "(ಲಭ್ಯವನ್ನು ಮೀರಿದೆ: {{qty}})",
+            day_one: "{{count}} ದಿನ",
+            day_other: "{{count}} ದಿನಗಳು",
+            perDose: "ಪ್ರತಿ ಡೋಸ್‌ಗೆ {{count}}",
+            noTimingSpecified: "ಸಮಯ ನಿರ್ದಿಷ್ಟಪಡಿಸಿಲ್ಲ",
+            qtyLabel: "ಪ್ರ",
+            notesHeading: "ಟಿಪ್ಪಣಿಗಳು"
+          }
         }
       },
       staff: {
@@ -778,7 +841,38 @@ export const kn = {
         "Operation Theatre": "ಶಸ್ತ್ರಚಿಕಿತ್ಸಾ ಕೊಠಡಿ",
         Administration: "ಆಡಳಿತ"
       },
-      reports: {
+          "attendance": {
+      "clockedOutTime": "ಚೆಕ್-ಔಟ್ ಸಮಯ:",
+    "clockOutBtn": "ಚೆಕ್-ಔಟ್ ಮಾಡಿ",
+    "shiftCompleted": "ಇಂದಿನ ಕರ್ತವ್ಯ ಮುಗಿದಿದೆ",
+      "modifyTitle": "ಹಾಜರಾತಿ ಸ್ಥಿತಿಯನ್ನು ಬದಲಾಯಿಸಿ:",
+      "modifyPrompt": "ಸ್ಥಿತಿಯನ್ನು ನವೀಕರಿಸಲು 1, 2, 3 ಅಥವಾ 4 ಅನ್ನು ನಮೂದಿಸಿ:",
+      "cancelCheckIn": "ಚೆಕ್-ಇನ್ ರದ್ದುಮಾಡಿ",
+      "confirmUnmarkDay": "ನೀವು ನಿಜವಾಗಿಯೂ ಈ ದಿನದ ಹಾಜರಾತಿಯನ್ನು ರದ್ದುಗೊಳಿಸಲು ಬಯಸುವಿರಾ?",
+      "confirmUnmarkToday": "ನೀವು ನಿಜವಾಗಿಯೂ ಇಂದಿನ ಚೆಕ್-ಇನ್ ರದ್ದುಗೊಳಿಸಲು ಬಯಸುವಿರಾ?",
+      "subtitle": "ದೈನಂದಿನ ಹಾಜರಾತಿಯನ್ನು ದಾಖಲಿಸಿ ಮತ್ತು ಮಾಸಿಕ ಲಾಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.",
+      "loading": "ಹಾಜರಾತಿ ದಾಖಲೆಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+      "selectStaff": "ವೈದ್ಯರು / ಸಿಬ್ಬಂದಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      "noSelectionHeader": "ಯಾವುದೇ ಸಿಬ್ಬಂದಿ ಸದಸ್ಯರನ್ನು ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ",
+      "noSelectionBody": "ಅವರ ಮಾಸಿಕ ಹಾಜರಾತಿಯನ್ನು ಪರಿಶೀಲಿಸಲು ದಯವಿಟ್ಟು ಮೇಲಿನ ಫಿಲ್ಟರ್‌ಗಳಿಂದ ಕ್ಲಿನಿಕ್ ಶಾಖೆ ಮತ್ತು ಉದ್ಯೋಗಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.",
+      "totalDays": "ತಿಂಗಳ ಒಟ್ಟು ದಿನಗಳು",
+      "present": "ಹಾಜರಿದ್ದ ದಿನಗಳು",
+      "leaveDaysCount": "ರಜೆ ದಿನಗಳು",
+      "absent": "ಗೈರುಹಾಜರಾದ ದಿನಗಳು",
+      "rate": "ಹಾಜರಾತಿ ದರ",
+      "clockInCard": "ದೈನಂದಿನ ಕರ್ತವ್ಯದ ಚೆಕ್-ಇನ್",
+      "clockInInfo": "ನಿಮ್ಮ ನಿಯೋಜಿತ ಕ್ಲಿನಿಕ್ ಶಾಖೆಯಲ್ಲಿ ಕರ್ತವ್ಯಕ್ಕೆ ವರದಿ ಮಾಡಿದಾಗ ಪ್ರತಿದಿನ ಒಂದು ಬಾರಿ ಕೆಳಗಿನ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.",
+      "alreadyMarked": "ಇಂದು ಕರ್ತವ್ಯಕ್ಕೆ ಹಾಜರಾತಿ ದಾಖಲಾಗಿದೆ",
+      "clockedTime": "ಚೆಕ್-ಇನ್ ಸಮಯ:",
+      "notClockedToday": "ಇಂದು ಇನ್ನೂ ಚೆಕ್-ಇನ್ ಮಾಡಿಲ್ಲ.",
+      "clockInBtn": "ಹಾಜರಾತಿ ದಾಖಲಿಸಿ",
+      "monthlyCalendar": "ಮಾಸಿಕ ಕರ್ತವ್ಯದ ಕ್ಯಾಲೆಂಡರ್",
+      "loadingLogs": "ಹಾಜರಾತಿ ದಾಖಲೆಗಳನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ...",
+      "presentSmall": "ಹಾ",
+      "offSmall": "ರಜೆ",
+      "absentSmall": "ಗೈ"
+    },
+  reports: {
         subtitle: "ವ್ಯವಸ್ಥೆಯ ಸ್ಥಿತಿಗತಿಗಳು, ವೈದ್ಯಕೀಯ ಅಂಕಿಅಂಶಗಳು, ಹಾಸಿಗೆ ಲಭ್ಯತೆ ಮತ್ತು ದಾಸ್ತಾನು ಪರಿಶೀಲನೆ ವಿವರಗಳನ್ನು ನೋಡಿ.",
         allBranches: "ಎಲ್ಲಾ ಶಾಖೆಗಳು",
         to: "ಇಂದ",
@@ -827,8 +921,25 @@ export const kn = {
         uniqueItems: "ವಿಶಿಷ್ಟ ವಸ್ತುಗಳು",
         medicineAvailabilityTitle: "ಔಷಧ ದಾಸ್ತಾನು ಲಭ್ಯತೆ",
         colBranchesCount: "ದಾಸ್ತಾನು ಇರುವ ಶಾಖೆಗಳು",
-        colBatchesCount: "ಬ್ಯಾಚ್‌ಗಳು"
-      }
+        colBatchesCount: "ಬ್ಯಾಚ್‌ಗಳು",
+        patientFootfallForecast: "ರೋಗಿಗಳ ಆಗಮನ ಮತ್ತು ಭೇಟಿ ಮುನ್ಸೂಚನೆ",
+        historicWalkins: "ಐತಿಹಾಸಿಕ ದೈನಂದಿನ ಭೇಟಿಗಳು",
+        projectedWalkins: "ಅಂದಾಜಿಸಲಾದ ದೈನಂದಿನ ಭೇಟಿಗಳು",
+        aiForecastSummary: "ಕಾರ್ಯಾಚರಣೆಯ ಒಳನೋಟಗಳು",
+        aiForecastNote: "ಹಿಂದಿನ ಕ್ಲಿನಿಕ್ ಭೇಟಿಗಳ ಆಧಾರದ ಮೇಲೆ ಮುನ್ಸೂಚನೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸಂಗ್ರಹಿಸಲಾಗಿದೆ.",
+        noBranchCapacityData: "ಯಾವುದೇ ಶಾಖೆಯ ಹಾಸಿಗೆ ಸಾಮರ್ಥ್ಯದ ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ."
+      },
+    diagnosticTests: {
+      title: "Diagnostic Test Tracking",
+      subtitle: "Manage test catalog and facility availability audits",
+      tabs: { catalog: "Test Catalog", availability: "Facility Availability", audit: "Audit History" },
+      categories: { Lab: "Lab", Imaging: "Imaging", Pathology: "Pathology", Other: "Other" },
+      status: { Active: "Active", Inactive: "Inactive" },
+      availabilityStatus: { Available: "Available", Unavailable: "Unavailable", Partial: "Partial", OutOfOrder: "Out of Order", NotAudited: "Not Audited" },
+      fields: { testName: "Test Name", testNamePlaceholder: "e.g. Complete Blood Count", testCode: "Test Code", testCodePlaceholder: "e.g. CBC", category: "Category", sampleType: "Sample Type", sampleTypePlaceholder: "e.g. Blood, Urine", status: "Status", reason: "Reason", reasonPlaceholder: "e.g. Reagent stockout, machine broken" },
+      catalog: { addTest: "Add Test", editTest: "Edit Test", searchPlaceholder: "Search tests...", empty: "No tests in catalog yet.", deactivate: "Deactivate", deactivateConfirm: "Deactivate \"{{name}}\" from the catalog?", loadError: "Failed to load test catalog.", saveError: "Failed to save test.", fieldRequired: "{{field}} is required", facilityAvailability: "Facility Availability", facilityAvailabilityHint: "Optionally set initial availability per facility when saving this test.", addFacility: "Add Facility", selectFacility: "Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityRequired: "Please select a facility for each row.", duplicateFacility: "Each facility can only be added once.", reasonRequired: "Reason is required when status is not Available.", reasonNotRequired: "No reason needed when available.", noFacilitiesAdded: "No facilities added. Use Add Facility to set availability." },
+      availability: { infoBanner: "Audit diagnostic test availability at your facility. Changes are logged for district administrators.", selectFacility: "Select Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityHint: "Select a facility to view and audit test availability.", loadError: "Failed to load availability.", saveError: "Failed to update availability.", saved: "Availability updated successfully.", reasonRequired: "Please enter a reason when status is not Available." },
+      audit: { filterFacility: "Filter by Facility", scopedToFacility: "Showing audit history for your assigned facility.", empty: "No availability changes recorded yet.", loadError: "Failed to load audit history.", when: "When", facility: "Facility", change: "Change" }
     },
     notifications: {
       hospitalOnboardedTitle: "ಆಸ್ಪತ್ರೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಆನ್‌ಬೋರ್ಡ್ ಮಾಡಲಾಗಿದೆ",
@@ -844,4 +955,5 @@ export const kn = {
       staffDeassignedTitle: "ಸಿಬ್ಬಂದಿಯನ್ನು ಕೇಂದ್ರದಿಂದ ಮುಕ್ತಗೊಳಿಸಲಾಗಿದೆ",
       staffDeassignedBody: "ಸಿಬ್ಬಂದಿ ಸದಸ್ಯ \"{{name}}\" ರವರನ್ನು {{performedBy}} ರವರಿಂದ {{facility}} ನಿಂದ ಮುಕ್ತಗೊಳಿಸಲಾಗಿದೆ."
     }
-  };
+  }
+};

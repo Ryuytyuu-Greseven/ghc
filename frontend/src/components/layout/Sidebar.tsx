@@ -12,6 +12,8 @@ import {
   Sparkles,
   AlertOctagon,
   BarChart3,
+  FlaskConical,
+  Clock,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
@@ -27,20 +29,22 @@ const allNavItems = [
   { to: '/ai-analytics', key: 'ai-analytics', icon: Sparkles },
   { to: '/critical-alerts', key: 'critical-alerts', icon: AlertOctagon },
   { to: '/availability', key: 'availability', icon: Calendar },
+  { to: '/attendance', key: 'attendance', icon: Clock },
   { to: '/transfers', key: 'transfers', icon: Shuffle },
   { to: '/audits', key: 'audits', icon: ClipboardList },
+  { to: '/diagnostic-tests', key: 'diagnosticTests', icon: FlaskConical },
   { to: '/reports', key: 'reports', icon: BarChart3 },
 ];
 
 const roleNavItemsMap: Record<string, string[]> = {
-  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/critical-alerts', '/transfers', '/audits','/reports'],
-  Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
-  Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
-  Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
-  Pharmacist: ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
-  Compounder: ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts'],
-  'Lab Technician': ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts'],
-  Cashier: ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts'],
+  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/critical-alerts', '/attendance', '/transfers', '/audits', '/diagnostic-tests', '/reports'],
+  Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/attendance', '/ai-analytics', '/critical-alerts', '/diagnostic-tests', '/reports'],
+  Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/attendance', '/ai-analytics', '/critical-alerts', '/diagnostic-tests', '/reports'],
+  Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/attendance', '/ai-analytics', '/critical-alerts', '/reports'],
+  Pharmacist: ['/', '/medicines', '/availability', '/attendance', '/ai-analytics', '/critical-alerts', '/reports'],
+  Compounder: ['/', '/medicines', '/availability', '/attendance', '/ai-analytics', '/critical-alerts'],
+  'Lab Technician': ['/', '/medicines', '/availability', '/attendance', '/ai-analytics', '/critical-alerts', '/diagnostic-tests'],
+  Cashier: ['/', '/medicines', '/availability', '/attendance', '/ai-analytics', '/critical-alerts'],
 };
 
 export function Sidebar() {

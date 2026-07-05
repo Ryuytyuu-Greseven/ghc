@@ -9,6 +9,7 @@ import { PatientRepository } from '../repositories/patient.repository';
 import { HospitalsModule } from '../hospitals/hospitals.module';
 import { UsersModule } from '../users/users.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { LocationsModule } from '../locations/locations.module';
 
 @Module({
   imports: [
@@ -17,9 +18,10 @@ import { NotificationsModule } from '../notifications/notifications.module';
     HospitalsModule,
     UsersModule,
     NotificationsModule,
+    LocationsModule,
   ],
   controllers: [PatientsController],
   providers: [PatientsService, PatientsHelperService, PatientRepository],
-  exports: [PatientRepository],
+  exports: [PatientRepository, MongooseModule],
 })
 export class PatientsModule {}

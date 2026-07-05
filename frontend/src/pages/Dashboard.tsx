@@ -1,16 +1,21 @@
+import { useState, useEffect } from 'react';
 import { Building2, Users, UserRound, Pill, BedDouble, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { StatCard } from '../components/ui/StatCard';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { useApp } from '../context/AppContext';
+import { useApp, authFetch } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
 import { DistrictInterventionAlerts } from '../components/dashboard/DistrictInterventionAlerts';
+import { environment } from '@env/environment';
 
 export function Dashboard() {
-  const { hospitals, staff, patients, medicines } = useApp();
+  const { hospitals, staff, patients, medicines, currentUser } = useApp();
   const { t } = useTranslation();
+
+  const isAdmin = currentUser?.role === 'Admin';
+  const assignedHospital = hospitals[0]; // For other roles, hospitals list contains only the user's assigned hospital
 
   const totalBeds = hospitals.reduce((s, h) => s + h.totalBeds, 0);
   const availableBeds = hospitals.reduce((s, h) => s + h.availableBeds, 0);
@@ -31,9 +36,41 @@ export function Dashboard() {
     ? Math.round(((staff.length - unassignedStaff) / staff.length) * 100)
     : 0;
 
+  const dashboardSubtitle = isAdmin
+    ? t('dashboard.organization_view', 'Organization View')
+    : t('dashboard.viewing_hospital', 'Assigned Hospital: {{name}}', { name: assignedHospital?.name || '' });
+
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    async function fetchPending() {
+      try {
+        const res = await authFetch(`${environment.mainBackendUrl}/inventory-requests?status=Pending&pageSize=5`);
+        if (res.ok) {
+          const data = await res.json();
+          if (active) {
+            setPendingRequests(data.data || []);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch pending requests for dashboard:', err);
+      } finally {
+        if (active) {
+          setLoadingRequests(false);
+        }
+      }
+    }
+    fetchPending();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <div className="flex flex-col h-full">
-      <Header title={t('dashboard.title')} subtitle={t('dashboard.subtitle')} />
+      <Header title={t('dashboard.title')} subtitle={dashboardSubtitle} />
 
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <div className="max-w-screen-2xl mx-auto space-y-6">
@@ -44,11 +81,14 @@ export function Dashboard() {
           {/* Stat cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard
-              label={t('common.hospitals')}
-              value={hospitals.length}
+              label={isAdmin ? t('common.hospitals') : t('common.hospital', 'Hospital')}
+              value={isAdmin ? hospitals.length : (assignedHospital?.name || '')}
               icon={<Building2 size={20} className="text-primary-600 dark:text-primary-400" />}
               color="bg-primary-50 dark:bg-primary-900/30"
-              sub={`${hospitals.filter(h => h.type === 'CHC').length} ${t('common.chcs')} · ${hospitals.filter(h => h.type === 'PHC').length} ${t('common.phcs')}`}
+              sub={isAdmin 
+                ? `${hospitals.filter(h => h.type === 'CHC').length} ${t('common.chcs')} · ${hospitals.filter(h => h.type === 'PHC').length} ${t('common.phcs')}`
+                : `${assignedHospital?.type || ''} · ${assignedHospital?.city || ''}`
+              }
             />
             <StatCard
               label={t('common.staff')}
@@ -69,7 +109,10 @@ export function Dashboard() {
               value={medicines.length}
               icon={<Pill size={20} className="text-amber-600 dark:text-amber-400" />}
               color="bg-amber-50 dark:bg-amber-900/30"
-              sub={t('dashboard.in_inventory')}
+              sub={isAdmin 
+                ? t('dashboard.in_inventory') 
+                : t('dashboard.in_hospital_inventory', 'In {{name}} Inventory', { name: assignedHospital?.name || '' })
+              }
             />
           </div>
 
@@ -122,7 +165,7 @@ export function Dashboard() {
             <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl p-5 text-white shadow-sm shadow-primary-600/20">
               <p className="text-primary-100 text-sm font-medium">{t('dashboard.available_beds')}</p>
               <p className="text-4xl font-bold mt-1 tabular-nums">{availableBeds}</p>
-              <p className="text-primary-200 text-xs mt-1">{t('dashboard.across_all_facilities')}</p>
+              <p className="text-primary-200 text-xs mt-1">{isAdmin ? t('dashboard.across_all_facilities') : t('dashboard.in_this_facility', 'in this facility')}</p>
             </div>
           </div>
 
@@ -218,6 +261,112 @@ export function Dashboard() {
               </CardBody>
             </Card>
           </div>
+
+          {/* Pending Requests Card */}
+          <Card>
+            <CardHeader className="flex justify-between items-center py-4 px-5 border-b border-slate-100 dark:border-slate-700/60">
+              <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                {t('dashboard.pending_requests_title', 'Pending Inventory Requests')}
+              </h3>
+              <div className="flex items-center gap-3">
+                {!isAdmin && (
+                  <Link
+                    to="/medicines?tab=requests&action=new"
+                    className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded transition-colors"
+                  >
+                    {t('dashboard.raise_request', 'Raise Request')}
+                  </Link>
+                )}
+                {pendingRequests.length > 0 && (
+                  <Link
+                    to="/medicines?tab=requests"
+                    className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
+                  >
+                    {isAdmin ? t('dashboard.view_all_requests', 'Manage All Requests') : t('dashboard.view_my_requests', 'View My Requests')}
+                  </Link>
+                )}
+              </div>
+            </CardHeader>
+            <CardBody className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[500px]">
+                  <thead>
+                    <tr className="border-b border-slate-100 dark:border-slate-700">
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        {t('inventory.requests.requestNumber', 'Request No')}
+                      </th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        {t('inventory.requests.branch', 'Facility')}
+                      </th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        {t('inventory.requests.date', 'Date')}
+                      </th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        {t('inventory.requests.items', 'Items')}
+                      </th>
+                      <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        {isAdmin ? t('dashboard.action', 'Action') : t('inventory.requests.status', 'Status')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loadingRequests ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-10 text-center text-slate-400 dark:text-slate-500">
+                          {t('common.loading', 'Loading...')}
+                        </td>
+                      </tr>
+                    ) : pendingRequests.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-10 text-center text-slate-400 dark:text-slate-500">
+                          {t('dashboard.no_pending_requests', 'No pending inventory requests')}
+                        </td>
+                      </tr>
+                    ) : (
+                      pendingRequests.map((req, idx) => {
+                        const dateStr = req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A';
+                        const itemCount = req.items?.length || 0;
+                        const branchName = req.branchId?.name || 'N/A';
+                        return (
+                          <tr
+                            key={req._id || idx}
+                            className="border-b border-slate-50 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                          >
+                            <td className="px-6 py-3.5 font-semibold text-slate-800 dark:text-slate-200">
+                              #{req.requestNumber}
+                            </td>
+                            <td className="px-6 py-3.5 text-slate-600 dark:text-slate-300">
+                              {branchName}
+                            </td>
+                            <td className="px-6 py-3.5 text-slate-500 dark:text-slate-400 tabular-nums">
+                              {dateStr}
+                            </td>
+                            <td className="px-6 py-3.5 text-slate-500 dark:text-slate-400">
+                              {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                            </td>
+                            <td className="px-6 py-3.5 text-right">
+                              {isAdmin ? (
+                                <Link
+                                  to={`/medicines?tab=requests&requestId=${req._id}`}
+                                  className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded transition-colors"
+                                >
+                                  {t('dashboard.review', 'Review')}
+                                </Link>
+                              ) : (
+                                <Badge variant="warning">
+                                  {t('inventory.status.Pending', 'Pending')}
+                                </Badge>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardBody>
+          </Card>
 
         </div>
       </div>

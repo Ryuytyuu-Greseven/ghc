@@ -6,7 +6,8 @@ export interface Hospital {
   name: string;
   type: FacilityType;
   address: string;
-  city: string;
+  city: string | number;
+  state?: string | number | null;
   phone: string;
   email: string;
   totalBeds: number;
@@ -22,6 +23,8 @@ export interface Hospital {
   version?: number;
   isCurrent?: boolean;
   updatedAt?: string;
+  stateCode?: number;
+  cityCode?: number;
 }
 
 export type StaffRole = 'Doctor' | 'Nurse' | 'Receptionist' | 'Pharmacist' | 'Lab Technician' | 'Compounder' | 'Cashier';
@@ -76,13 +79,15 @@ export interface Staff {
   // Address
   addressLine1?: string;
   addressLine2?: string;
-  city?: string;
-  state?: string;
+  city?: string | number;
+  state?: string | number;
   pincode?: string;
   assignedHospitalId: string | null;
   isMedicalIncharge?: boolean;
   unavailableOnDays?: string[];
   createdAt: string;
+  stateCode?: number;
+  cityCode?: number;
 }
 
 export type Gender = 'male' | 'female' | 'other';
@@ -98,6 +103,10 @@ export interface Patient {
   email: string;
   aadhaarNumber: string;
   address: string;
+  state?: string | number;
+  city?: string | number;
+  stateCode?: number;
+  cityCode?: number;
   hospitalId: string;
   bedRequired: boolean;
   admittedAt: string;
@@ -114,8 +123,18 @@ export interface PatientFormValues {
   email: string;
   aadhaarNumber: string;
   address: string;
+  state: string;
+  city: string;
   hospitalId: string;
   bedRequired: boolean;
+}
+
+export interface PatientMedicine {
+  name: string;
+  quantity: number;
+  days?: number;
+  sessions?: string[];
+  quantityPerSession?: number;
 }
 
 export interface PatientData {
@@ -124,9 +143,13 @@ export interface PatientData {
   problem: string;
   visitDate: string;
   category: string;
-  medicines: { name: string; quantity: number }[];
+  medicines: PatientMedicine[];
   doctor?: string;
+  nurse?: string;
+  nurseUserId?: string;
+  nurse?: string;
   notes?: string;
+  recommendedTests?: string[];
 }
 
 export type MedicineCategory = 'medication' | 'equipment' | 'consumable' | 'diagnostic';
@@ -306,4 +329,61 @@ export interface RedistributionRecommendation {
   toBranchName: string;
   recommendedQuantity: number;
   justification: string;
+  isAlreadyRequested?: boolean;
+}
+
+// ── Diagnostic Test Tracking ──────────────────────────────────────────────────
+
+export type DiagnosticTestCategory = 'Lab' | 'Imaging' | 'Pathology' | 'Other';
+export type DiagnosticTestStatus = 'Active' | 'Inactive';
+export type TestAvailabilityStatus =
+  | 'Available'
+  | 'Unavailable'
+  | 'Partial'
+  | 'OutOfOrder'
+  | 'NotAudited';
+
+export type WritableTestAvailabilityStatus = Exclude<
+  TestAvailabilityStatus,
+  'NotAudited'
+>;
+
+export interface FacilityAvailabilityEntry {
+  hospitalId: string;
+  status: WritableTestAvailabilityStatus;
+  reason?: string;
+}
+
+export interface DiagnosticTest {
+  _id: string;
+  testName: string;
+  testCode?: string;
+  category: DiagnosticTestCategory;
+  sampleType?: string;
+  status: DiagnosticTestStatus;
+  createdAt?: string;
+  facilityAvailabilities?: FacilityAvailabilityEntry[];
+}
+
+export interface FacilityTestAvailabilityRow {
+  testId: string;
+  testName: string;
+  testCode?: string;
+  category: DiagnosticTestCategory;
+  sampleType?: string;
+  status: TestAvailabilityStatus;
+  reason?: string;
+  lastAuditedAt?: string | null;
+  availabilityId?: string | null;
+}
+
+export interface TestAvailabilityAudit {
+  _id: string;
+  hospitalId: string | PopulatedBranch;
+  testId: string | { _id: string; testName: string; testCode?: string; category?: string };
+  previousStatus: TestAvailabilityStatus;
+  newStatus: TestAvailabilityStatus;
+  reason?: string;
+  auditedAt: string;
+  createdAt?: string;
 }

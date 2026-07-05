@@ -48,6 +48,14 @@ export class InventoryRequest {
   @Prop({ required: true, trim: true })
   requestedBy: string;
 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'User',
+    required: false,
+    default: null,
+  })
+  userId?: Types.ObjectId | null;
+
   @Prop({ enum: Object.values(RequestStatus), default: RequestStatus.PENDING })
   status: RequestStatus;
 

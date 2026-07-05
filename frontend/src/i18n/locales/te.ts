@@ -23,6 +23,7 @@ export const te = {
       delete: "తొలగించు",
       save: "సేవ్ చేయి",
       cancel: "రద్దు చేయి",
+      close: "మూసివేయి",
       available: "అందుబాటులో ఉంది",
       total: "మొత్తం",
       parentChc: "పేరెంట్ సీహెచ్‌సీ",
@@ -86,12 +87,14 @@ export const te = {
       hospitals: "ఆసుపత్రులు & క్లినిక్‌లు",
       staff: "సిబ్బంది",
       patients: "రోగులు",
-      medicines: "మందులు & సామాగ్రి",
+      medicines: "ఇన్వెంటరీ & సామాగ్రి",
       "ai-analytics": "AI ఇన్వెంటరీ విశ్లేషణలు",
       "critical-alerts": "కీలక హెచ్చరికలు",
       availability: "నా అందుబాటు",
       transfers: "కవరేజ్ & బదిలీలు",
       audits: "ఆడిట్ లాగ్స్",
+      diagnosticTests: "డయాగ్నాస్టిక్ టెస్ట్‌లు",
+      attendance: "డ్యూటీ హాజరు",
       reports: "నివేదికలు"
     },
     roles: {
@@ -108,6 +111,11 @@ export const te = {
     dashboard: {
       title: "డాష్‌బోర్డ్",
       subtitle: "జీహెచ్‌సీ ఆరోగ్య నిర్వహణ అవలోకనం",
+      organization_view: "సంస్థ వీక్షణ",
+      viewing_hospital: "కేటాయించిన ఆసుపత్రి: {{name}}",
+      in_facility_inventory: "సదుపాయం ఇన్వెంటరీలో",
+      in_hospital_inventory: "{{name}} ఇన్వెంటరీలో",
+      in_this_facility: "ఈ సదుపాయంలో",
       totalPatients: "మొత్తం రోగులు",
       activeStaff: "యాక్టివ్ సిబ్బంది",
       bedsAvailable: "అందుబాటులో ఉన్న పడకలు",
@@ -131,9 +139,18 @@ export const te = {
       beds_free: "పడకలు ఖాళీగా ఉన్నాయి",
       unassigned: "కేటాయించని",
       requiringBeds: "పడకలు అవసరమైనవి",
+      pending_requests_title: "పెండింగ్ ఇన్వెంటరీ అభ్యర్థనలు",
+      no_pending_requests: "పెండింగ్ ఇన్వెంటరీ అభ్యర్థనలు ఏవీ లేవు",
+      view_all_requests: "అన్ని అభ్యర్థనలను నిర్వహించండి",
+      view_my_requests: "నా అభ్యర్థనలను చూడండి",
+      raise_request: "అభ్యర్థనను పంపండి",
+      action: "చర్య",
+      review: "సమీక్షించండి",
       intervention: {
         title: "కీలక హెచ్చరికలు",
+        title_facility: "మీ సదుపాయానికి సంబంధించిన కీలక హెచ్చరికలు",
         subtitle: "తీవ్రమైన వనరుల కొరత ఎదుర్కొంటున్న ఆరోగ్య కేంద్రాలు",
+        subtitle_facility: "మీకు కేటాయించిన సదుపాయం కోసం వనరుల స్థితి హెచ్చరికలు",
         severity_high: "అధిక",
         severity_medium: "మధ్యస్థ",
         bed_shortage: "బెడ్ కొరత",
@@ -238,7 +255,7 @@ export const te = {
         registered: "నమోదైనది",
         occupancyRate: "ఆక్యుపెన్సీ రేటు",
         roleTypes: "{{count}} పాత్ర రకాలు",
-        needBeds: "{{count}} మందికి పడకలు అవసరం",
+        needBeds: "{{count}} పడకలు కేటాయించబడ్డాయి",
         noStaff: "ఈ సదుపాయానికి ఇంకా ఎటువంటి సిబ్బంది కేటాయించబడలేదు",
         noMedicines: "ఈ సదుపాయానికి ఇంకా ఎటువంటి మందులు కేటాయించబడలేదు",
         noPatients: "ప్రస్తుతం రోగులు ఎవరూ చేరలేదు",
@@ -301,7 +318,7 @@ export const te = {
       healthAI: "జీహెచ్‌సీ హెల్త్ AI"
     },
     inventory: {
-      title: "మందులు & సామాగ్రి",
+      title: "ఇన్వెంటరీ & సామాగ్రి",
       subtitle: "ఇన్వెంటరీ, స్టాక్, అభ్యర్థనలు మరియు ఆడిట్ ట్రాక్‌ను నిర్వహించండి",
       tabs: {
         master: "ఇన్వెంటరీ మాస్టర్",
@@ -447,6 +464,8 @@ export const te = {
         applyTransfer: "బదిలీని వర్తింపజేయి",
         applyingTransfer: "వర్తింపజేస్తోంది...",
         applySuccess: "బదిలీ అభ్యర్థన విజయవంతంగా సృష్టించబడింది",
+        alreadyRequested: "అభ్యర్థించబడింది",
+        redistributionRequestName: "స్మార్ట్ పునఃపంపిణీ అభ్యర్థన",
         noRecommendations: "ఎటువంటి పునఃపంపిణీ సిఫార్సులు లేవు",
         noRecommendationsDesc: "ప్రస్తుత అంచనాల ప్రకారం అన్ని శాఖలలో స్టాక్ స్థాయిలు సమతుల్యంగా ఉన్నాయి.",
         fromFacility: "పంపే కేంద్రం",
@@ -567,6 +586,12 @@ export const te = {
         },
         detail: {
           loadingSubtitle: "రోగి సందర్శనల చరిత్రను లోడ్ చేస్తోంది",
+          clinicalOnboardingAnalysis: "క్లినికల్ ఆన్‌బోర్డింగ్ విశ్లేషణ",
+          guidelinesCareProtocol: "మార్గదర్శకాలు & సంరక్షణ నియమావళి",
+          analyzingSymptoms: "లక్షణాలను విశ్లేషిస్తోంది...",
+          diagnosticAssistant: "వ్యాధి నిర్ధారణ సహాయకుడు",
+          checkingPrescriptionSafety: "మందుల ప్రిస్క్రిప్షన్ భద్రతను తనిఖీ చేస్తోంది...",
+          prescriptionSafetyValidator: "మందుల ప్రిస్క్రిప్షన్ భద్రతా ధృవీకరణకర్త",
           loadError: "రోగి సందర్శనల చరిత్రను లోడ్ చేయడంలో విఫలమైంది",
           loadDoctorsError: "అందుబాటులో ఉన్న వైద్యులను లోడ్ చేయడంలో విఫలమైంది",
           saveVisitError: "సందర్శనను సేవ్ చేయడంలో విఫలమైంది",
@@ -592,6 +617,10 @@ export const te = {
           loadingDoctors: "వైద్యులను లోడ్ చేస్తోంది...",
           selectDoctor: "— వైద్యుడిని ఎంచుకోండి —",
           noDoctors: "ఆ తేదీకి ఎటువంటి అందుబాటులో ఉన్న వైద్యులు లేరు.",
+          nurseLabel: "నర్స్ ను కేటాయించండి",
+          selectNurse: "— నర్స్ ను ఎంచుకోండి —",
+          loadingNurses: "నర్స్ లను లోడ్ చేస్తోంది...",
+          noNurses: "ఆ తేదీకి ఎటువంటి అందుబాటులో ఉన్న నర్స్ లు లేరు.",
           saveVisit: "సందర్శనను సేవ్ చేయి",
           medicineDetails: "మందుల వివరాలు",
           medicineDetailsWithProblem: "మందుల వివరాలు - {{problem}}",
@@ -603,7 +632,41 @@ export const te = {
           selectCategoryToView: "మందులను చూడటానికి ఒక వర్గాన్ని ఎంచుకోండి.",
           notesLabel: "గమనికలు",
           notesPlaceholder: "లక్షణాలు, సలహా లేదా తదుపరి సందర్శన వివరాలు",
-          saveMedicineDetails: "మందుల వివరాలను సేవ్ చేయి"
+          recommendedTestsLabel: "సిఫార్సు చేయబడిన రోగనిర్ధారణ పరీక్షలు",
+          recommendedTestsHeader: "సిఫార్సు చేయబడిన పరీక్షలు",
+          selectTestPlaceholder: "రోగనిర్ధారణ పరీక్షను ఎంచుకోండి...",
+          customTestPlaceholder: "కస్టమ్ రోగనిర్ధారణ పరీక్ష పేరును నమోదు చేయండి...",
+          otherCustomTest: "ఇతర / కస్టమ్ పరీక్ష",
+          addTest: "జతచేయి",
+          doneEditing: "పూర్తయింది",
+          saveMedicineDetails: "మందుల వివరాలను సేవ్ చేయి",
+          sessions: {
+            mng: "ఉదయం",
+            afternoon: "మధ్యాహ్నం",
+            evening: "సాయంత్రం",
+            night: "రాత్రి",
+            midnight: "అర్ధరాత్రి"
+          },
+          prescription: {
+            viewButton: "ప్రిస్క్రిప్షన్",
+            viewTitle: "ప్రిస్క్రిప్షన్ — {{problem}}",
+            viewButtonTitle: "ప్రిస్క్రిప్షన్ చూడు",
+            prescriptionDetails: "ప్రిస్క్రిప్షన్ వివరాలు",
+            previouslyPrescribed: "ముందుగా సూచించబడింది",
+            batchAvailable: "బ్యాచ్ {{batchNo}} · అందుబాటులో {{qty}}",
+            removeFromPrescription: "ప్రిస్క్రిప్షన్ నుండి తొలగించు",
+            daysToTake: "తీసుకోవాల్సిన రోజులు",
+            qtyPerSession: "సెషన్‌కు పరిమాణం",
+            sessionsTimings: "సెషన్లు / సమయాలు",
+            calculatedTotalQty: "లెక్కించిన మొత్తం పరిమాణం:",
+            exceedsAvailable: "(అందుబాటు కంటే మించింది: {{qty}})",
+            day_one: "{{count}} రోజు",
+            day_other: "{{count}} రోజులు",
+            perDose: "డోస్‌కు {{count}}",
+            noTimingSpecified: "సమయం పేర్కొనబడలేదు",
+            qtyLabel: "పరి",
+            notesHeading: "గమనికలు"
+          }
         }
       },
       staff: {
@@ -779,7 +842,38 @@ export const te = {
         "Operation Theatre": "ఆపరేషన్ థియేటర్",
         Administration: "అడ్మినిస్ట్రేషన్"
       },
-      reports: {
+          "attendance": {
+      "clockedOutTime": "చెక్-అవుట్ సమయం:",
+      "clockOutBtn": "చెక్-అవుట్ చేయి",
+      "shiftCompleted": "నేటి డ్యూటీ పూర్తయింది",
+      "modifyTitle": "హాజరు స్థితిని సవరించండి:",
+      "modifyPrompt": "స్థితిని నవీకరించడానికి 1, 2, 3 లేదా 4ని నమోదు చేయండి:",
+      "cancelCheckIn": "చెక్-ఇన్ రద్దు చేయి",
+      "confirmUnmarkDay": "మీరు నిజంగా ఈ రోజు హాజరును రద్దు చేయాలనుకుంటున్నారా?",
+      "confirmUnmarkToday": "మీరు నిజంగా ఈ రోజు చెక్-ఇన్‌ను రద్దు చేయాలనుకుంటున్నారా?",
+      "subtitle": "రోజువారీ హాజరును నమోదు చేయండి మరియు నెలవారీ లాగ్‌లను తనిఖీ చేయండి.",
+      "loading": "హాజరు రికార్డులను సమకాలీకరిస్తోంది...",
+      "selectStaff": "వైద్యుడు / సిబ్బందిని ఎంచుకోండి",
+      "noSelectionHeader": "సిబ్బంది సభ్యులు ఎవరూ ఎంపిక కాలేదు",
+      "noSelectionBody": "వారి నెలవారీ హాజరును తనిఖీ చేయడానికి దయచేసి పైన ఉన్న ఫిల్టర్‌ల నుండి క్లినిక్ శాఖ మరియు ఉద్యోగిని ఎంచుకోండి.",
+      "totalDays": "నెల మొత్తం రోజులు",
+      "present": "హాజరైన రోజులు",
+      "leaveDaysCount": "సెలవు రోజులు",
+      "absent": "హాజరుకాని రోజులు",
+      "rate": "హాజరు శాతం",
+      "clockInCard": "రోజువారీ డ్యూటీ చెక్-ఇన్",
+      "clockInInfo": "మీరు మీ కేటాయించిన క్లినిక్ శాఖలో విధికి నివేదించినప్పుడు రోజుకు ఒకసారి దిగువ బటన్‌ను క్లిక్ చేయండి.",
+      "alreadyMarked": "ఈ రోజు విధికి హాజరు నమోదైంది",
+      "clockedTime": "చెక్-ఇన్ సమయం:",
+      "notClockedToday": "ఈ రోజు ఇంకా చెక్-ఇన్ చేయలేదు.",
+      "clockInBtn": "హాజరు నమోదు చేయి",
+      "monthlyCalendar": "నెలవారీ డ్యూటీ క్యాలెండర్",
+      "loadingLogs": "హాజరు రికార్డులను పొందుతోంది...",
+      "presentSmall": "హా",
+      "offSmall": "ఆఫ్",
+      "absentSmall": "హా.లే"
+    },
+  reports: {
         subtitle: "సిస్టమ్ పనితీరు, క్లినికల్ గణాంకాలు, బెడ్ల లభ్యత మరియు స్టాక్ తనిఖీలను చూడండి.",
         allBranches: "అన్ని బ్రాంచీలు",
         to: "నుండి",
@@ -828,8 +922,25 @@ export const te = {
         uniqueItems: "ప్రత్యేక వస్తువులు",
         medicineAvailabilityTitle: "మందుల స్టాక్ లభ్యత",
         colBranchesCount: "స్టాక్ ఉన్న బ్రాంచీలు",
-        colBatchesCount: "బ్యాచ్‌లు"
-      }
+        colBatchesCount: "బ్యాచ్‌లు",
+        patientFootfallForecast: "రోగుల రాక మరియు ఫుట్‌ఫాల్ అంచనా",
+        historicWalkins: "చారిత్రక రోజువారీ సందర్శనలు",
+        projectedWalkins: "అంచనా వేసిన రోజువారీ సందర్శనలు",
+        aiForecastSummary: "కార్యాచరణ అంతర్దృష్టులు",
+        aiForecastNote: "గత క్లినిక్ సందర్శనల ఆధారంగా అంచనా స్వయంచాలకంగా రూపొందించబడింది.",
+        noBranchCapacityData: "ఎటువంటి బ్రాంచ్ సామర్థ్య డేటా అందుబాటులో లేదు."
+      },
+    diagnosticTests: {
+      title: "Diagnostic Test Tracking",
+      subtitle: "Manage test catalog and facility availability audits",
+      tabs: { catalog: "Test Catalog", availability: "Facility Availability", audit: "Audit History" },
+      categories: { Lab: "Lab", Imaging: "Imaging", Pathology: "Pathology", Other: "Other" },
+      status: { Active: "Active", Inactive: "Inactive" },
+      availabilityStatus: { Available: "Available", Unavailable: "Unavailable", Partial: "Partial", OutOfOrder: "Out of Order", NotAudited: "Not Audited" },
+      fields: { testName: "Test Name", testNamePlaceholder: "e.g. Complete Blood Count", testCode: "Test Code", testCodePlaceholder: "e.g. CBC", category: "Category", sampleType: "Sample Type", sampleTypePlaceholder: "e.g. Blood, Urine", status: "Status", reason: "Reason", reasonPlaceholder: "e.g. Reagent stockout, machine broken" },
+      catalog: { addTest: "Add Test", editTest: "Edit Test", searchPlaceholder: "Search tests...", empty: "No tests in catalog yet.", deactivate: "Deactivate", deactivateConfirm: "Deactivate \"{{name}}\" from the catalog?", loadError: "Failed to load test catalog.", saveError: "Failed to save test.", fieldRequired: "{{field}} is required", facilityAvailability: "Facility Availability", facilityAvailabilityHint: "Optionally set initial availability per facility when saving this test.", addFacility: "Add Facility", selectFacility: "Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityRequired: "Please select a facility for each row.", duplicateFacility: "Each facility can only be added once.", reasonRequired: "Reason is required when status is not Available.", reasonNotRequired: "No reason needed when available.", noFacilitiesAdded: "No facilities added. Use Add Facility to set availability." },
+      availability: { infoBanner: "Audit diagnostic test availability at your facility. Changes are logged for district administrators.", selectFacility: "Select Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityHint: "Select a facility to view and audit test availability.", loadError: "Failed to load availability.", saveError: "Failed to update availability.", saved: "Availability updated successfully.", reasonRequired: "Please enter a reason when status is not Available." },
+      audit: { filterFacility: "Filter by Facility", scopedToFacility: "Showing audit history for your assigned facility.", empty: "No availability changes recorded yet.", loadError: "Failed to load audit history.", when: "When", facility: "Facility", change: "Change" }
     },
     notifications: {
       hospitalOnboardedTitle: "ఆసుపత్రి విజయవంతంగా ఆన్‌బోర్డు చేయబడింది",
@@ -845,4 +956,5 @@ export const te = {
       staffDeassignedTitle: "సిబ్బంది సదుపాయం నుండి తొలగించబడ్డారు",
       staffDeassignedBody: "సిబ్బంది సభ్యుడు \"{{name}}\" {{performedBy}} ద్వారా {{facility}} నుండి తొలగించబడ్డారు."
     }
-  };
+  }
+};

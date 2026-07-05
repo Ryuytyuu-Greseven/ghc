@@ -93,10 +93,10 @@ export class Staff {
   addressLine2?: string;
 
   @Prop()
-  city?: string;
+  city?: number;
 
   @Prop()
-  state?: string;
+  state?: number;
 
   @Prop()
   pincode?: string;

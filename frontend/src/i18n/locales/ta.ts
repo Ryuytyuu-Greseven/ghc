@@ -23,6 +23,7 @@ export const ta = {
       delete: "அழி",
       save: "சேமி",
       cancel: "ரத்து செய்",
+      close: "மூடு",
       available: "கிடைப்பவை",
       total: "மொத்தம்",
       parentChc: "முதன்மையான சிஎச்சி (CHC)",
@@ -86,12 +87,14 @@ export const ta = {
       hospitals: "மருத்துவமனைகள் & கிளினிக்குகள்",
       staff: "ஊழியர் மேலாண்மை",
       patients: "நோயாளிகள்",
-      medicines: "மருந்துகள் & பொருட்கள்",
+      medicines: "சரக்கு மற்றும் பொருட்கள்",
       "ai-analytics": "AI சரக்கு பகுப்பாய்வு",
       "critical-alerts": "முக்கிய எச்சரிக்கைகள்",
       availability: "என் இருப்பு நிலை",
       transfers: "பணிப் பரிமாற்றங்கள்",
       audits: "தணிக்கை பதிவுகள்",
+      diagnosticTests: "நோயறிதல் பரிசோதனைகள்",
+      attendance: "பணி வருகை",
       reports: "அறிக்கைகள்"
     },
     roles: {
@@ -108,6 +111,11 @@ export const ta = {
     dashboard: {
       title: "டாஷ்போர்டு",
       subtitle: "GHC சுகாதார மேலாண்மை கண்ணோட்டம்",
+      organization_view: "அமைப்பு பார்வை",
+      viewing_hospital: "ஒதுக்கப்பட்ட மருத்துவமனை: {{name}}",
+      in_facility_inventory: "மையத்தின் கையிருப்பில்",
+      in_hospital_inventory: "{{name}} கையிருப்பில்",
+      in_this_facility: "இந்த மையத்தில்",
       totalPatients: "மொத்த நோயாளிகள்",
       activeStaff: "செயலில் உள்ள ஊழியர்கள்",
       bedsAvailable: "கிடைக்கும் படுக்கைகள்",
@@ -131,9 +139,18 @@ export const ta = {
       beds_free: "படுக்கைகள் காலியாக உள்ளன",
       unassigned: "ஒதுக்கப்படாத",
       requiringBeds: "படுக்கை தேவைப்படுபவர்கள்",
+      pending_requests_title: "நிலுவையில் உள்ள சரக்கு கோரிக்கைகள்",
+      no_pending_requests: "சரக்கு கோரிக்கைகள் எதுவும் நிலுவையில் இல்லை",
+      view_all_requests: "அனைத்து கோரிக்கைகளையும் நிர்வகி",
+      view_my_requests: "எனது கோரிக்கைகளை காண்க",
+      raise_request: "கோரிக்கையை உருவாக்கு",
+      action: "செயல்பாடு",
+      review: "மதிப்பாய்வு செய்க",
       intervention: {
         title: "முக்கிய எச்சரிக்கைகள்",
+        title_facility: "உங்கள் மையத்திற்கான முக்கிய எச்சரிக்கைகள்",
         subtitle: "முக்கிய வள பற்றாக்குறைகளை தெரிவிக்கும் சுகாதார மையங்கள்",
+        subtitle_facility: "உங்களுக்கு ஒதுக்கப்பட்ட மையத்திற்கான வள நிலை எச்சரிக்கைகள்",
         subtitle_staff: "உங்கள் மையத்திற்கான முக்கிய வள எச்சரிக்கைகள்",
         severity_high: "அதிக",
         severity_medium: "நடுத்தர",
@@ -238,7 +255,7 @@ export const ta = {
         registered: "பதிவு செய்யப்பட்டது",
         occupancyRate: "படுக்கை இருப்பு விகிதம்",
         roleTypes: "{{count}} பணி வகைகள்",
-        needBeds: "{{count}} பேருக்கு படுக்கை தேவை",
+        needBeds: "{{count}} படுக்கைகள் ஒதுக்கப்பட்டன",
         noStaff: "இந்த மையத்திற்கு இன்னும் ஊழியர்கள் யாரும் ஒதுக்கப்படவில்லை",
         noMedicines: "இந்த மையத்திற்கு இன்னும் மருந்துகள் ஒதுக்கப்படவில்லை",
         noPatients: "தற்போது நோயாளிகள் யாரும் அனுமதிக்கப்படவில்லை",
@@ -301,7 +318,7 @@ export const ta = {
       healthAI: "GHC ஹெಲ್ತ್ AI"
     },
     inventory: {
-      title: "மருந்துகள் & பொருட்கள்",
+      title: "சரக்கு மற்றும் பொருட்கள்",
       subtitle: "இருப்பு, கோரிக்கைகள் மற்றும் பரிவர்த்தனைகளை நிர்வகிக்கவும்",
       tabs: {
         master: "இருப்பு மாஸ்டர்",
@@ -446,6 +463,8 @@ export const ta = {
         applyTransfer: "பரிமாற்றத்தை விண்ணப்பி",
         applyingTransfer: "விண்ணப்பிக்கப்படுகிறது...",
         applySuccess: "பரிமாற்ற கோரிக்கை வெற்றிகரமாக உருவாக்கப்பட்டது",
+        alreadyRequested: "கோரப்பட்டது",
+        redistributionRequestName: "ஸ்மார்ட் மறுவிநியோக கோரிக்கை",
         noRecommendations: "மறுவிநியோக பரிந்துரைகள் எதுவும் இல்லை",
         noRecommendationsDesc: "தற்போதைய கணிப்புகளின்படி அனைத்து கிளைகளிலும் இருப்பு அளவு சமநிலையில் உள்ளது.",
         fromFacility: "அனுப்பும் இடம்",
@@ -566,6 +585,12 @@ export const ta = {
         },
         detail: {
           loadingSubtitle: "நோயாளியின் வருகை வரலாற்றை ஏற்றுகிறது",
+          clinicalOnboardingAnalysis: "மருத்துவ சேர்க்கை பகுப்பாய்வு",
+          guidelinesCareProtocol: "வழிகாட்டுதல்கள் & பராமரிப்பு நெறிமுறை",
+          analyzingSymptoms: "அறிகுறிகளை பகுப்பாய்வு செய்கிறது...",
+          diagnosticAssistant: "மருத்துவ கண்டறிதல் உதவியாளர்",
+          checkingPrescriptionSafety: "மருந்து சீட்டு பாதுகாப்பை சரிபார்க்கிறது...",
+          prescriptionSafetyValidator: "மருந்து சீட்டு பாதுகாப்பு சரிபார்ப்பான்",
           loadError: "நோயாளியின் வரலாற்றை ஏற்ற முடியவில்லை",
           loadDoctorsError: "மருத்துவர்கள் பட்டியலை ஏற்ற முடியவில்லை",
           saveVisitError: "வருகையைச் சேமிக்க முடியவில்லை",
@@ -591,6 +616,10 @@ export const ta = {
           loadingDoctors: "மருத்துவர்கள் ஏற்றப்படுகிறது...",
           selectDoctor: "— மருத்துவரைத் தேர்ந்தெடுக்கவும் —",
           noDoctors: "இந்தத் தேதியில் மருத்துவர்கள் யாரும் கிடைக்கவில்லை.",
+          nurseLabel: "செவிலியரை நியமிக்கவும்",
+          selectNurse: "— செவிலியரைத் தேர்ந்தெடுக்கவும் —",
+          loadingNurses: "செவிலியர்கள் ஏற்றப்படுகிறது...",
+          noNurses: "இந்தத் தேதியில் செவிலியர்கள் யாரும் கிடைக்கவில்லை.",
           saveVisit: "வருகையைச் சேமி",
           medicineDetails: "மருந்து விவரங்கள்",
           medicineDetailsWithProblem: "மருந்து விவரங்கள் - {{problem}}",
@@ -602,7 +631,41 @@ export const ta = {
           selectCategoryToView: "மருந்துகளைப் பார்க்க ஒரு வகையைத் தேர்ந்தெடுக்கவும்.",
           notesLabel: "குறிப்புகள்",
           notesPlaceholder: "அறிகுறிகள், அறிவுரை அல்லது பின்தொடர்தல் குறிப்புகள்",
-          saveMedicineDetails: "மருந்து விவரங்களைச் சேமி"
+          recommendedTestsLabel: "பரிந்துரைக்கப்பட்ட கண்டறியும் சோதனைகள்",
+          recommendedTestsHeader: "பரிந்துரைக்கப்பட்ட சோதனைகள்",
+          selectTestPlaceholder: "கண்டறியும் சோதனையைத் தேர்ந்தெடுக்கவும்...",
+          customTestPlaceholder: "தனிப்பயன் கண்டறியும் சோதனை பெயரை உள்ளிடவும்...",
+          otherCustomTest: "மற்றவை / தனிப்பயன் சோதனை",
+          addTest: "சேர்க்கவும்",
+          doneEditing: "முடிந்தது",
+          saveMedicineDetails: "மருந்து விவரங்களைச் சேமி",
+          sessions: {
+            mng: "காலை",
+            afternoon: "மதியம்",
+            evening: "மாலை",
+            night: "இரவு",
+            midnight: "நள்ளிரவு"
+          },
+          prescription: {
+            viewButton: "மருந்துச் சீட்டு",
+            viewTitle: "மருந்துச் சீட்டு — {{problem}}",
+            viewButtonTitle: "மருந்துச் சீட்டை பார்",
+            prescriptionDetails: "மருந்துச் சீட்டு விவரங்கள்",
+            previouslyPrescribed: "முன்பு பரிந்துரைக்கப்பட்டது",
+            batchAvailable: "தொகுதி {{batchNo}} · கிடைக்கும் {{qty}}",
+            removeFromPrescription: "மருந்துச் சீட்டிலிருந்து நீக்கு",
+            daysToTake: "எடுக்கும் நாட்கள்",
+            qtyPerSession: "அமர்வுக்கு அளவு",
+            sessionsTimings: "அமர்வுகள் / நேரங்கள்",
+            calculatedTotalQty: "கணக்கிடப்பட்ட மொத்த அளவு:",
+            exceedsAvailable: "(கிடைப்பதை மீறியது: {{qty}})",
+            day_one: "{{count}} நாள்",
+            day_other: "{{count}} நாட்கள்",
+            perDose: "ஒரு டோஸுக்கு {{count}}",
+            noTimingSpecified: "நேரம் குறிப்பிடவில்லை",
+            qtyLabel: "அள",
+            notesHeading: "குறிப்புகள்"
+          }
         }
       },
       staff: {
@@ -778,7 +841,38 @@ export const ta = {
         "Operation Theatre": "அறுவை சிகிச்சை அரங்கம்",
         Administration: "நிர்வாகம்"
       },
-      reports: {
+          "attendance": {
+      "clockedOutTime": "வெளியேறிய நேரம்:",
+      "clockOutBtn": "வெளியேறு",
+      "shiftCompleted": "இன்றைய பணி நிறைவடைந்தது",
+      "modifyTitle": "வருகை நிலையை மாற்றுக:",
+      "modifyPrompt": "நிலையை மாற்ற 1, 2, 3 அல்லது 4 ஐ உள்ளிடவும்:",
+      "cancelCheckIn": "வருகையை ரத்துசெய்",
+      "confirmUnmarkDay": "இந்த நாளுக்கான வருகைப்பதிவை நீக்க விரும்புகிறீர்களா?",
+      "confirmUnmarkToday": "இன்றைய வருகைப்பதிவை ரத்துசெய்ய விரும்புகிறீர்களா?",
+      "subtitle": "தினசரி வருகையை பதிவு செய்து, மாதாந்திர பதிவுகளைச் சரிபார்க்கவும்.",
+      "loading": "வருகைப் பதிவுகள் ஒத்திசைக்கப்படுகின்றன...",
+      "selectStaff": "மருத்துவர் / பணியாளரைத் தேர்ந்தெடுக்கவும்",
+      "noSelectionHeader": "பணியாளர் யாரும் தேர்ந்தெடுக்கப்படவில்லை",
+      "noSelectionBody": "மாதாந்திர வருகையை ஆய்வு செய்ய மேலே உள்ள வடிப்பான்களில் இருந்து மருத்துவமனை கிளையையும் ஊழியரையும் தேர்ந்தெடுக்கவும்.",
+      "totalDays": "மாதத்தின் மொத்த நாட்கள்",
+      "present": "வருகை நாட்கள்",
+      "leaveDaysCount": "விடுமுறை நாட்கள்",
+      "absent": "வருகை தராத நாட்கள்",
+      "rate": "வருகை விகிதம்",
+      "clockInCard": "தினசரி பணி வருகைப் பதிவு",
+      "clockInInfo": "உங்களுக்கு ஒதுக்கப்பட்ட மருத்துவமனை கிளையில் பணிக்கு வரும்போது தினசரி ஒருமுறை கீழே உள்ள பொத்தானைக் கிளிக் செய்யவும்.",
+      "alreadyMarked": "இன்று பணிக்கு வருகை பதிவு செய்யப்பட்டுள்ளது",
+      "clockedTime": "பதிவு நேரம்:",
+      "notClockedToday": "இன்று இன்னும் வருகை பதிவு செய்யப்படவில்லை.",
+      "clockInBtn": "வருகையைப் பதிவுசெய்",
+      "monthlyCalendar": "மாதாந்திர பணி காலண்டர்",
+      "loadingLogs": "வருகைப் பதிவுகளைப் பெறுகிறது...",
+      "presentSmall": "வ",
+      "offSmall": "விடு",
+      "absentSmall": "வ.இ"
+    },
+  reports: {
         subtitle: "கணினி முறிவுகள், மருத்துவ புள்ளிவிவரங்கள், படுக்கை இருப்பு மற்றும் பங்கு சோதனைகளை அணுகவும்.",
         allBranches: "அனைத்து கிளைகளும்",
         to: "முதல்",
@@ -827,8 +921,25 @@ export const ta = {
         uniqueItems: "தனித்துவமான பொருட்கள்",
         medicineAvailabilityTitle: "மருந்து கையிருப்பு கிடைத்தல்",
         colBranchesCount: "கையிருப்பு உள்ள கிளைகள்",
-        colBatchesCount: "தொகுதிகள்"
-      }
+        colBatchesCount: "தொகுதிகள்",
+        patientFootfallForecast: "நோயாளி வருகை மற்றும் கணிப்பு",
+        historicWalkins: "கடந்த கால தினசரி வருகைகள்",
+        projectedWalkins: "கணிக்கப்பட்ட தினசரி வருகைகள்",
+        aiForecastSummary: "செயல்பாட்டு நுண்ணறிவு",
+        aiForecastNote: "கடந்த கால மருத்துவமனை வருகைகளின் அடிப்படையில் கணிப்பு தானாகவே தொகுக்கப்படுகிறது.",
+        noBranchCapacityData: "கிளையின் படுக்கை வசதி தரவு எதுவும் இல்லை."
+      },
+    diagnosticTests: {
+      title: "Diagnostic Test Tracking",
+      subtitle: "Manage test catalog and facility availability audits",
+      tabs: { catalog: "Test Catalog", availability: "Facility Availability", audit: "Audit History" },
+      categories: { Lab: "Lab", Imaging: "Imaging", Pathology: "Pathology", Other: "Other" },
+      status: { Active: "Active", Inactive: "Inactive" },
+      availabilityStatus: { Available: "Available", Unavailable: "Unavailable", Partial: "Partial", OutOfOrder: "Out of Order", NotAudited: "Not Audited" },
+      fields: { testName: "Test Name", testNamePlaceholder: "e.g. Complete Blood Count", testCode: "Test Code", testCodePlaceholder: "e.g. CBC", category: "Category", sampleType: "Sample Type", sampleTypePlaceholder: "e.g. Blood, Urine", status: "Status", reason: "Reason", reasonPlaceholder: "e.g. Reagent stockout, machine broken" },
+      catalog: { addTest: "Add Test", editTest: "Edit Test", searchPlaceholder: "Search tests...", empty: "No tests in catalog yet.", deactivate: "Deactivate", deactivateConfirm: "Deactivate \"{{name}}\" from the catalog?", loadError: "Failed to load test catalog.", saveError: "Failed to save test.", fieldRequired: "{{field}} is required", facilityAvailability: "Facility Availability", facilityAvailabilityHint: "Optionally set initial availability per facility when saving this test.", addFacility: "Add Facility", selectFacility: "Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityRequired: "Please select a facility for each row.", duplicateFacility: "Each facility can only be added once.", reasonRequired: "Reason is required when status is not Available.", reasonNotRequired: "No reason needed when available.", noFacilitiesAdded: "No facilities added. Use Add Facility to set availability." },
+      availability: { infoBanner: "Audit diagnostic test availability at your facility. Changes are logged for district administrators.", selectFacility: "Select Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityHint: "Select a facility to view and audit test availability.", loadError: "Failed to load availability.", saveError: "Failed to update availability.", saved: "Availability updated successfully.", reasonRequired: "Please enter a reason when status is not Available." },
+      audit: { filterFacility: "Filter by Facility", scopedToFacility: "Showing audit history for your assigned facility.", empty: "No availability changes recorded yet.", loadError: "Failed to load audit history.", when: "When", facility: "Facility", change: "Change" }
     },
     notifications: {
       hospitalOnboardedTitle: "மருத்துவமனை வெற்றிகரமாக சேர்க்கப்பட்டது",
@@ -844,4 +955,5 @@ export const ta = {
       staffDeassignedTitle: "ஊழியர் சுகாதார மையப் பணியிலிருந்து விடுவிக்கப்பட்டார்",
       staffDeassignedBody: "ஊழியர் \"{{name}}\" {{performedBy}} என்பவரால் {{facility}} பணியிலிருந்து விடுவிக்கப்பட்டார்."
     }
-  };
+  }
+};

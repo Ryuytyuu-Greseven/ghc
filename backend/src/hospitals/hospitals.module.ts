@@ -23,10 +23,13 @@ import { StaffRepository } from '../repositories/staff.repository';
 import { Patient, PatientSchema } from '../schemas/patient.schema';
 import { PatientRepository } from '../repositories/patient.repository';
 import { UsersModule } from '../users/users.module';
+import { LocationsModule } from '../locations/locations.module';
+import { DiagnosticTestsModule } from '../diagnostic-tests/diagnostic-tests.module';
 
 @Module({
   imports: [
     AuthModule,
+    DiagnosticTestsModule,
     MongooseModule.forFeature([
       { name: Hospital.name, schema: HospitalSchema },
       { name: BedAllocation.name, schema: BedAllocationSchema },
@@ -35,6 +38,7 @@ import { UsersModule } from '../users/users.module';
       { name: Patient.name, schema: PatientSchema },
     ]),
     UsersModule,
+    LocationsModule,
   ],
   controllers: [HospitalsController],
   providers: [

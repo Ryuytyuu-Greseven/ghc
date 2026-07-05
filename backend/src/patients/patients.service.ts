@@ -14,6 +14,9 @@ import { HospitalsCommonService } from '../common/services/hospitals.service';
 import { HospitalRepository } from '../repositories/hospital.repository';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-types';
+import { llmInstance } from '../google/vertex.config';
+import { SystemMessage, HumanMessage } from '@langchain/core/messages';
+import { LocationsService } from '../locations/locations.service';
 
 const requiredCreateFields: (keyof CreatePatientDto)[] = [
   'name',
@@ -38,28 +41,50 @@ export class PatientsService {
     private readonly hospitalsCommonService: HospitalsCommonService,
     private readonly hospitalRepository: HospitalRepository,
     private readonly notificationsService: NotificationsService,
+    private readonly locationsService: LocationsService,
   ) { }
 
+  private mapLocationNames(patient: any) {
+    if (!patient) return patient;
+    const doc = patient.toObject ? patient.toObject() : patient;
+    const stateCode = doc.state;
+    const cityCode = doc.city;
+
+    doc.stateCode = stateCode;
+    doc.cityCode = cityCode;
+
+    doc.state = this.locationsService.getStateName(stateCode) || doc.state;
+    doc.city = this.locationsService.getDistrictName(cityCode) || doc.city;
+
+    return doc;
+  }
+
   async findAll(query: SearchPatientsDto = {}) {
-    return this.patientRepository.findPaginated({
+    const paginated = await this.patientRepository.findPaginated({
       ...query,
       page: query.page ?? 1,
       pageSize: query.pageSize ?? 10,
     });
+    return {
+      ...paginated,
+      data: paginated.data.map(p => this.mapLocationNames(p)),
+    };
   }
 
   async findAllList(filter: object = {}) {
-    return this.patientRepository.findAll({ isActive: true, ...filter });
+    const list = await this.patientRepository.findAll({ isActive: true, ...filter });
+    return list.map(p => this.mapLocationNames(p));
   }
 
   async findOne(id: string) {
     const patient = await this.patientRepository.findById(id);
     if (!patient) throw new NotFoundException(`Patient ${id} not found`);
-    return patient;
+    return this.mapLocationNames(patient);
   }
 
   async findByHospital(hospitalId: string) {
-    return this.patientRepository.findByHospital(hospitalId);
+    const list = await this.patientRepository.findByHospital(hospitalId);
+    return list.map(p => this.mapLocationNames(p));
   }
 
   async findDischarged(options: { hospitalId?: string; from: Date; to: Date }) {
@@ -70,7 +95,8 @@ export class PatientsService {
     if (options.hospitalId) {
       filter.hospitalId = new Types.ObjectId(options.hospitalId);
     }
-    return this.patientRepository.findDischarged(filter);
+    const list = await this.patientRepository.findDischarged(filter);
+    return list.map(p => this.mapLocationNames(p));
   }
 
   async create(data: CreatePatientDto) {
@@ -103,7 +129,7 @@ export class PatientsService {
       },
     );
 
-    return createdPatient;
+    return this.mapLocationNames(createdPatient);
   }
 
   async update(id: string, data: UpdatePatientDto) {
@@ -117,7 +143,7 @@ export class PatientsService {
       this.toPatientPersistence(patient),
     );
     if (!updated) throw new NotFoundException(`Patient ${id} not found`);
-    return updated;
+    return this.mapLocationNames(updated);
   }
 
   private prepareCreate(data: CreatePatientDto): CreatePatientDto {
@@ -233,5 +259,45 @@ export class PatientsService {
     }
 
     return patient;
+  }
+
+  async getRiskProfile(patientId: string): Promise<any> {
+    const patient = await this.patientRepository.findById(patientId);
+    if (!patient) throw new NotFoundException(`Patient ${patientId} not found`);
+
+    try {
+      const prompt = `Analyze this patient's profile to predict potential clinical health risks and recommend screening checks.
+Patient Name: ${patient.name}
+Age: ${patient.age}
+Gender: ${patient.gender}
+Blood Group: ${patient.bloodGroup || 'Not specified'}
+Bed Required / Admitted: ${patient.bedRequired ? 'Yes' : 'No'}
+
+Return ONLY valid JSON with this exact shape:
+{
+  "potentialRisks": ["Risk 1", "Risk 2"],
+  "recommendedVitalsMonitoring": ["Vitals check 1", "Vitals check 2"],
+  "generalHealthGuidelines": "Age and gender specific guidelines summary"
+}`;
+
+      const response = await llmInstance.invoke([
+        new SystemMessage('You are a helpful clinical risk analysis assistant. Respond in JSON only.'),
+        new HumanMessage(prompt),
+      ]);
+
+      const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+    } catch (err) {
+      // Fallback
+    }
+
+    return {
+      potentialRisks: ['Routine monitoring required based on age group'],
+      recommendedVitalsMonitoring: ['Blood Pressure', 'Heart Rate', 'Body Temperature'],
+      generalHealthGuidelines: 'Maintain a balanced diet and regular screening checks.',
+    };
   }
 }

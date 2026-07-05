@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   FileText, 
   Activity, 
@@ -23,16 +23,128 @@ import { useTranslation } from 'react-i18next';
 
 type TabType = 'clinical' | 'occupancy' | 'staffing' | 'inventory';
 
+function FootfallForecastChart({
+  historical,
+  projected,
+  historicLabel,
+  projectedLabel,
+}: {
+  historical: { date: string; quantity: number }[];
+  projected: { date: string; quantity: number }[];
+  historicLabel: string;
+  projectedLabel: string;
+}) {
+  const chartData = useMemo(() => {
+    const recentHistoric = historical.slice(-14);
+    return [
+      ...recentHistoric.map((point) => ({ ...point, type: 'historic' as const })),
+      ...projected.map((point) => ({ ...point, type: 'projected' as const })),
+    ];
+  }, [historical, projected]);
+
+  const maxValue = Math.max(...chartData.map((point) => point.quantity), 1);
+  const width = 640;
+  const height = 220;
+  const padding = 28;
+  const barWidth = Math.max(8, (width - padding * 2) / Math.max(chartData.length, 1) - 4);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <span className="inline-flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-sm bg-slate-400" />
+          {historicLabel}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-sm bg-primary-500" />
+          {projectedLabel}
+        </span>
+      </div>
+      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/40 p-4">
+        <svg viewBox={`0 0 ${width} ${height}`} className="min-w-[640px] w-full h-[220px]">
+          {chartData.map((point, index) => {
+            const barHeight = (point.quantity / maxValue) * (height - padding * 2);
+            const x = padding + index * (barWidth + 4);
+            const y = height - padding - barHeight;
+            return (
+              <g key={`${point.type}-${point.date}-${index}`}>
+                {point.quantity > 0 && (
+                  <text
+                    x={x + barWidth / 2}
+                    y={y - 5}
+                    textAnchor="middle"
+                    className="fill-slate-600 dark:fill-slate-350 text-[8px] font-bold"
+                  >
+                    {point.quantity}
+                  </text>
+                )}
+                <rect
+                  x={x}
+                  y={y}
+                  width={barWidth}
+                  height={barHeight}
+                  rx={3}
+                  className={point.type === 'historic' ? 'fill-slate-400/80' : 'fill-primary-500/90'}
+                />
+                {index % 3 === 0 && (
+                  <text
+                    x={x + barWidth / 2}
+                    y={height - 8}
+                    textAnchor="middle"
+                    className="fill-slate-500 text-[9px]"
+                  >
+                    {point.date.slice(5)}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 export function Reports() {
   const { t } = useTranslation();
-  const { currentUser, hospitals } = useApp();
-  const userRole = currentUser?.role || 'Admin';
+  const { currentUser, hospitals, staff, loading: appLoading } = useApp();
+  const userRole = currentUser?.role || '';
+
+  const currentStaff = staff.find((s) => {
+    const uId = typeof s.userId === 'object' && s.userId ? (s.userId as any)._id : s.userId;
+    const uName = typeof s.userId === 'object' && s.userId ? (s.userId as any).username : s.username;
+    return uId === currentUser?.id || uName === currentUser?.username;
+  });
+  const userHospitalId = currentStaff?.assignedHospitalId || '';
 
   // State
   const [activeTab, setActiveTab] = useState<TabType>('occupancy');
   const [selectedBranch, setSelectedBranch] = useState<string>('');
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
+
+  useEffect(() => {
+    if (userRole && userRole !== 'Admin') {
+      setSelectedBranch(userHospitalId);
+    }
+  }, [userHospitalId, userRole]);
+
+  if (!currentUser || appLoading) {
+    return (
+      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+        <Header 
+          title={t('nav.reports') || 'Analytics & Reports'} 
+          subtitle={t('reports.subtitle', 'Access system breakdowns, clinical statistics, bed availability, and stock checks.')} 
+        />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 text-slate-500">
+            <RefreshCw size={24} className="animate-spin text-primary-500" />
+            <span>{t('reports.loading', 'Compiling Report Analytics...')}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,11 +161,7 @@ export function Reports() {
 
   // Set default tab based on role permissions
   useEffect(() => {
-    if (userRole === 'Pharmacist') {
-      setActiveTab('inventory');
-    } else if (userRole === 'Nurse' || userRole === 'Receptionist') {
-      setActiveTab('occupancy');
-    } else if (userRole === 'Doctor') {
+    if (userRole === 'Doctor') {
       setActiveTab('clinical');
     } else {
       setActiveTab('occupancy');
@@ -66,13 +174,8 @@ export function Reports() {
   }, [activeTab, selectedBranch]);
 
   // Determine allowed tabs
-  const isAllowed = (tab: TabType): boolean => {
-    if (userRole === 'Admin') return true;
-    if (tab === 'clinical') return userRole === 'Doctor';
-    if (tab === 'occupancy') return ['Doctor', 'Nurse', 'Receptionist'].includes(userRole);
-    if (tab === 'staffing') return false; // Admin only
-    if (tab === 'inventory') return userRole === 'Pharmacist';
-    return false;
+  const isAllowed = (_tab: TabType): boolean => {
+    return true;
   };
 
   const fetchReportData = async () => {
@@ -420,16 +523,26 @@ export function Reports() {
               {/* Branch Selector */}
               <div className="flex items-center gap-2">
                 <Building size={16} className="text-slate-400 dark:text-slate-500" />
-                <select
-                  value={selectedBranch}
-                  onChange={(e) => setSelectedBranch(e.target.value)}
-                  className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition"
-                >
-                  <option value="">{t('reports.allBranches', 'All Branches')}</option>
-                  {hospitals.map((h: any) => (
-                    <option key={h._id} value={h._id}>{h.name}</option>
-                  ))}
-                </select>
+                {userRole === 'Admin' ? (
+                  <select
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition"
+                  >
+                    <option value="">{t('reports.allBranches', 'All Branches')}</option>
+                    {hospitals.map((h: any) => (
+                      <option key={h.id || h._id} value={h.id || h._id}>{h.name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-350 rounded-xl text-sm font-medium border border-slate-200 dark:border-slate-700">
+                    <span>
+                      {hospitals.find(
+                        (h: any) => h.id === userHospitalId || h._id === userHospitalId,
+                      )?.name || t('common.unknown', 'Unknown Branch')}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Date Filters (Only shown for Clinical Tab) */}
@@ -580,26 +693,34 @@ export function Reports() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                          {occupancyData.details.map((b: any) => (
-                            <tr key={b.hospitalId} className="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
-                              <td className="px-5 py-3.5 font-semibold text-slate-800 dark:text-slate-200">{b.name}</td>
-                              <td className="px-5 py-3.5"><Badge variant="info">{b.type}</Badge></td>
-                              <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.totalBeds}</td>
-                              <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.occupiedBeds}</td>
-                              <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.availableBeds}</td>
-                              <td className="px-5 py-3.5">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-slate-800 dark:text-slate-250 font-mono">{b.occupancyRate}%</span>
-                                  <div className="w-16 bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                                    <div 
-                                      className={`h-full rounded-full ${b.occupancyRate > 85 ? 'bg-red-500' : 'bg-primary-500'}`} 
-                                      style={{ width: `${b.occupancyRate}%` }} 
-                                    />
-                                  </div>
-                                </div>
+                          {!occupancyData.details || occupancyData.details.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="px-5 py-8 text-center text-slate-400 dark:text-slate-500 italic">
+                                {t('reports.noBranchCapacityData', 'No branch capacity data available.')}
                               </td>
                             </tr>
-                          ))}
+                          ) : (
+                            occupancyData.details.map((b: any) => (
+                              <tr key={b.hospitalId} className="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
+                                <td className="px-5 py-3.5 font-semibold text-slate-800 dark:text-slate-200">{b.name}</td>
+                                <td className="px-5 py-3.5"><Badge variant="info">{b.type}</Badge></td>
+                                <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.totalBeds}</td>
+                                <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.occupiedBeds}</td>
+                                <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.availableBeds}</td>
+                                <td className="px-5 py-3.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-slate-800 dark:text-slate-250 font-mono">{b.occupancyRate}%</span>
+                                    <div className="w-16 bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                      <div 
+                                        className={`h-full rounded-full ${b.occupancyRate > 85 ? 'bg-red-500' : 'bg-primary-500'}`} 
+                                        style={{ width: `${b.occupancyRate}%` }} 
+                                      />
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -696,6 +817,41 @@ export function Reports() {
                   </div>
                 </div>
 
+                {/* Patient Footfall Forecast Chart Card */}
+                {clinicalData.footfallTrend && clinicalData.footfallTrend.length > 0 && (
+                  <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden p-6 space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <TrendingUp size={16} className="text-primary-500" />
+                        {t('reports.patientFootfallForecast', 'Patient Walk-in & Footfall Forecast')}
+                      </h4>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-2">
+                        <FootfallForecastChart
+                          historical={clinicalData.footfallTrend}
+                          projected={clinicalData.footfallForecast || []}
+                          historicLabel={t('reports.historicWalkins', 'Historical Daily Walk-ins')}
+                          projectedLabel={t('reports.projectedWalkins', 'Projected Daily Walk-ins')}
+                        />
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-5 border border-slate-150 dark:border-slate-800 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                            {t('reports.aiForecastSummary', 'Operational Insights')}
+                          </h5>
+                          <p className="text-sm text-slate-700 dark:text-slate-350 leading-relaxed">
+                            {clinicalData.footfallSummary}
+                          </p>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400">
+                          {t('reports.aiForecastNote', 'Forecast automatically compiled using historical clinic visits.')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Medicines by Branch breakdown — full width */}
                 {clinicalData.topMedicinesByBranch && clinicalData.topMedicinesByBranch.length > 0 && (
                   <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
@@ -777,8 +933,8 @@ export function Reports() {
                   </div>
                 </div>
 
-                {/* Branch Distribution — full width below */}
-                {staffingData.branchDistribution && staffingData.branchDistribution.length > 0 && (
+                {/* Branch Distribution — only visible to Admins */}
+                {userRole === 'Admin' && staffingData.branchDistribution && staffingData.branchDistribution.length > 0 && (
                   <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
                       <Building className="text-primary-500" size={16} />
