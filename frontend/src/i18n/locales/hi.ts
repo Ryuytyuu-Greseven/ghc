@@ -94,6 +94,7 @@ export const hi = {
       transfers: "कवरेज और स्थानांतरण",
       audits: "ऑडिट लॉग्स",
       diagnosticTests: "डायग्नोस्टिक परीक्षण",
+      attendance: "ड्यूटी उपस्थिति",
       reports: "रिपोर्ट"
     },
     roles: {
@@ -827,7 +828,38 @@ export const hi = {
         "Operation Theatre": "ऑपरेशन थियेटर",
         Administration: "प्रशासन"
       },
-      reports: {
+          "attendance": {
+      "clockedOutTime": "चेक-आउट का समय:",
+      "clockOutBtn": "चेक-आउट करें",
+      "shiftCompleted": "आज की ड्यूटी पूरी हुई",
+      "modifyTitle": "उपस्थिति स्थिति बदलें:",
+      "modifyPrompt": "स्थिति अपडेट करने के लिए 1, 2, 3 या 4 दर्ज करें:",
+      "cancelCheckIn": "चेक-इन रद्द करें",
+      "confirmUnmarkDay": "क्या आप वाकई इस दिन की उपस्थिति हटाना चाहते हैं?",
+      "confirmUnmarkToday": "क्या आप वाकई आज का चेक-इन रद्द करना चाहते हैं?",
+      "subtitle": "दैनिक उपस्थिति दर्ज करें और मासिक लॉग की जांच करें।",
+      "loading": "उपस्थिति रिकॉर्ड सिंक किए जा रहे हैं...",
+      "selectStaff": "डॉक्टर / स्टाफ चुनें",
+      "noSelectionHeader": "कोई स्टाफ सदस्य नहीं चुना गया",
+      "noSelectionBody": "मासिक उपस्थिति देखने के लिए कृपया ऊपर दिए गए फ़िल्टर से क्लिनिक शाखा और कर्मचारी चुनें।",
+      "totalDays": "महीने के कुल दिन",
+      "present": "उपस्थित दिन",
+      "leaveDaysCount": "छुट्टी के दिन",
+      "absent": "अनुपस्थित दिन",
+      "rate": "उपस्थिति दर",
+      "clockInCard": "दैनिक ड्यूटी चेक-इन",
+      "clockInInfo": "अपने असाइन किए गए क्लिनिक शाखा में ड्यूटी पर रिपोर्ट करने पर प्रतिदिन एक बार नीचे दिए गए बटन पर क्लिक करें।",
+      "alreadyMarked": "आज की उपस्थिति दर्ज है",
+      "clockedTime": "चेक-इन समय:",
+      "notClockedToday": "आज अभी तक चेक-इन नहीं किया गया है।",
+      "clockInBtn": "उपस्थिति दर्ज करें",
+      "monthlyCalendar": "मासिक ड्यूटी कैलेंडर",
+      "loadingLogs": "उपस्थिति रिकॉर्ड प्राप्त किए जा रहे हैं...",
+      "presentSmall": "उ",
+      "offSmall": "बंद",
+      "absentSmall": "अ"
+    },
+  reports: {
         subtitle: "सिस्टम की विफलता, नैदानिक आंकड़े, बिस्तर की उपलब्धता और स्टॉक जांच तक पहुंचें।",
         allBranches: "सभी शाखाएं",
         to: "तक",
