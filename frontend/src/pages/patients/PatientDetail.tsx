@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CalendarDays, Pill, Plus, UserRound, FileText, X, Pencil, Activity, Sparkles } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Pill, Plus, UserRound, FileText, X, Pencil, Activity, Sparkles, Mail, Check } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/Button';
@@ -246,6 +246,40 @@ export function PatientDetail() {
   const [editingMedicineId, setEditingMedicineId] = useState<string | null>(null);
   const [newTestInput, setNewTestInput] = useState('');
   const [isOtherTestSelected, setIsOtherTestSelected] = useState(false);
+  const [sendingPrescriptionEmail, setSendingPrescriptionEmail] = useState(false);
+  const [prescriptionEmailSent, setPrescriptionEmailSent] = useState(false);
+
+  const handleSendPrescriptionEmail = async () => {
+    if (!prescriptionGroupToView || !patient?.email) return;
+    setSendingPrescriptionEmail(true);
+    try {
+      const visits = prescriptionGroupToView.visits
+        .filter(v => v.medicines.length > 0 || (v.recommendedTests && v.recommendedTests.length > 0))
+        .map(v => ({
+          visitDate: v.visitDate,
+          doctor: v.doctor,
+          medicines: v.medicines,
+          recommendedTests: v.recommendedTests,
+          notes: v.notes,
+        }));
+      await authFetch(`${API_BASE}/patient-data/send-prescription-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientName: patient.name,
+          patientEmail: patient.email,
+          problem: prescriptionGroupToView.problem,
+          visits,
+        }),
+      });
+      setPrescriptionEmailSent(true);
+      setTimeout(() => setPrescriptionEmailSent(false), 4000);
+    } catch {
+      // silent fail
+    } finally {
+      setSendingPrescriptionEmail(false);
+    }
+  };
 
   const addRecommendedTest = (visitId: string) => {
     if (!newTestInput.trim()) return;
@@ -925,9 +959,7 @@ export function PatientDetail() {
                     disabled={loadingRiskProfile}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-250 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-950/40 transition duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm disabled:opacity-50 animate-flicker"
                   >
-                    {loadingRiskProfile && (
-                      <div className="h-3 w-3 rounded-full border-2 border-emerald-600 dark:border-emerald-400 border-t-transparent animate-spin" />
-                    )}
+
                     <Sparkles size={13} className={`text-emerald-600 dark:text-emerald-400 ${loadingRiskProfile ? 'animate-spin' : ''}`} />
                     {loadingRiskProfile ? t('patients.detail.analyzingSymptoms', 'Analyzing...') : t('patients.detail.clinicalOnboardingAnalysis', 'Clinical Onboarding Analysis')}
                   </button>
@@ -1117,9 +1149,7 @@ export function PatientDetail() {
                           disabled={loadingVisitSuggestions}
                           className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/40 dark:bg-blue-950/20 text-blue-800 dark:text-blue-400 text-[10px] font-bold hover:bg-blue-100 dark:hover:bg-blue-950/40 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm disabled:opacity-50 shrink-0 animate-flicker-blue"
                         >
-                          {loadingVisitSuggestions && (
-                            <div className="h-2.5 w-2.5 rounded-full border border-blue-600 dark:border-blue-400 border-t-transparent animate-spin" />
-                          )}
+
                           <Sparkles size={11} className={`text-blue-600 dark:text-blue-400 ${loadingVisitSuggestions ? 'animate-spin' : ''}`} />
                           {loadingVisitSuggestions ? t('patients.detail.analyzingSymptoms', 'Analyzing...') : t('patients.detail.diagnosticAssistant', 'Diagnostic Assistant')}
                         </button>
@@ -1440,9 +1470,7 @@ export function PatientDetail() {
                   disabled={loadingPrescriptionValidation}
                   className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-amber-250 dark:border-amber-800 bg-amber-50/40 dark:bg-amber-950/20 text-amber-800 dark:text-amber-400 text-xs font-bold hover:bg-amber-100/50 dark:hover:bg-amber-950/40 transition duration-300 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm disabled:opacity-50 animate-flicker-amber"
                 >
-                  {loadingPrescriptionValidation && (
-                    <div className="h-3 w-3 rounded-full border-2 border-amber-600 dark:border-amber-400 border-t-transparent animate-spin" />
-                  )}
+
                   <Sparkles size={14} className={`text-amber-600 dark:text-amber-400 ${loadingPrescriptionValidation ? 'animate-spin' : ''}`} />
                   {loadingPrescriptionValidation ? t('patients.detail.checkingPrescriptionSafety', 'Checking prescription safety...') : t('patients.detail.prescriptionSafetyValidator', 'Prescription Safety Validator')}
                 </button>
@@ -1689,8 +1717,30 @@ export function PatientDetail() {
               );
             })}
 
-            <div className="flex justify-end pt-2">
-              <Button type="button" onClick={() => setPrescriptionGroupToView(null)}>
+            <div className="flex items-center justify-between pt-2 flex-wrap gap-3">
+              {patient?.email ? (
+                <button
+                  type="button"
+                  onClick={handleSendPrescriptionEmail}
+                  disabled={sendingPrescriptionEmail || prescriptionEmailSent}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-300 ${
+                    prescriptionEmailSent
+                      ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                      : 'bg-primary-50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800 hover:bg-primary-100 dark:hover:bg-primary-950/50'
+                  } disabled:opacity-60`}
+                >
+                  {prescriptionEmailSent ? (
+                    <><Check size={13} className="text-emerald-600" /> Sent to {patient.email}</>
+                  ) : sendingPrescriptionEmail ? (
+                    <><div className="h-3 w-3 rounded-full border border-primary-500 border-t-transparent animate-spin" /> Sending...</>
+                  ) : (
+                    <><Mail size={13} /> Send via Email</>  
+                  )}
+                </button>
+              ) : (
+                <span className="text-xs text-slate-400 italic">No email on file for this patient</span>
+              )}
+              <Button type="button" onClick={() => { setPrescriptionGroupToView(null); setPrescriptionEmailSent(false); }}>
                 {t('common.close')}
               </Button>
             </div>
