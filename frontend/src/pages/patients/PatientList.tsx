@@ -39,6 +39,7 @@ function mapPatientFromBackendForList(item: any): Patient {
     cityCode: item.cityCode,
     bedRequired: item.bedRequired ?? false,
     admittedAt: item.admittedAt ? new Date(item.admittedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    dischargedAt: item.dischargedAt ? new Date(item.dischargedAt).toISOString().split('T')[0] : undefined,
   };
 }
 
@@ -300,6 +301,16 @@ export function PatientList() {
                     <div className="flex justify-between gap-2">
                       <span className="text-slate-500 dark:text-slate-400 shrink-0">{t('patients.admitted')}</span>
                       <span className="text-slate-700 dark:text-slate-200 tabular-nums">{p.admittedAt}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-slate-500 dark:text-slate-400 shrink-0">Status</span>
+                      <span className={`font-semibold ${
+                        p.bedRequired
+                          ? 'text-rose-600 dark:text-rose-400'
+                          : 'text-slate-500'
+                      }`}>
+                        {p.bedRequired ? 'Admitted' : 'Discharged / Outpatient'}
+                      </span>
                     </div>
                     <div className="flex justify-between gap-2">
                       <span className="text-slate-500 dark:text-slate-400 shrink-0">{t('patients.phoneLabel')}</span>

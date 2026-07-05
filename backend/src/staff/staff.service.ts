@@ -731,7 +731,7 @@ export class StaffService {
     return req;
   }
 
-  async getAvailableDoctors(date: string) {
+  async getAvailableDoctors(date: string, hospitalId?: string) {
     if (!date) {
       throw new BadRequestException('Date is required');
     }
@@ -752,9 +752,18 @@ export class StaffService {
       dateStr = `${yyyy}-${mm}-${dd}`;
     }
 
-    const staffList = await this.staffRepository.findAll({
+    const query: any = {
       unavailableOnDays: { $ne: dateStr },
-    });
+    };
+    if (hospitalId) {
+      const orConditions: any[] = [{ hospitalId }];
+      if (Types.ObjectId.isValid(hospitalId)) {
+        orConditions.push({ hospitalId: new Types.ObjectId(hospitalId) });
+      }
+      query.$or = orConditions;
+    }
+
+    const staffList = await this.staffRepository.findAll(query);
 
     const availableDoctors = staffList.filter((s) => {
       const user = s.userId as any;
@@ -775,7 +784,7 @@ export class StaffService {
     });
   }
 
-  async getAvailableNurses(date: string) {
+  async getAvailableNurses(date: string, hospitalId?: string) {
     if (!date) {
       throw new BadRequestException('Date is required');
     }
@@ -796,9 +805,18 @@ export class StaffService {
       dateStr = `${yyyy}-${mm}-${dd}`;
     }
 
-    const staffList = await this.staffRepository.findAll({
+    const query: any = {
       unavailableOnDays: { $ne: dateStr },
-    });
+    };
+    if (hospitalId) {
+      const orConditions: any[] = [{ hospitalId }];
+      if (Types.ObjectId.isValid(hospitalId)) {
+        orConditions.push({ hospitalId: new Types.ObjectId(hospitalId) });
+      }
+      query.$or = orConditions;
+    }
+
+    const staffList = await this.staffRepository.findAll(query);
 
     const availableNurses = staffList.filter((s) => {
       const user = s.userId as any;

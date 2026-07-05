@@ -14,6 +14,8 @@ import { NotificationType } from '../notifications/notification-types';
 import { llmInstance } from '../google/vertex.config';
 import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 import * as nodemailer from 'nodemailer';
+import { HospitalsCommonService } from '../common/services/hospitals.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 type BranchInventoryAdjustment = {
   branchId: string;
@@ -37,6 +39,8 @@ export class PatientDataService {
     private readonly patientRepository: PatientRepository,
     private readonly staffRepository: StaffRepository,
     private readonly notificationsService: NotificationsService,
+    private readonly hospitalsCommonService: HospitalsCommonService,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   async findByPatient(patientId: string) {
@@ -49,8 +53,71 @@ export class PatientDataService {
 
   async create(data: Record<string, any>) {
     const patientData = this.preparePatientData(data);
+
+    if (data.bedRequired === true || data.bedRequired === 'true') {
+      const patientId = data.patientId;
+      if (!patientId || !Types.ObjectId.isValid(patientId)) {
+        throw new BadRequestException('Invalid patient ID for bed allocation');
+      }
+      const patient = await this.patientRepository.findById(patientId);
+      if (!patient) {
+        throw new NotFoundException(`Patient ${patientId} not found`);
+      }
+      if (!patient.hospitalId) {
+        throw new BadRequestException('Patient is not assigned to any hospital for bed allocation');
+      }
+      const hospitalId = (patient.hospitalId as any)._id?.toString() || patient.hospitalId.toString();
+
+      // Check dates
+      if (!data.admittedAt || !data.dischargedAt) {
+        throw new BadRequestException('Admit and discharge dates are required for bed allocation');
+      }
+
+      const admitDate = new Date(data.admittedAt);
+      const dischargeDate = new Date(data.dischargedAt);
+
+      // Perform bed availability checks
+      const available = await this.hospitalsCommonService.areBedsAvailable(hospitalId);
+
+      if (!available) {
+        throw new BadRequestException('No beds available at this hospital');
+      }
+
+      // Allocate the bed
+      await this.hospitalsCommonService.allocateBed(
+        hospitalId,
+        patientId.toString(),
+      );
+
+      // Update patient model
+      await this.patientRepository.update(patientId.toString(), {
+        bedRequired: true,
+        admittedAt: admitDate,
+        dischargedAt: dischargeDate,
+      });
+    }
+
     const created = await this.patientDataRepository.create(patientData);
     await this.notifyDoctorAssignment(created, data);
+
+    if (created.medicines && created.medicines.length > 0) {
+      const patient = await this.patientRepository.findById(created.patientId.toString());
+      if (patient) {
+        await this.auditLogsService.log({
+          module: 'patients',
+          action: 'CREATE',
+          message: `Medicines assigned to patient ${patient.name} on visit creation: ${created.medicines.map((m: any) => `${m.name} (Qty: ${m.quantity})`).join(', ')}`,
+          performedBy: created.doctor || 'Doctor',
+          performedByRole: 'Doctor',
+          metadata: {
+            patientId: patient._id.toString(),
+            patientName: patient.name,
+            medicines: created.medicines,
+          },
+        });
+      }
+    }
+
     return created;
   }
 
@@ -115,6 +182,19 @@ export class PatientDataService {
       visit.patientId.toString(),
     );
     if (!patient) return;
+
+    await this.auditLogsService.log({
+      module: 'patients',
+      action: 'UPDATE',
+      message: `Medicines updated for patient ${patient.name}: ${medicines.map((m: any) => `${m.name} (Qty: ${m.quantity})`).join(', ')}`,
+      performedBy: visit.doctor || 'Doctor',
+      performedByRole: 'Doctor',
+      metadata: {
+        patientId: patient._id.toString(),
+        patientName: patient.name,
+        medicines: medicines,
+      },
+    });
 
     void this.notificationsService.dispatch(
       NotificationType.PATIENT_MEDICINES_ASSIGNED,
@@ -214,8 +294,17 @@ export class PatientDataService {
         ? data.recommendedTests.map((t: unknown) => String(t).trim()).filter(t => t !== '')
         : [];
     }
+    if (data.status !== undefined) {
+      patientData.status = String(data.status).trim();
+    }
     if (data.isActive !== undefined)
       patientData.isActive = Boolean(data.isActive);
+    if (data.admittedAt !== undefined) {
+      patientData.admittedAt = data.admittedAt ? new Date(data.admittedAt) : undefined;
+    }
+    if (data.dischargedAt !== undefined) {
+      patientData.dischargedAt = data.dischargedAt ? new Date(data.dischargedAt) : undefined;
+    }
 
     return patientData;
   }

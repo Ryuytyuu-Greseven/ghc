@@ -322,7 +322,6 @@ export function PatientForm({ initial, onClose }: Props) {
         error={errorFor('address')}
         placeholder={t('patients.form.placeholders.address')}
       />
-
       <div className="grid grid-cols-2 gap-4">
         <Select
           label={t('staff.form.labels.state', 'State')}
@@ -351,18 +350,7 @@ export function PatientForm({ initial, onClose }: Props) {
           ]}
         />
       </div>
-      <div className="flex items-center gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50">
-        <input
-          type="checkbox"
-          id="bedRequired"
-          checked={form.bedRequired}
-          onChange={e => set('bedRequired', e.target.checked)}
-          className="w-4 h-4 accent-primary-600 cursor-pointer"
-        />
-        <label htmlFor="bedRequired" className="text-sm font-medium text-slate-700 cursor-pointer">
-          {form.bedRequired ? t('patients.form.deallocateBed') : t('patients.form.allocateBed')}
-        </label>
-      </div>
+
 
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>

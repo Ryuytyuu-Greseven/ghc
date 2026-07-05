@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { HospitalRepository } from '../../repositories/hospital.repository';
 import { BedAllocationRepository } from '../../repositories/bed-allocation.repository';
+import { PatientRepository } from '../../repositories/patient.repository';
 import { Types } from 'mongoose';
 
 @Injectable()
@@ -12,7 +13,61 @@ export class HospitalsCommonService {
   constructor(
     private readonly hospitalRepository: HospitalRepository,
     private readonly bedAllocationRepository: BedAllocationRepository,
+    private readonly patientRepository: PatientRepository,
   ) {}
+
+  async areBedsAvailableForRange(
+    hospitalId: string,
+    admitDate: Date,
+    dischargeDate: Date,
+  ): Promise<boolean> {
+    let hospital = await this.hospitalRepository.findById(hospitalId);
+    if (!hospital) {
+      hospital =
+        await this.hospitalRepository.findCurrentByHospitalId(hospitalId);
+    }
+    if (!hospital || !hospital.isActive) {
+      throw new NotFoundException(
+        `Active hospital record not found for ID: ${hospitalId}`,
+      );
+    }
+    const totalBeds = hospital.totalBeds;
+
+    // Fetch all active patient allocations in this hospital
+    const activePatients = await this.patientRepository.findAll({
+      hospitalId: new Types.ObjectId(hospital._id.toString()),
+      bedRequired: true,
+    });
+
+    const start = new Date(admitDate);
+    const end = new Date(dischargeDate);
+    
+    // Iterate day by day in range
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const currentDay = new Date(d);
+      currentDay.setHours(12, 0, 0, 0);
+
+      let occupiedOnDay = 0;
+      for (const p of activePatients) {
+        if (p.admittedAt && p.dischargedAt) {
+          const pStart = new Date(p.admittedAt);
+          const pEnd = new Date(p.dischargedAt);
+          pStart.setHours(12, 0, 0, 0);
+          pEnd.setHours(12, 0, 0, 0);
+
+          if (currentDay >= pStart && currentDay <= pEnd) {
+            occupiedOnDay++;
+          }
+        }
+      }
+
+      if (occupiedOnDay >= totalBeds) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   async areBedsAvailable(hospitalId: string): Promise<boolean> {
     let hospital = await this.hospitalRepository.findById(hospitalId);
@@ -51,7 +106,7 @@ export class HospitalsCommonService {
         await this.hospitalRepository.findCurrentByHospitalId(hospitalId);
     }
 
-    if (!hospital) {
+    if (!hospital || !hospital.isActive) {
       throw new NotFoundException(
         `Active hospital record not found for ID: ${hospitalId}`,
       );
@@ -64,12 +119,6 @@ export class HospitalsCommonService {
       if (current) {
         hospital = current;
       }
-    }
-
-    if (!hospital) {
-      throw new NotFoundException(
-        `Active hospital record not found for ID: ${hospitalId}`,
-      );
     }
 
     const logicalId = hospital.hospitalId || hospital._id.toString();
