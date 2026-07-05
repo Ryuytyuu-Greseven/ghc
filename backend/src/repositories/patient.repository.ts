@@ -12,7 +12,7 @@ export class PatientRepository {
     @InjectModel(Patient.name)
     private readonly patientModel: Model<PatientDocument>,
     private readonly queryService: QueryService,
-  ) {}
+  ) { }
 
   async findAll(filter: object = {}): Promise<PatientDocument[]> {
     return this.patientModel.find(filter).populate('hospitalId').exec();
@@ -62,10 +62,15 @@ export class PatientRepository {
     return this.patientModel.find({ hospitalId }).populate('hospitalId').exec();
   }
 
-  async findByAadhaarNumber(
-    aadhaarNumber: string,
-    excludeId?: string,
-  ): Promise<PatientDocument | null> {
+  async findDischarged(filter: object = {}): Promise<PatientDocument[]> {
+    return this.patientModel
+      .find(filter)
+      .populate('hospitalId')
+      .sort({ dischargedAt: -1 })
+      .exec();
+  }
+
+  async findByAadhaarNumber(aadhaarNumber: string, excludeId?: string): Promise<PatientDocument | null> {
     const filter: Record<string, unknown> = { aadhaarNumber };
     if (excludeId) filter._id = { $ne: excludeId };
     return this.patientModel.findOne(filter).exec();

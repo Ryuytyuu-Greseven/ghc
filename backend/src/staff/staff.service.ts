@@ -8,7 +8,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { StaffRepository } from '../repositories/staff.repository';
-import { Staff } from '../schemas/staff.schema';
 import {
   CoverageRequest,
   CoverageRequestDocument,
@@ -45,7 +44,7 @@ export class StaffService {
     @InjectModel(Hospital.name)
     private readonly hospitalModel: Model<HospitalDocument>,
     private readonly userRepository: UserRepository,
-  ) {}
+  ) { }
 
   async findAll(filter: object = {}) {
     const list = await this.staffRepository.findAll(filter);
@@ -61,6 +60,39 @@ export class StaffService {
   async findByHospital(hospitalId: string) {
     const list = await this.staffRepository.findByHospital(hospitalId);
     return list.map(flattenStaff);
+  }
+
+  async findFiltered(options: {
+    hospitalId?: string;
+    role?: string;
+    status?: 'active' | 'inactive' | 'all';
+    name?: string;
+  } = {}) {
+    const filter: Record<string, unknown> = {};
+    if (options.hospitalId) filter.hospitalId = options.hospitalId;
+
+    let staffList = (await this.staffRepository.findAll(filter)).map(flattenStaff);
+
+    if (options.role) {
+      staffList = staffList.filter(
+        (s) => s.role?.toLowerCase() === options.role!.toLowerCase(),
+      );
+    }
+    if (options.status === 'active') {
+      staffList = staffList.filter((s) => s.isActive === true);
+    } else if (options.status === 'inactive') {
+      staffList = staffList.filter((s) => s.isActive === false);
+    }
+    if (options.name) {
+      const lower = options.name.toLowerCase();
+      staffList = staffList.filter((s) => {
+        const fullName =
+          s.displayName || `${s.firstName} ${s.lastName || ''}`.trim();
+        return fullName.toLowerCase().includes(lower);
+      });
+    }
+
+    return staffList;
   }
 
   async create(data: any, userId?: string, performedBy?: string) {
@@ -600,8 +632,8 @@ export class StaffService {
     return {
       status:
         updated &&
-        updated.unavailableOnDays &&
-        updated.unavailableOnDays.length > 0
+          updated.unavailableOnDays &&
+          updated.unavailableOnDays.length > 0
           ? 'Unavailable'
           : 'Available',
       unavailableOnDays: updated?.unavailableOnDays || [],

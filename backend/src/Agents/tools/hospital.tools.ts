@@ -1,8 +1,10 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { getModelToken } from '@nestjs/mongoose';
 import { appInstance } from '../../main';
 import { HospitalsService } from '../../hospitals/hospitals.service';
 import { HospitalDocument } from 'src/schemas/hospital.schema';
+import { Staff } from '../../schemas/staff.schema';
 import { HospitalHelperService } from '../services/hospital-helper.service';
 
 function getHospitalsService(): HospitalsService {
@@ -259,6 +261,49 @@ export const fetchAvailableSpecialists = tool(
   },
 );
 
+export const fetchHospitalsBySpecialization = tool(
+  async ({ specialization }) => {
+    console.log('Fetch Hospitals By Specialization', specialization);
+    const staffModel = appInstance.get(getModelToken(Staff.name));
+    const staff = await staffModel
+      .find({ specialization: { $regex: specialization, $options: 'i' } })
+      .populate('hospitalId')
+      .exec();
+
+    const grouped = new Map<string, any>();
+    for (const s of staff) {
+      const hospital = s.hospitalId;
+      if (!hospital || !hospital.name) continue;
+      const key = hospital._id.toString();
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          hospitalId: hospital._id,
+          hospitalName: hospital.name,
+          doctors: [],
+        });
+      }
+      grouped.get(key).doctors.push({
+        name: s.displayName || `${s.firstName} ${s.lastName || ''}`.trim(),
+        specialization: s.specialization,
+      });
+    }
+
+    return JSON.stringify(Array.from(grouped.values()));
+  },
+  {
+    name: 'fetchHospitalsBySpecialization',
+    description:
+      'Find hospitals that have doctors with a given medical specialization (e.g. cardiologist, pediatrician, gynecologist, surgeon)',
+    schema: z.object({
+      specialization: z
+        .string()
+        .describe(
+          'Medical specialization to search for, e.g. Cardiologist, Pediatrician',
+        ),
+    }),
+  },
+);
+
 export const hospitalTools = [
   listHospitals,
   getHospital,
@@ -268,4 +313,5 @@ export const hospitalTools = [
   fetchPatientsDetails,
   fetchStaffDetails,
   fetchAvailableSpecialists,
+  fetchHospitalsBySpecialization,
 ];

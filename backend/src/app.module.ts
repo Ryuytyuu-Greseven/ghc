@@ -19,6 +19,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { AuditInterceptor } from './audit-logs/audit.interceptor';
 import { ReportsModule } from './reports/reports.module';
+import { TwilioModule } from './twilio/twilio.module';
 import { config } from 'dotenv';
 config();
 
@@ -45,6 +46,7 @@ config();
     NotificationsModule,
     AuditLogsModule,
     ReportsModule,
+    TwilioModule,
   ],
   controllers: [AppController],
   providers: [

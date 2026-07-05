@@ -14,6 +14,10 @@ export const PatientState = Annotation.Root({
     reducer: (_, b) => b,
     default: () => [],
   }),
+  dischargedPatients: Annotation<any[]>({
+    reducer: (_, b) => b,
+    default: () => [],
+  }),
   byDisease: Annotation<
     { condition: string; count: number; patients: any[] }[]
   >({

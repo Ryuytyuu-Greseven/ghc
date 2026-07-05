@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -23,7 +24,7 @@ export class PatientsController {
   constructor(
     private readonly patientsService: PatientsService,
     private readonly usersService: UsersService,
-  ) {}
+  ) { }
 
   @Post()
   async search(@Req() req: any, @Body() body: SearchPatientsDto = {}) {
@@ -56,6 +57,22 @@ export class PatientsController {
       );
     }
     return this.patientsService.findByHospital(hospitalId);
+  }
+
+  @Get('discharged')
+  async findDischarged(
+    @Req() req: any,
+    @Query('from') fromStr?: string,
+    @Query('to') toStr?: string,
+  ) {
+    const hospitalId = await this.getAssignedHospitalId(req);
+    const from = fromStr ? new Date(fromStr) : new Date(new Date().setHours(0, 0, 0, 0));
+    const to = toStr ? new Date(toStr) : new Date(new Date().setHours(23, 59, 59, 999));
+    return this.patientsService.findDischarged({
+      hospitalId: hospitalId ?? undefined,
+      from,
+      to,
+    });
   }
 
   @Get(':id')
