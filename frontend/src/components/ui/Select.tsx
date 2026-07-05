@@ -13,7 +13,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, options, placeholder, dropdownPlacement = 'auto', className, onChange, onBlur, value, required, ...props }, ref) => {
+  ({ label, error, options, placeholder, dropdownPlacement = 'auto', className, onChange, onBlur, value, required, disabled, ...props }, ref) => {
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -56,6 +56,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     };
 
     const toggleDropdown = () => {
+      if (disabled) return;
       const nextOpen = !isOpen;
       if (nextOpen && dropdownPlacement !== 'auto') {
         setOpenUpward(dropdownPlacement === 'up');
@@ -85,6 +86,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {/* Custom Toggle Button */}
         <button
           type="button"
+          disabled={disabled}
           onClick={toggleDropdown}
           onBlur={(event) => {
             if (!containerRef.current?.contains(event.relatedTarget as Node | null)) {
@@ -97,6 +99,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               ? 'border-red-400 dark:border-red-500'
               : 'border-slate-300 dark:border-slate-600',
             selectedOption ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-400',
+            disabled && 'opacity-60 cursor-not-allowed',
             className
           )}
         >

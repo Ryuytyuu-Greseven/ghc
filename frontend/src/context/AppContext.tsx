@@ -201,8 +201,10 @@ function mapStaffToBackend(s: any): any {
   };
 }
 
-function getBackendId(value: any): string {
-  return value?._id ?? value?.id ?? value ?? '';
+function getPatientHospitalId(value: any): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  return value.hospitalId ?? value._id?.toString?.() ?? value.id ?? '';
 }
 
 function mapPatientFromBackend(item: any): Patient {
@@ -216,8 +218,7 @@ function mapPatientFromBackend(item: any): Patient {
     email: item.email ?? '',
     aadhaarNumber: item.aadhaarNumber ?? '',
     address: item.address ?? '',
-    // Patient APIs may populate hospitalId; UI filters need the raw facility ID string.
-    hospitalId: getBackendId(item.hospitalId),
+    hospitalId: getPatientHospitalId(item.hospitalId),
     bedRequired: item.bedRequired ?? false,
     admittedAt: item.admittedAt ? new Date(item.admittedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
   };

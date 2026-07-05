@@ -6,6 +6,7 @@ import {
   FacilityTestAvailability,
   FacilityTestAvailabilityDocument,
 } from '../schemas/facility-test-availability.schema';
+import { Hospital, HospitalDocument } from '../schemas/hospital.schema';
 import { TestAvailabilityStatus } from '../common/enums/diagnostic-test.enum';
 
 @Injectable()
@@ -13,6 +14,8 @@ export class FacilityTestAvailabilityRepository {
   constructor(
     @InjectModel(FacilityTestAvailability.name)
     private readonly model: Model<FacilityTestAvailabilityDocument>,
+    @InjectModel(Hospital.name)
+    private readonly hospitalModel: Model<HospitalDocument>,
   ) {}
 
   async findByHospital(
@@ -22,6 +25,56 @@ export class FacilityTestAvailabilityRepository {
       .find({ hospitalId: new Types.ObjectId(hospitalId) })
       .populate('testId', 'testName testCode category sampleType status')
       .exec();
+  }
+
+  async findAvailableByHospital(
+    hospitalId: string,
+  ): Promise<FacilityTestAvailabilityDocument[]> {
+    const hospitalObjectIds = await this.resolveHospitalObjectIds(hospitalId);
+    if (!hospitalObjectIds.length) {
+      return [];
+    }
+
+    return this.model
+      .find({
+        hospitalId: { $in: hospitalObjectIds },
+        status: TestAvailabilityStatus.Available,
+      })
+      .populate('testId', 'testName testCode category sampleType status')
+      .exec();
+  }
+
+  async resolveHospitalIdStrings(hospitalId: string): Promise<string[]> {
+    const objectIds = await this.resolveHospitalObjectIds(hospitalId);
+    return objectIds.map((id) => id.toString());
+  }
+
+  private async resolveHospitalObjectIds(
+    hospitalId: string,
+  ): Promise<Types.ObjectId[]> {
+    if (!Types.ObjectId.isValid(hospitalId)) {
+      return [];
+    }
+
+    const hospitals = await this.hospitalModel
+      .find({
+        $or: [{ _id: new Types.ObjectId(hospitalId) }, { hospitalId }],
+      })
+      .select('_id hospitalId')
+      .lean()
+      .exec();
+
+    const idSet = new Set<string>([hospitalId]);
+    for (const hospital of hospitals) {
+      idSet.add(hospital._id.toString());
+      if (hospital.hospitalId) {
+        idSet.add(hospital.hospitalId);
+      }
+    }
+
+    return [...idSet]
+      .filter((id) => Types.ObjectId.isValid(id))
+      .map((id) => new Types.ObjectId(id));
   }
 
   async findByTestId(

@@ -15,8 +15,10 @@ import { useTranslation } from 'react-i18next';
 
 const API_BASE = environment.mainBackendUrl;
 
-function getBackendId(value: any): string {
-  return value?._id ?? value?.id ?? value ?? '';
+function getPatientHospitalId(value: any): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  return value.hospitalId ?? value._id?.toString?.() ?? value.id ?? '';
 }
 
 function mapPatientFromBackendForList(item: any): Patient {
@@ -30,7 +32,7 @@ function mapPatientFromBackendForList(item: any): Patient {
     email: item.email ?? '',
     aadhaarNumber: item.aadhaarNumber ?? '',
     address: item.address ?? '',
-    hospitalId: getBackendId(item.hospitalId),
+    hospitalId: getPatientHospitalId(item.hospitalId),
     bedRequired: item.bedRequired ?? false,
     admittedAt: item.admittedAt ? new Date(item.admittedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
   };

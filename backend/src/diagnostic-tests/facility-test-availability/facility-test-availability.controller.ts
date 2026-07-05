@@ -34,8 +34,12 @@ export class FacilityTestAvailabilityController {
   async getByHospital(
     @Req() req: any,
     @Param('hospitalId') hospitalId: string,
+    @Query('availableOnly') availableOnly?: string,
   ) {
     await this.assertHospitalAccess(req, hospitalId);
+    if (availableOnly === 'true') {
+      return this.service.getAvailableByHospital(hospitalId);
+    }
     return this.service.getByHospital(hospitalId);
   }
 
@@ -59,7 +63,11 @@ export class FacilityTestAvailabilityController {
   private async assertHospitalAccess(req: any, hospitalId: string) {
     const user = req.user;
     const userHospitalId = await this.getAssignedHospitalId(req);
-    this.service.assertHospitalAccess(user.role, userHospitalId, hospitalId);
+    await this.service.assertHospitalAccessForUser(
+      user.role,
+      userHospitalId,
+      hospitalId,
+    );
   }
 
   private async getAssignedHospitalId(req: any) {
