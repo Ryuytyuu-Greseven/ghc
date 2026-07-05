@@ -14,6 +14,11 @@ import { InventoryMasterRepository } from '../../repositories/inventory-master.r
 import { RequestStatus, TransactionType } from '../../common/enums';
 import { buildPaginatedResponse } from '../utils/pagination.util';
 import { StaffRepository } from '../../repositories/staff.repository';
+import { NotificationsService } from '../../notifications/notifications.service';
+import { NotificationType } from '../../notifications/notification-types';
+import { httpLocalStorage } from '../../common/services/http.service';
+import { UserRepository } from '../../repositories/user.repository';
+import { HospitalRepository } from '../../repositories/hospital.repository';
 
 @Injectable()
 export class InventoryRequestsService {
@@ -25,6 +30,9 @@ export class InventoryRequestsService {
     private readonly masterRepo: InventoryMasterRepository,
     private readonly helper: InventoryRequestsHelperService,
     private readonly staffRepo: StaffRepository,
+    private readonly notificationsService: NotificationsService,
+    private readonly userRepo: UserRepository,
+    private readonly hospitalRepo: HospitalRepository,
   ) {}
 
   async findAll(query: Record<string, any> = {}, user?: any) {
@@ -107,11 +115,66 @@ export class InventoryRequestsService {
     }
 
     const requestNumber = await this.requestRepo.generateRequestNumber();
-    return this.requestRepo.create({
+    let resolvedUserId = user?.userId;
+    if (!resolvedUserId) {
+      const store = httpLocalStorage.getStore();
+      if (store && store.token) {
+        try {
+          const tokenStr = store.token.startsWith('Bearer ') ? store.token.substring(7) : store.token;
+          const payloadBase64 = tokenStr.split('.')[1];
+          if (payloadBase64) {
+            const payloadDecoded = Buffer.from(payloadBase64, 'base64').toString('utf8');
+            const parsed = JSON.parse(payloadDecoded);
+            resolvedUserId = parsed.userId || parsed.sub;
+          }
+        } catch (e) {
+          // ignore parsing errors
+        }
+      }
+    }
+    const userId = resolvedUserId ? new Types.ObjectId(resolvedUserId) : null;
+
+    const createdRequest = await this.requestRepo.create({
       ...data,
+      userId,
       requestNumber,
       status: RequestStatus.PENDING,
     });
+
+    // Notify admins
+    try {
+      const admins = await this.userRepo.findAll({ role: 'Admin', isActive: true });
+      const targetAdmins = admins.map((admin) => ({
+        id: admin._id.toString(),
+        email: admin.email,
+      }));
+
+      const performedBy = data.requestedBy || user?.username || 'Staff';
+
+      let branchName: string | undefined = undefined;
+      if (createdRequest.branchId) {
+        const branch = await this.hospitalRepo.findById(createdRequest.branchId.toString());
+        if (branch) {
+          branchName = branch.name;
+        }
+      }
+
+      if (targetAdmins.length > 0) {
+        void this.notificationsService.dispatch(
+          NotificationType.INVENTORY_REQUEST_RAISED,
+          {
+            request: createdRequest,
+            performedBy,
+            branchName,
+            targetAdmins,
+          },
+        );
+      }
+    } catch (err) {
+      console.error('Failed to dispatch request raised notification to admins:', err);
+    }
+
+    return createdRequest;
   }
 
   async approve(id: string, body: Record<string, any>, user?: any) {
@@ -124,7 +187,8 @@ export class InventoryRequestsService {
       throw new BadRequestException('Only Pending requests can be approved');
     }
 
-    const { approvedItems = [], remarks = '', performedBy = 'System' } = body;
+    const { approvedItems = [], remarks = '' } = body;
+    const performedBy = body.performedBy || (user ? user.username : 'Admin');
 
     const updatedItems = request.items.map((item) => {
       const itemIdStr = (item.itemId as any)._id
@@ -199,6 +263,21 @@ export class InventoryRequestsService {
       },
     });
 
+    const targetUserId = await this.resolveRequesterUserId(request);
+    const targetEmail = await this.resolveRequesterEmail(request);
+    if (targetUserId) {
+      void this.notificationsService.dispatch(
+        NotificationType.INVENTORY_REQUEST_PROCESSED,
+        {
+          request: updatedRequest,
+          performedBy,
+          status: newStatus,
+          userId: targetUserId,
+          email: targetEmail || undefined,
+        },
+      );
+    }
+
     return updatedRequest;
   }
 
@@ -216,7 +295,7 @@ export class InventoryRequestsService {
       remarks: body.remarks ?? '',
     });
 
-    const performedBy = body.performedBy ?? 'System';
+    const performedBy = body.performedBy || (user ? user.username : 'Admin');
     await this.transactionRepo.create({
       module: 'inventory',
       action: 'UPDATE',
@@ -230,6 +309,21 @@ export class InventoryRequestsService {
       },
     });
 
+    const targetUserIdReject = await this.resolveRequesterUserId(request);
+    const targetEmailReject = await this.resolveRequesterEmail(request);
+    if (targetUserIdReject) {
+      void this.notificationsService.dispatch(
+        NotificationType.INVENTORY_REQUEST_PROCESSED,
+        {
+          request: updatedRequest,
+          performedBy,
+          status: RequestStatus.REJECTED,
+          userId: targetUserIdReject,
+          email: targetEmailReject || undefined,
+        },
+      );
+    }
+
     return updatedRequest;
   }
 
@@ -239,10 +333,96 @@ export class InventoryRequestsService {
     }
     const request = await this.requestRepo.findById(id);
     if (!request) throw new NotFoundException(`Request ${id} not found`);
-    return this.requestRepo.update(id, {
+    const updatedRequest = await this.requestRepo.update(id, {
       status: body.status,
       remarks: body.remarks,
     });
+
+    const performedBy = body.performedBy || (user ? user.username : 'Admin');
+    const targetUserIdUpdate = await this.resolveRequesterUserId(request);
+    const targetEmailUpdate = await this.resolveRequesterEmail(request);
+    if (targetUserIdUpdate) {
+      void this.notificationsService.dispatch(
+        NotificationType.INVENTORY_REQUEST_PROCESSED,
+        {
+          request: updatedRequest,
+          performedBy,
+          status: body.status,
+          userId: targetUserIdUpdate,
+          email: targetEmailUpdate || undefined,
+        },
+      );
+    }
+
+    return updatedRequest;
+  }
+
+  private async resolveRequesterUserId(request: any): Promise<string | null> {
+    if (request.userId) {
+      return request.userId.toString();
+    }
+    if (request.requestedBy) {
+      try {
+        const staffList = await this.staffRepo.findAll();
+        const requestedByLower = request.requestedBy.toLowerCase().trim();
+        const found = staffList.find((s) => {
+          const displayName = s.displayName?.toLowerCase().trim();
+          const fullName = `${s.firstName || ''} ${s.lastName || ''}`.trim().toLowerCase();
+          return (
+            displayName === requestedByLower ||
+            fullName === requestedByLower ||
+            s.firstName?.toLowerCase() === requestedByLower
+          );
+        });
+        if (found && found.userId) {
+          return (found.userId as any)._id
+            ? (found.userId as any)._id.toString()
+            : found.userId.toString();
+        }
+      } catch (e) {
+        console.error('Failed to resolve requester user ID:', e);
+      }
+    }
+    return null;
+  }
+
+  private async resolveRequesterEmail(request: any): Promise<string | null> {
+    if (request.userId) {
+      try {
+        const staff = await this.staffRepo.findOne({ userId: request.userId });
+        if (staff && staff.email) {
+          return staff.email;
+        }
+        // Fallback to user collection (e.g. for admin user accounts)
+        const user = await this.userRepo.findById(request.userId.toString());
+        if (user && user.email) {
+          return user.email;
+        }
+      } catch (e) {
+        console.error('Failed to resolve requester email by userId:', e);
+      }
+    }
+    if (request.requestedBy) {
+      try {
+        const staffList = await this.staffRepo.findAll();
+        const requestedByLower = request.requestedBy.toLowerCase().trim();
+        const found = staffList.find((s) => {
+          const displayName = s.displayName?.toLowerCase().trim();
+          const fullName = `${s.firstName || ''} ${s.lastName || ''}`.trim().toLowerCase();
+          return (
+            displayName === requestedByLower ||
+            fullName === requestedByLower ||
+            s.firstName?.toLowerCase() === requestedByLower
+          );
+        });
+        if (found && found.email) {
+          return found.email;
+        }
+      } catch (e) {
+        console.error('Failed to resolve requester email by requestedBy name:', e);
+      }
+    }
+    return null;
   }
 
   private checkRole(user: any, allowedRole: 'Admin' | 'NotAdmin') {

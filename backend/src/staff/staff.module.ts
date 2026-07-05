@@ -12,6 +12,7 @@ import {
 import { Hospital, HospitalSchema } from '../schemas/hospital.schema';
 import { StaffRepository } from '../repositories/staff.repository';
 import { UsersModule } from '../users/users.module';
+import { LocationsModule } from '../locations/locations.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UsersModule } from '../users/users.module';
       { name: Hospital.name, schema: HospitalSchema },
     ]),
     UsersModule,
+    LocationsModule,
   ],
   controllers: [StaffController],
   providers: [StaffService, StaffHelperService, StaffRepository],

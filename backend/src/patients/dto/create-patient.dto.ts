@@ -18,6 +18,8 @@ export class CreatePatientDto {
   email: string;
   aadhaarNumber: string;
   address: string;
+  state?: number;
+  city?: number;
   hospitalId: string;
   bedRequired: boolean;
   admittedAt?: Date | string;

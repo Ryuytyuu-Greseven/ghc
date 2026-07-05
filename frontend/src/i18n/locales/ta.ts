@@ -87,7 +87,7 @@ export const ta = {
       hospitals: "மருத்துவமனைகள் & கிளினிக்குகள்",
       staff: "ஊழியர் மேலாண்மை",
       patients: "நோயாளிகள்",
-      medicines: "மருந்துகள் & பொருட்கள்",
+      medicines: "சரக்கு மற்றும் பொருட்கள்",
       "ai-analytics": "AI சரக்கு பகுப்பாய்வு",
       "critical-alerts": "முக்கிய எச்சரிக்கைகள்",
       availability: "என் இருப்பு நிலை",
@@ -111,6 +111,11 @@ export const ta = {
     dashboard: {
       title: "டாஷ்போர்டு",
       subtitle: "GHC சுகாதார மேலாண்மை கண்ணோட்டம்",
+      organization_view: "அமைப்பு பார்வை",
+      viewing_hospital: "ஒதுக்கப்பட்ட மருத்துவமனை: {{name}}",
+      in_facility_inventory: "மையத்தின் கையிருப்பில்",
+      in_hospital_inventory: "{{name}} கையிருப்பில்",
+      in_this_facility: "இந்த மையத்தில்",
       totalPatients: "மொத்த நோயாளிகள்",
       activeStaff: "செயலில் உள்ள ஊழியர்கள்",
       bedsAvailable: "கிடைக்கும் படுக்கைகள்",
@@ -134,9 +139,18 @@ export const ta = {
       beds_free: "படுக்கைகள் காலியாக உள்ளன",
       unassigned: "ஒதுக்கப்படாத",
       requiringBeds: "படுக்கை தேவைப்படுபவர்கள்",
+      pending_requests_title: "நிலுவையில் உள்ள சரக்கு கோரிக்கைகள்",
+      no_pending_requests: "சரக்கு கோரிக்கைகள் எதுவும் நிலுவையில் இல்லை",
+      view_all_requests: "அனைத்து கோரிக்கைகளையும் நிர்வகி",
+      view_my_requests: "எனது கோரிக்கைகளை காண்க",
+      raise_request: "கோரிக்கையை உருவாக்கு",
+      action: "செயல்பாடு",
+      review: "மதிப்பாய்வு செய்க",
       intervention: {
         title: "முக்கிய எச்சரிக்கைகள்",
+        title_facility: "உங்கள் மையத்திற்கான முக்கிய எச்சரிக்கைகள்",
         subtitle: "முக்கிய வள பற்றாக்குறைகளை தெரிவிக்கும் சுகாதார மையங்கள்",
+        subtitle_facility: "உங்களுக்கு ஒதுக்கப்பட்ட மையத்திற்கான வள நிலை எச்சரிக்கைகள்",
         subtitle_staff: "உங்கள் மையத்திற்கான முக்கிய வள எச்சரிக்கைகள்",
         severity_high: "அதிக",
         severity_medium: "நடுத்தர",
@@ -304,7 +318,7 @@ export const ta = {
       healthAI: "GHC ஹெಲ್ತ್ AI"
     },
     inventory: {
-      title: "மருந்துகள் & பொருட்கள்",
+      title: "சரக்கு மற்றும் பொருட்கள்",
       subtitle: "இருப்பு, கோரிக்கைகள் மற்றும் பரிவர்த்தனைகளை நிர்வகிக்கவும்",
       tabs: {
         master: "இருப்பு மாஸ்டர்",

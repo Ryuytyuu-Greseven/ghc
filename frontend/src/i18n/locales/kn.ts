@@ -87,7 +87,7 @@ export const kn = {
       hospitals: "ಆಸ್ಪತ್ರೆಗಳು ಮತ್ತು ಕ್ಲಿನಿಕ್‌ಗಳು",
       staff: "ಸಿಬ್ಬಂದಿ ನಿರ್ವಹಣೆ",
       patients: "ರೋಗಿಗಳು",
-      medicines: "ಔಷಧಿಗಳು ಮತ್ತು ಸರಬರಾಜು",
+      medicines: "ದಾಸ್ತಾನು ಮತ್ತು ಸರಬರಾಜು",
       "ai-analytics": "AI ಇನ್ವೆಂಟರಿ ಅನಾಲಿಟಿಕ್ಸ್",
       "critical-alerts": "ನಿರ್ಣಾಯಕ ಎಚ್ಚರಿಕೆಗಳು",
       availability: "ನನ್ನ ಲಭ್ಯತೆ",
@@ -111,6 +111,11 @@ export const kn = {
     dashboard: {
       title: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
       subtitle: "GHC ಆರೋಗ್ಯ ನಿರ್ವಹಣೆಯ ಅವಲೋಕನ",
+      organization_view: "ಸಂಸ್ಥೆಯ ನೋಟ",
+      viewing_hospital: "ನಿಯೋಜಿತ ಆಸ್ಪತ್ರೆ: {{name}}",
+      in_facility_inventory: "ಕೇಂದ್ರದ ದಾಸ್ತಾನಿನಲ್ಲಿ",
+      in_hospital_inventory: "{{name}} ದಾಸ್ತಾನಿನಲ್ಲಿ",
+      in_this_facility: "ಈ ಕೇಂದ್ರದಲ್ಲಿ",
       totalPatients: "ಒಟ್ಟು ರೋಗಿಗಳು",
       activeStaff: "ಸಕ್ರಿಯ ಸಿಬ್ಬಂದಿ",
       bedsAvailable: "ಲಭ್ಯವಿರುವ ಹಾಸಿಗೆಗಳು",
@@ -134,9 +139,18 @@ export const kn = {
       beds_free: "ಹಾಸಿಗೆಗಳು ಖಾಲಿ ಇವೆ",
       unassigned: "ನಿಯೋಜಿಸದ",
       requiringBeds: "ಹಾಸಿಗೆಗಳ ಅವಶ್ಯಕತೆ ಇರುವವರು",
+      pending_requests_title: "ಬಾಕಿ ಉಳಿದಿರುವ ಇನ್ವೆಂಟರಿ ವಿನಂತಿಗಳು",
+      no_pending_requests: "ಯಾವುದೇ ಇನ್ವೆಂಟರಿ ವಿನಂತಿಗಳು ಬಾಕಿ ಇಲ್ಲ",
+      view_all_requests: "ಎಲ್ಲಾ ವಿನಂತಿಗಳನ್ನು ನಿರ್ವಹಿಸಿ",
+      view_my_requests: "ನನ್ನ ವಿನಂತಿಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
+      raise_request: "ವಿನಂತಿ ಸಲ್ಲಿಸಿ",
+      action: "ಕ್ರಮ",
+      review: "ಪರಿಶೀಲಿಸಿ",
       intervention: {
         title: "ತೀವ್ರ ಎಚ್ಚರಿಕೆಗಳು",
+        title_facility: "ನಿಮ್ಮ ಕೇಂದ್ರಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ತೀವ್ರ ಎಚ್ಚರಿಕೆಗಳು",
         subtitle: "ತೀವ್ರ ಸಂಪನ್ಮೂಲ ತೊಂದರೆಗಳನ್ನು ಸೂಚಿಸುವ ಆರೋಗ್ಯ ಕೇಂದ್ರಗಳು",
+        subtitle_facility: "ನಿಮ್ಮ ನಿಯೋಜಿತ ಕೇಂದ್ರಕ್ಕಾಗಿ ಸಂಪನ್ಮೂಲ ಸ್ಥಿತಿ ಎಚ್ಚರಿಕೆಗಳು",
         subtitle_staff: "ನಿಮ್ಮ ಕೇಂದ್ರಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ತೀವ್ರ ಸಂಪನ್ಮೂಲ ಎಚ್ಚರಿಕೆಗಳು",
         severity_high: "ಹೆಚ್ಚು",
         severity_medium: "ಮಧ್ಯಮ",
@@ -304,7 +318,7 @@ export const kn = {
       healthAI: "GHC ಹೆಲ್ತ್ AI"
     },
     inventory: {
-      title: "ಔಷಧಿಗಳು ಮತ್ತು ಸರಬರಾಜು",
+      title: "ದಾಸ್ತಾನು ಮತ್ತು ಸರಬರಾಜು",
       subtitle: "ದಾಸ್ತಾನು, ಕೋರಿಕೆಗಳು ಮತ್ತು ವಹಿವಾಟು ಇತಿಹಾಸವನ್ನು ನಿರ್ವಹಿಸಿ",
       tabs: {
         master: "ದಾಸ್ತಾನು ಮಾಸ್ಟರ್",

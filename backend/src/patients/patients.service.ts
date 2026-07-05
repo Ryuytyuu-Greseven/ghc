@@ -16,6 +16,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-types';
 import { llmInstance } from '../google/vertex.config';
 import { SystemMessage, HumanMessage } from '@langchain/core/messages';
+import { LocationsService } from '../locations/locations.service';
 
 const requiredCreateFields: (keyof CreatePatientDto)[] = [
   'name',
@@ -40,28 +41,50 @@ export class PatientsService {
     private readonly hospitalsCommonService: HospitalsCommonService,
     private readonly hospitalRepository: HospitalRepository,
     private readonly notificationsService: NotificationsService,
+    private readonly locationsService: LocationsService,
   ) { }
 
+  private mapLocationNames(patient: any) {
+    if (!patient) return patient;
+    const doc = patient.toObject ? patient.toObject() : patient;
+    const stateCode = doc.state;
+    const cityCode = doc.city;
+
+    doc.stateCode = stateCode;
+    doc.cityCode = cityCode;
+
+    doc.state = this.locationsService.getStateName(stateCode) || doc.state;
+    doc.city = this.locationsService.getDistrictName(cityCode) || doc.city;
+
+    return doc;
+  }
+
   async findAll(query: SearchPatientsDto = {}) {
-    return this.patientRepository.findPaginated({
+    const paginated = await this.patientRepository.findPaginated({
       ...query,
       page: query.page ?? 1,
       pageSize: query.pageSize ?? 10,
     });
+    return {
+      ...paginated,
+      data: paginated.data.map(p => this.mapLocationNames(p)),
+    };
   }
 
   async findAllList(filter: object = {}) {
-    return this.patientRepository.findAll({ isActive: true, ...filter });
+    const list = await this.patientRepository.findAll({ isActive: true, ...filter });
+    return list.map(p => this.mapLocationNames(p));
   }
 
   async findOne(id: string) {
     const patient = await this.patientRepository.findById(id);
     if (!patient) throw new NotFoundException(`Patient ${id} not found`);
-    return patient;
+    return this.mapLocationNames(patient);
   }
 
   async findByHospital(hospitalId: string) {
-    return this.patientRepository.findByHospital(hospitalId);
+    const list = await this.patientRepository.findByHospital(hospitalId);
+    return list.map(p => this.mapLocationNames(p));
   }
 
   async findDischarged(options: { hospitalId?: string; from: Date; to: Date }) {
@@ -72,7 +95,8 @@ export class PatientsService {
     if (options.hospitalId) {
       filter.hospitalId = new Types.ObjectId(options.hospitalId);
     }
-    return this.patientRepository.findDischarged(filter);
+    const list = await this.patientRepository.findDischarged(filter);
+    return list.map(p => this.mapLocationNames(p));
   }
 
   async create(data: CreatePatientDto) {
@@ -105,7 +129,7 @@ export class PatientsService {
       },
     );
 
-    return createdPatient;
+    return this.mapLocationNames(createdPatient);
   }
 
   async update(id: string, data: UpdatePatientDto) {
@@ -119,7 +143,7 @@ export class PatientsService {
       this.toPatientPersistence(patient),
     );
     if (!updated) throw new NotFoundException(`Patient ${id} not found`);
-    return updated;
+    return this.mapLocationNames(updated);
   }
 
   private prepareCreate(data: CreatePatientDto): CreatePatientDto {

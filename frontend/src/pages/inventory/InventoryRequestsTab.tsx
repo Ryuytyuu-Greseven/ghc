@@ -10,6 +10,7 @@ import { RequestForm } from './RequestForm';
 import { RequestDetailModal } from './RequestDetailModal';
 import { PaginationControls } from '../../components/ui/PaginationControls';
 import { useTranslation } from 'react-i18next';
+import { inventoryApi } from '../../services/inventoryApi';
 
 const statusVariant: Record<RequestStatus, 'warning' | 'success' | 'danger' | 'purple'> = {
   Pending: 'warning',
@@ -94,6 +95,50 @@ export function InventoryRequestsTab() {
 
     loadRequests(params.toString());
   }, [page, pageSize, sortBy, sortOrder, filterStatus, selectedBranchId, fromDate, toDate, search, loadRequests, isAdmin, assignedHospital]);
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    
+    // Check if we need to open the "Raise Request" modal
+    if (queryParams.get('action') === 'new') {
+      setNewReqOpen(true);
+      // Clean up parameter from URL so it doesn't reopen on subsequent renders
+      const url = new URL(window.location.href);
+      url.searchParams.delete('action');
+      window.history.replaceState({}, '', url.pathname + url.search);
+    }
+    
+    // Check if we need to open a specific request detail
+    const requestIdParam = queryParams.get('requestId');
+    if (requestIdParam) {
+      // First check if the request is already in our list
+      const existing = requests.find((r) => r._id === requestIdParam);
+      if (existing) {
+        setDetailRequest(existing);
+        // Clean up parameter from URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('requestId');
+        window.history.replaceState({}, '', url.pathname + url.search);
+      } else {
+        // If not in the list, fetch it directly
+        const fetchRequestDetail = async () => {
+          try {
+            const req = await inventoryApi.getRequest(requestIdParam);
+            if (req) {
+              setDetailRequest(req);
+              // Clean up parameter from URL
+              const url = new URL(window.location.href);
+              url.searchParams.delete('requestId');
+              window.history.replaceState({}, '', url.pathname + url.search);
+            }
+          } catch (err) {
+            console.error('Failed to fetch request detail for modal:', err);
+          }
+        };
+        fetchRequestDetail();
+      }
+    }
+  }, [requests]);
 
   const handleSort = (field: string) => {
     if (sortBy === field) {

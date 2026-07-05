@@ -6,6 +6,7 @@ import { buildPaginatedResponse } from '../inventory/utils/pagination.util';
 import { BedAllocationRepository } from '../repositories/bed-allocation.repository';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-types';
+import { LocationsService } from '../locations/locations.service';
 
 @Injectable()
 export class HospitalsService {
@@ -13,7 +14,23 @@ export class HospitalsService {
     private readonly hospitalRepository: HospitalRepository,
     private readonly bedAllocationRepository: BedAllocationRepository,
     private readonly notificationsService: NotificationsService,
+    private readonly locationsService: LocationsService,
   ) {}
+
+  private mapLocationNames(hospital: any) {
+    if (!hospital) return hospital;
+    const doc = hospital.toObject ? hospital.toObject() : hospital;
+    const stateCode = doc.state;
+    const cityCode = doc.city;
+
+    doc.stateCode = stateCode;
+    doc.cityCode = cityCode;
+
+    doc.state = this.locationsService.getStateName(stateCode) || doc.state;
+    doc.city = this.locationsService.getDistrictName(cityCode) || doc.city;
+
+    return doc;
+  }
 
   async getAllHospitals(
     query: Record<string, any> = {},
@@ -25,10 +42,11 @@ export class HospitalsService {
       query.pageSize === undefined &&
       query.limit === undefined
     ) {
-      return this.hospitalRepository.findAll({
+      const res = await this.hospitalRepository.findAll({
         isActive: true,
         ...extraFilter,
       });
+      return res.map(h => this.mapLocationNames(h));
     }
 
     // Map 'limit' to 'pageSize' if passed
@@ -38,20 +56,22 @@ export class HospitalsService {
 
     const { data, total, page, pageSize } =
       await this.hospitalRepository.findPaginated(query, extraFilter);
-    return buildPaginatedResponse(data, total, page, pageSize);
+    const mappedData = data.map(h => this.mapLocationNames(h));
+    return buildPaginatedResponse(mappedData, total, page, pageSize);
   }
 
   async getHospitalById(id: string) {
     const hospital = await this.hospitalRepository.findById(id);
     if (!hospital) throw new NotFoundException(`Hospital ${id} not found`);
     // If it's an archive version, automatically resolve to current active version details
+    let activeDoc = hospital;
     if (!hospital.isCurrent && hospital.hospitalId) {
       const current = await this.hospitalRepository.findCurrentByHospitalId(
         hospital.hospitalId,
       );
-      if (current) return current;
+      if (current) activeDoc = current;
     }
-    return hospital;
+    return this.mapLocationNames(activeDoc);
   }
 
   async createHospital(data: Partial<Hospital>, userId?: string, performedBy?: string) {
@@ -65,11 +85,11 @@ export class HospitalsService {
     };
     const created = await this.hospitalRepository.create(docData);
     void this.notificationsService.dispatch(NotificationType.HOSPITAL_ONBOARDED, {
-      hospital: created,
+      hospital: this.mapLocationNames(created),
       userId,
       performedBy,
     });
-    return created;
+    return this.mapLocationNames(created);
   }
 
   async updateHospital(id: string, data: Partial<Hospital>, userId?: string, performedBy?: string) {
@@ -121,13 +141,13 @@ export class HospitalsService {
       : 'Profile information updated';
 
     void this.notificationsService.dispatch(NotificationType.HOSPITAL_UPDATED, {
-      hospital: created,
+      hospital: this.mapLocationNames(created),
       changes,
       userId,
       performedBy,
     });
 
-    return created;
+    return this.mapLocationNames(created);
   }
 
   async deleteHospital(id: string) {
@@ -137,7 +157,8 @@ export class HospitalsService {
   }
 
   async getHospitalHistory(hospitalId: string) {
-    return this.hospitalRepository.findHistory(hospitalId);
+    const history = await this.hospitalRepository.findHistory(hospitalId);
+    return history.map(h => this.mapLocationNames(h));
   }
 
   async getHospitalBedAllocations(id: string) {

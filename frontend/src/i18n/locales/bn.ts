@@ -87,7 +87,7 @@ export const bn = {
       hospitals: "হাসপাতাল ও ক্লিনিক",
       staff: "কর্মী",
       patients: "রোগী",
-      medicines: "ওষুধ ও চিকিৎসা সরবরাহ",
+      medicines: "ইনভেন্টরি এবং সরবরাহ",
       "ai-analytics": "এআই ইনভেন্টরি অ্যানালিটিক্স",
       "critical-alerts": "গুরুতর সতর্কতা",
       availability: "আমার প্রাপ্যতা",
@@ -111,6 +111,11 @@ export const bn = {
     dashboard: {
       title: "ড্যাশবোর্ড",
       subtitle: "জিএইচসি স্বাস্থ্য ব্যবস্থাপনা ওভারভিউ",
+      organization_view: "সংগঠন ভিউ",
+      viewing_hospital: "বরাদ্দকৃত হাসপাতাল: {{name}}",
+      in_facility_inventory: "সুবিধা ইনভেন্টরিতে",
+      in_hospital_inventory: "{{name}} ইনভেন্টরিতে",
+      in_this_facility: "এই সুবিধা কেন্দ্রে",
       totalPatients: "মোট রোগী",
       activeStaff: "সক্রিয় কর্মী",
       bedsAvailable: "উপলব্ধ শয্যা",
@@ -134,9 +139,18 @@ export const bn = {
       beds_free: "শয্যা খালি",
       unassigned: "কর্মী বরাদ্দহীন",
       requiringBeds: "শয্যা প্রয়োজন",
+      pending_requests_title: "অপেক্ষমান ইনভেন্টরি অনুরোধসমূহ",
+      no_pending_requests: "কোন অপেক্ষমান ইনভেন্টরি অনুরোধ নেই",
+      view_all_requests: "সমস্ত অনুরোধ পরিচালনা করুন",
+      view_my_requests: "আমার অনুরোধ দেখুন",
+      raise_request: "অনুরোধ উত্থাপন করুন",
+      action: "পদক্ষেপ",
+      review: "পর্যালোচনা",
       intervention: {
         title: "গুরুতর সতর্কতা",
+        title_facility: "আপনার সুবিধার জন্য গুরুতর সতর্কতা",
         subtitle: "গুরুতর সম্পদ সংকটের মুখোমুখি হওয়া স্বাস্থ্য কেন্দ্রসমূহ",
+        subtitle_facility: "আপনার বরাদ্দকৃত সুবিধার জন্য সংস্থান স্থিতি সতর্কতা",
         severity_high: "উচ্চ",
         severity_medium: "মাঝারি",
         bed_shortage: "শয্যা সংকট",
@@ -304,7 +318,7 @@ export const bn = {
       healthAI: "জিএইচসি স্বাস্থ্য এআই"
     },
     inventory: {
-      title: "ওষুধ ও চিকিৎসা সরবরাহ",
+      title: "ইনভেন্টরি এবং সরবরাহ",
       subtitle: "ইনভেন্টরি, স্টক, অনুরোধ এবং অডিট ট্রেইল পরিচালনা করুন",
       tabs: {
         master: "ইনভেন্টরি মাস্টার",

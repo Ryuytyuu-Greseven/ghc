@@ -87,7 +87,7 @@ export const gu = {
     "hospitals": "હોસ્પિટલો અને ક્લિનિક્સ",
     "staff": "સ્ટાફ",
     "patients": "દર્દીઓ",
-    "medicines": "દવાઓ અને સપ્લાય",
+    "medicines": "ઈન્વેન્ટરી અને સપ્લાય",
     "ai-analytics": "AI ઇન્વેન્ટરી એનાલિટિક્સ",
     "critical-alerts": "મહત્વપૂર્ણ એલર્ટ્સ",
     "availability": "મારી ઉપલબ્ધતા",
@@ -111,6 +111,11 @@ export const gu = {
   "dashboard": {
     "title": "ડેશબોર્ડ",
     "subtitle": "GHC હેલ્થ કેર મેનેજમેન્ટ વિહંગાવલોકન",
+    "organization_view": "સંગઠન વ્યૂ",
+    "viewing_hospital": "સોંપાયેલ હોસ્પિટલ: {{name}}",
+    "in_facility_inventory": "કેન્દ્રની ઇન્વેન્ટરીમાં",
+    "in_hospital_inventory": "{{name}} ઇન્વેન્ટરીમાં",
+    "in_this_facility": "આ કેન્દ્રમાં",
     "totalPatients": "કુલ દર્દીઓ",
     "activeStaff": "સક્રિય સ્ટાફ",
     "bedsAvailable": "ઉપલબ્ધ બેડ",
@@ -134,9 +139,18 @@ export const gu = {
     "beds_free": "બેડ ખાલી",
     "unassigned": "અનઅસાઇન્ડ",
     "requiringBeds": "બેડની જરૂરિયાતવાળા",
+    "pending_requests_title": "બાકી ઇન્વેન્ટરી વિનંતીઓ",
+    "no_pending_requests": "કોઈ બાકી ઇન્વેન્ટરી વિનંતીઓ નથી",
+    "view_all_requests": "તમામ વિનંતીઓનું સંચાલન કરો",
+    "view_my_requests": "મારી વિનંતીઓ જુઓ",
+    "raise_request": "વિનંતી સબમિટ કરો",
+    "action": "પગલાં",
+    "review": "સમીક્ષા",
     "intervention": {
       "title": "ગંભીર ચેતવણીઓ",
+      "title_facility": "તમારા કેન્દ્ર માટે ગંભીર ચેતવણીઓ",
       "subtitle": "ગંભીર સંસાધન અડચણો સૂચવતાં આરોગ્ય કેન્દ્રો",
+      "subtitle_facility": "તમારા સોંપાયેલ કેન્દ્ર માટે સંસાધન સ્થિતિ ચેતવણીઓ",
       "subtitle_staff": "તમારા કેન્દ્ર માટે ગંભીર સંસાધન ચેતવણીઓ",
       "severity_high": "ઊંચું",
       "severity_medium": "મધ્યમ",
@@ -304,7 +318,7 @@ export const gu = {
     "healthAI": "આરોગ્ય AI"
   },
   "inventory": {
-    "title": "દવાઓ અને સપ્લાય",
+    "title": "ઈન્વેન્ટરી અને સપ્લાય",
     "subtitle": "કેન્દ્રીય સ્ટોર અને બ્રાન્ચ ઇન્વેન્ટરીનું સંચાલન કરો",
     "tabs": {
       "master": "માસ્ટર કેટલોગ",

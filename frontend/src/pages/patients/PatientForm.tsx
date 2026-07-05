@@ -8,6 +8,7 @@ import { useApp } from '../../context/AppContext';
 import type { Patient, Gender, BloodGroup, PatientDraft, PatientFormValues } from '../../types';
 import { Pencil, Plus, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { locationApi } from '../../services/locationApi';
 
 interface Props {
   initial: Patient | null;
@@ -28,6 +29,8 @@ const requiredFields: RequiredPatientField[] = [
   'email',
   'aadhaarNumber',
   'address',
+  'state',
+  'city',
   'hospitalId',
 ];
 
@@ -80,6 +83,9 @@ export function PatientForm({ initial, onClose }: Props) {
     { value: 'other', label: t('patients.form.genders.other') },
   ];
 
+  const [states, setStates] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+
   const [form, setForm] = useState<PatientFormValues>({
     name: initial?.name ?? '',
     age: String(initial?.age ?? ''),
@@ -89,9 +95,47 @@ export function PatientForm({ initial, onClose }: Props) {
     email: initial?.email ?? '',
     aadhaarNumber: initial?.aadhaarNumber ?? '',
     address: initial?.address ?? '',
+    state: (initial as any)?.stateCode ? String((initial as any).stateCode) : '',
+    city: (initial as any)?.cityCode ? String((initial as any).cityCode) : '',
     hospitalId: initial?.hospitalId ?? '',
     bedRequired: initial?.bedRequired ?? false,
   });
+
+  const handleStateChange = (stateCode: string) => {
+    setForm(f => ({
+      ...f,
+      state: stateCode,
+      city: '',
+    }));
+  };
+
+  useEffect(() => {
+    async function loadStates() {
+      try {
+        const data = await locationApi.getStates();
+        setStates(data);
+      } catch (err) {
+        console.error('Failed to load states:', err);
+      }
+    }
+    loadStates();
+  }, []);
+
+  useEffect(() => {
+    if (!form.state) {
+      setDistricts([]);
+      return;
+    }
+    async function loadDistricts() {
+      try {
+        const data = await locationApi.getDistricts(form.state);
+        setDistricts(data);
+      } catch (err) {
+        console.error('Failed to load districts:', err);
+      }
+    }
+    loadDistricts();
+  }, [form.state]);
   const [touched, setTouched] = useState<PatientFormTouched>({});
   const [toast, setToast] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -135,6 +179,8 @@ export function PatientForm({ initial, onClose }: Props) {
       email: form.email.trim(),
       aadhaarNumber: form.aadhaarNumber.trim(),
       address: form.address.trim(),
+      state: form.state ? Number(form.state) : undefined,
+      city: form.city ? Number(form.city) : undefined,
       hospitalId: form.hospitalId,
       bedRequired: form.bedRequired,
     };
@@ -276,6 +322,35 @@ export function PatientForm({ initial, onClose }: Props) {
         error={errorFor('address')}
         placeholder={t('patients.form.placeholders.address')}
       />
+
+      <div className="grid grid-cols-2 gap-4">
+        <Select
+          label={t('staff.form.labels.state', 'State')}
+          required
+          value={form.state}
+          onChange={e => handleStateChange(e.target.value)}
+          onBlur={() => touch('state')}
+          error={errorFor('state')}
+          options={[
+            { value: '', label: '— Select State —' },
+            ...states.map(s => ({ value: String(s.code), label: s.name })),
+          ]}
+        />
+
+        <Select
+          label={t('staff.form.labels.city', 'District')}
+          required
+          disabled={!form.state}
+          value={form.city}
+          onChange={e => set('city', e.target.value)}
+          onBlur={() => touch('city')}
+          error={errorFor('city')}
+          options={[
+            { value: '', label: '— Select District —' },
+            ...districts.map(d => ({ value: String(d.code), label: d.name })),
+          ]}
+        />
+      </div>
       <div className="flex items-center gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50">
         <input
           type="checkbox"
