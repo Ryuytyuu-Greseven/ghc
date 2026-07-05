@@ -17,7 +17,7 @@ export let appInstance: INestApplication;
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useStaticAssets(join(__dirname, 'notifications', 'assets'), {
-    prefix: '/email-assets/',
+    prefix: '/public/',
   });
   // shall change to actual domain later
   // const allowedOrigins = [

@@ -4,6 +4,7 @@ import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
 import type { AppNotification, NotificationCategory } from '../../types';
 import { notificationApi } from '../../services/notificationApi';
+import { useNotificationsSocket } from '../../hooks/useNotificationsSocket';
 
 type PanelNotification = AppNotification & { time: string };
 
@@ -134,13 +135,27 @@ export function NotificationsPanel() {
     }
   }, [t]);
 
+  const handleNewNotification = useCallback(
+    (notification: AppNotification) => {
+      setNotifs(current => {
+        if (current.some(item => item.id === notification.id)) return current;
+        return [
+          {
+            ...notification,
+            time: formatRelativeTime(notification.createdAt, t),
+          },
+          ...current,
+        ];
+      });
+    },
+    [t],
+  );
+
+  useNotificationsSocket(handleNewNotification);
+
   useEffect(() => {
     void loadNotifications();
   }, [loadNotifications]);
-
-  useEffect(() => {
-    if (open) void loadNotifications();
-  }, [open, loadNotifications]);
 
   const markAllRead = async () => {
     setNotifs(n => n.map(x => ({ ...x, read: true })));
