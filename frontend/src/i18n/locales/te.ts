@@ -92,6 +92,7 @@ export const te = {
       availability: "నా అందుబాటు",
       transfers: "కవరేజ్ & బదిలీలు",
       audits: "ఆడిట్ లాగ్స్",
+      diagnosticTests: "డయాగ్నాస్టిక్ టెస్ట్‌లు",
       reports: "నివేదికలు"
     },
     roles: {
@@ -829,7 +830,18 @@ export const te = {
         medicineAvailabilityTitle: "మందుల స్టాక్ లభ్యత",
         colBranchesCount: "స్టాక్ ఉన్న బ్రాంచీలు",
         colBatchesCount: "బ్యాచ్‌లు"
-      }
+      },
+    diagnosticTests: {
+      title: "Diagnostic Test Tracking",
+      subtitle: "Manage test catalog and facility availability audits",
+      tabs: { catalog: "Test Catalog", availability: "Facility Availability", audit: "Audit History" },
+      categories: { Lab: "Lab", Imaging: "Imaging", Pathology: "Pathology", Other: "Other" },
+      status: { Active: "Active", Inactive: "Inactive" },
+      availabilityStatus: { Available: "Available", Unavailable: "Unavailable", Partial: "Partial", OutOfOrder: "Out of Order", NotAudited: "Not Audited" },
+      fields: { testName: "Test Name", testNamePlaceholder: "e.g. Complete Blood Count", testCode: "Test Code", testCodePlaceholder: "e.g. CBC", category: "Category", sampleType: "Sample Type", sampleTypePlaceholder: "e.g. Blood, Urine", status: "Status", reason: "Reason", reasonPlaceholder: "e.g. Reagent stockout, machine broken" },
+      catalog: { addTest: "Add Test", editTest: "Edit Test", searchPlaceholder: "Search tests...", empty: "No tests in catalog yet.", deactivate: "Deactivate", deactivateConfirm: "Deactivate \"{{name}}\" from the catalog?", loadError: "Failed to load test catalog.", saveError: "Failed to save test.", fieldRequired: "{{field}} is required", facilityAvailability: "Facility Availability", facilityAvailabilityHint: "Optionally set initial availability per facility when saving this test.", addFacility: "Add Facility", selectFacility: "Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityRequired: "Please select a facility for each row.", duplicateFacility: "Each facility can only be added once.", reasonRequired: "Reason is required when status is not Available.", reasonNotRequired: "No reason needed when available.", noFacilitiesAdded: "No facilities added. Use Add Facility to set availability." },
+      availability: { infoBanner: "Audit diagnostic test availability at your facility. Changes are logged for district administrators.", selectFacility: "Select Facility", selectFacilityPlaceholder: "Choose a facility...", selectFacilityHint: "Select a facility to view and audit test availability.", loadError: "Failed to load availability.", saveError: "Failed to update availability.", saved: "Availability updated successfully.", reasonRequired: "Please enter a reason when status is not Available." },
+      audit: { filterFacility: "Filter by Facility", scopedToFacility: "Showing audit history for your assigned facility.", empty: "No availability changes recorded yet.", loadError: "Failed to load audit history.", when: "When", facility: "Facility", change: "Change" }
     },
     notifications: {
       hospitalOnboardedTitle: "ఆసుపత్రి విజయవంతంగా ఆన్‌బోర్డు చేయబడింది",
@@ -845,4 +857,5 @@ export const te = {
       staffDeassignedTitle: "సిబ్బంది సదుపాయం నుండి తొలగించబడ్డారు",
       staffDeassignedBody: "సిబ్బంది సభ్యుడు \"{{name}}\" {{performedBy}} ద్వారా {{facility}} నుండి తొలగించబడ్డారు."
     }
-  };
+  }
+};

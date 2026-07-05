@@ -12,6 +12,7 @@ import {
   Sparkles,
   AlertOctagon,
   BarChart3,
+  FlaskConical,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
@@ -29,17 +30,18 @@ const allNavItems = [
   { to: '/availability', key: 'availability', icon: Calendar },
   { to: '/transfers', key: 'transfers', icon: Shuffle },
   { to: '/audits', key: 'audits', icon: ClipboardList },
+  { to: '/diagnostic-tests', key: 'diagnosticTests', icon: FlaskConical },
   { to: '/reports', key: 'reports', icon: BarChart3 },
 ];
 
 const roleNavItemsMap: Record<string, string[]> = {
-  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/critical-alerts', '/transfers', '/audits','/reports'],
-  Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
-  Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
-  Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
-  Pharmacist: ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
+  Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/critical-alerts', '/transfers', '/audits', '/diagnostic-tests', '/reports'],
+  Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts', '/diagnostic-tests', '/reports'],
+  Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts', '/diagnostic-tests', '/reports'],
+  Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts', '/reports'],
+  Pharmacist: ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts', '/reports'],
   Compounder: ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts'],
-  'Lab Technician': ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts'],
+  'Lab Technician': ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts', '/diagnostic-tests'],
   Cashier: ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts'],
 };
 

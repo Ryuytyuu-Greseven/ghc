@@ -79,6 +79,9 @@ export class AuditInterceptor implements NestInterceptor {
     else if (mainPath === 'branch-inventory') module = 'inventory';
     else if (mainPath === 'inventory-requests') module = 'inventory';
     else if (mainPath === 'patient-data') module = 'patient-data';
+    else if (mainPath === 'diagnostic-tests') module = 'diagnostic-tests';
+    else if (mainPath === 'facility-test-availability')
+      module = 'diagnostic-tests';
 
     // Map method to action
     if (method === 'POST') action = 'CREATE';
@@ -157,6 +160,25 @@ export class AuditInterceptor implements NestInterceptor {
           message = `Patient medical record ID ${entityId} was updated by ${performer}.`;
         } else {
           message = `Patient medical record ID ${entityId} was deleted by ${performer}.`;
+        }
+        break;
+
+      case 'diagnostic-tests':
+        if (mainPath === 'diagnostic-tests') {
+          if (action === 'CREATE') {
+            message = `Diagnostic test "${response?.testName || body?.testName || 'Unknown'}" was added to catalog by ${performer}.`;
+          } else if (action === 'UPDATE') {
+            message = `Diagnostic test "${response?.testName || body?.testName || entityId}" was updated by ${performer}.`;
+          } else {
+            message = `Diagnostic test ID ${entityId} was deactivated by ${performer}.`;
+          }
+        } else if (
+          mainPath === 'facility-test-availability' &&
+          url.includes('/test/')
+        ) {
+          message = `Test availability was updated at a facility by ${performer}. Status: ${body?.status || 'Unknown'}.`;
+        } else {
+          message = `Diagnostic test change (${action}) performed by ${performer}.`;
         }
         break;
 

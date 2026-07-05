@@ -307,3 +307,59 @@ export interface RedistributionRecommendation {
   recommendedQuantity: number;
   justification: string;
 }
+
+// ── Diagnostic Test Tracking ──────────────────────────────────────────────────
+
+export type DiagnosticTestCategory = 'Lab' | 'Imaging' | 'Pathology' | 'Other';
+export type DiagnosticTestStatus = 'Active' | 'Inactive';
+export type TestAvailabilityStatus =
+  | 'Available'
+  | 'Unavailable'
+  | 'Partial'
+  | 'OutOfOrder'
+  | 'NotAudited';
+
+export type WritableTestAvailabilityStatus = Exclude<
+  TestAvailabilityStatus,
+  'NotAudited'
+>;
+
+export interface FacilityAvailabilityEntry {
+  hospitalId: string;
+  status: WritableTestAvailabilityStatus;
+  reason?: string;
+}
+
+export interface DiagnosticTest {
+  _id: string;
+  testName: string;
+  testCode?: string;
+  category: DiagnosticTestCategory;
+  sampleType?: string;
+  status: DiagnosticTestStatus;
+  createdAt?: string;
+  facilityAvailabilities?: FacilityAvailabilityEntry[];
+}
+
+export interface FacilityTestAvailabilityRow {
+  testId: string;
+  testName: string;
+  testCode?: string;
+  category: DiagnosticTestCategory;
+  sampleType?: string;
+  status: TestAvailabilityStatus;
+  reason?: string;
+  lastAuditedAt?: string | null;
+  availabilityId?: string | null;
+}
+
+export interface TestAvailabilityAudit {
+  _id: string;
+  hospitalId: string | PopulatedBranch;
+  testId: string | { _id: string; testName: string; testCode?: string; category?: string };
+  previousStatus: TestAvailabilityStatus;
+  newStatus: TestAvailabilityStatus;
+  reason?: string;
+  auditedAt: string;
+  createdAt?: string;
+}

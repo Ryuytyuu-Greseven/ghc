@@ -17,6 +17,7 @@ import { Availability } from './pages/Availability';
 import { Transfers } from './pages/Transfers';
 import { Audits } from './pages/Audits';
 import { Reports } from './pages/Reports';
+import { DiagnosticTestsPage } from './pages/diagnostic-tests/DiagnosticTestsPage';
 
 interface GuardProps {
   allowedRoles: string[];
@@ -138,6 +139,14 @@ export default function App() {
                     element={
                       <RoleGuard allowedRoles={['Admin']}>
                         <Audits />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/diagnostic-tests"
+                    element={
+                      <RoleGuard allowedRoles={['Admin', 'Lab Technician', 'Doctor', 'Nurse']}>
+                        <DiagnosticTestsPage />
                       </RoleGuard>
                     }
                   />
