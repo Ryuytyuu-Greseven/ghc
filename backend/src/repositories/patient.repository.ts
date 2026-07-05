@@ -51,7 +51,7 @@ export class PatientRepository {
   }
 
   async findById(id: string): Promise<PatientDocument | null> {
-    return this.patientModel.findById(id).populate('hospitalId').exec();
+    return this.patientModel.findById(id);
   }
 
   async findOne(filter: object): Promise<PatientDocument | null> {

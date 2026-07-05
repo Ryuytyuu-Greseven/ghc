@@ -23,10 +23,12 @@ import { StaffRepository } from '../repositories/staff.repository';
 import { Patient, PatientSchema } from '../schemas/patient.schema';
 import { PatientRepository } from '../repositories/patient.repository';
 import { UsersModule } from '../users/users.module';
+import { DiagnosticTestsModule } from '../diagnostic-tests/diagnostic-tests.module';
 
 @Module({
   imports: [
     AuthModule,
+    DiagnosticTestsModule,
     MongooseModule.forFeature([
       { name: Hospital.name, schema: HospitalSchema },
       { name: BedAllocation.name, schema: BedAllocationSchema },

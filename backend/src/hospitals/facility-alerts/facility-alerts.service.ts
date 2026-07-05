@@ -5,12 +5,15 @@ import { BedAllocationRepository } from '../../repositories/bed-allocation.repos
 import { BranchInventoryRepository } from '../../repositories/branch-inventory.repository';
 import { StaffRepository } from '../../repositories/staff.repository';
 import { PatientRepository } from '../../repositories/patient.repository';
+import { DiagnosticTestRepository } from '../../repositories/diagnostic-test.repository';
+import { FacilityTestAvailabilityRepository } from '../../repositories/facility-test-availability.repository';
+import { DiagnosticTestStatus } from '../../common/enums/diagnostic-test.enum';
 
 export interface InterventionAlert {
   branchId: string;
   branchName: string;
   branchType: string;
-  type: 'Bed Shortage' | 'Severe Stockout' | 'Staff Crunch';
+  type: 'Bed Shortage' | 'Severe Stockout' | 'Staff Crunch' | 'Test Unavailable';
   severity: 'High' | 'Medium';
   metric: string;
   justification: string;
@@ -22,6 +25,8 @@ export interface InterventionAlert {
     totalItemsCount?: number;
     patientCount?: number;
     staffCount?: number;
+    unavailableTestCount?: number;
+    totalTestCount?: number;
   };
 }
 
@@ -33,6 +38,8 @@ export class FacilityAlertsService {
     private readonly branchInventoryRepository: BranchInventoryRepository,
     private readonly staffRepository: StaffRepository,
     private readonly patientRepository: PatientRepository,
+    private readonly diagnosticTestRepository: DiagnosticTestRepository,
+    private readonly facilityTestAvailabilityRepository: FacilityTestAvailabilityRepository,
   ) {}
 
   async getInterventionAlerts(hospitalId?: string): Promise<InterventionAlert[]> {
@@ -123,6 +130,34 @@ export class FacilityAlertsService {
             details: {
               patientCount: activeCount,
               staffCount,
+            },
+          });
+        }
+      }
+
+      // 4. Test Unavailability Flagging
+      const totalTestCount = await this.diagnosticTestRepository.count({
+        status: DiagnosticTestStatus.Active,
+      });
+      if (totalTestCount > 0) {
+        const { unavailable: unavailableTestCount } =
+          await this.facilityTestAvailabilityRepository.countByStatusForHospital(
+            branchId,
+          );
+        const unavailableRatio = unavailableTestCount / totalTestCount;
+        if (unavailableRatio > 0.25 || unavailableTestCount >= 3) {
+          alerts.push({
+            branchId,
+            branchName,
+            branchType,
+            type: 'Test Unavailable',
+            severity: unavailableRatio > 0.4 ? 'High' : 'Medium',
+            metric: `${unavailableTestCount} of ${totalTestCount} Tests Unavailable`,
+            justification: `${unavailableTestCount} diagnostic tests are unavailable or out of order at this facility. Patients may need referral to another center.`,
+            timestamp: new Date(),
+            details: {
+              unavailableTestCount,
+              totalTestCount,
             },
           });
         }

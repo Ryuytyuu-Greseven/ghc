@@ -13,7 +13,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, options, placeholder, dropdownPlacement = 'auto', className, onChange, onBlur, value, ...props }, ref) => {
+  ({ label, error, options, placeholder, dropdownPlacement = 'auto', className, onChange, onBlur, value, required, ...props }, ref) => {
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -74,6 +74,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
             {label}
+            {required && (
+              <span className="text-red-500 ml-0.5" aria-hidden="true">
+                *
+              </span>
+            )}
           </label>
         )}
 

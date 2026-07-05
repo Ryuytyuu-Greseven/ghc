@@ -93,8 +93,9 @@ export const en = {
       availability: "My Availability",
       transfers: "Coverage & Transfers",
       audits: "Audit Logs",
-      reports: "Reports",
-    "attendance": "Duty Attendance",
+      diagnosticTests: "Diagnostic Tests",
+      attendance: "Duty Attendance",
+      reports: "Reports"
     },
     roles: {
       Admin: "Admin",
@@ -141,12 +142,15 @@ export const en = {
         bed_shortage: "Bed Shortage",
         severe_stockout: "Severe Stockout",
         staff_crunch: "Staff Crunch",
+        test_unavailable: "Test Unavailable",
         action_transfer: "Initiate AI Transfer",
         action_staff: "Rebalance Staff",
         action_view_hospital: "Manage Facilities",
+        action_tests: "Review Test Availability",
         justification_bed: "Critical capacity reached. Occupancy is at {{occupancy}}% with only {{beds}} beds remaining.",
         justification_stockout: "{{outOfStock}} out of {{total}} monitored items are completely out of stock. Immediate replenishment or redistribution is recommended.",
         justification_staff: "High patient workload with {{patients}} active patients and only {{staff}} assigned staff members. Urgent staffing coverage intervention required.",
+        justification_tests: "{{unavailable}} diagnostic tests are unavailable or out of order at this facility. Patients may need referral to another center.",
         metric_bed: "{{occupancy}}% Occupancy ({{beds}} beds left)",
         metric_stockout: "{{ratio}}% Drugs Out of Stock",
         metric_staff: "{{ratio}}:1 Patient-to-Staff Ratio",
@@ -907,6 +911,7 @@ export const en = {
         noStock: "No inventory stock entries found.",
         uniqueItems: "unique items",
         medicineAvailabilityTitle: "Medicine Stock Availability",
+        colBranchesCount: "Branches with Stock",
         colBatchesCount: "Batches",
         patientFootfallForecast: "Patient Walk-in & Footfall Forecast",
         historicWalkins: "Historical Daily Walk-ins",
@@ -914,6 +919,83 @@ export const en = {
         aiForecastSummary: "Operational Insights",
         aiForecastNote: "Forecast automatically compiled using historical clinic visits.",
         noBranchCapacityData: "No branch capacity data available."
+      },
+    diagnosticTests: {
+      title: "Diagnostic Test Tracking",
+      subtitle: "Manage test catalog and facility availability audits",
+      tabs: {
+        catalog: "Test Catalog",
+        availability: "Facility Availability",
+        audit: "Audit History"
+      },
+      categories: {
+        Lab: "Lab",
+        Imaging: "Imaging",
+        Pathology: "Pathology",
+        Other: "Other"
+      },
+      status: {
+        Active: "Active",
+        Inactive: "Inactive"
+      },
+      availabilityStatus: {
+        Available: "Available",
+        Unavailable: "Unavailable",
+        Partial: "Partial",
+        OutOfOrder: "Out of Order",
+        NotAudited: "Not Audited"
+      },
+      fields: {
+        testName: "Test Name",
+        testNamePlaceholder: "e.g. Complete Blood Count",
+        testCode: "Test Code",
+        testCodePlaceholder: "e.g. CBC",
+        category: "Category",
+        sampleType: "Sample Type",
+        sampleTypePlaceholder: "e.g. Blood, Urine",
+        status: "Status",
+        reason: "Reason",
+        reasonPlaceholder: "e.g. Reagent stockout, machine broken"
+      },
+      catalog: {
+        addTest: "Add Test",
+        editTest: "Edit Test",
+        searchPlaceholder: "Search tests...",
+        empty: "No tests in catalog yet.",
+        deactivate: "Deactivate",
+        deactivateConfirm: "Deactivate \"{{name}}\" from the catalog?",
+        loadError: "Failed to load test catalog.",
+        saveError: "Failed to save test.",
+        fieldRequired: "{{field}} is required",
+        facilityAvailability: "Facility Availability",
+        facilityAvailabilityHint: "Optionally set initial availability per facility when saving this test.",
+        addFacility: "Add Facility",
+        selectFacility: "Facility",
+        selectFacilityPlaceholder: "Choose a facility...",
+        selectFacilityRequired: "Please select a facility for each row.",
+        duplicateFacility: "Each facility can only be added once.",
+        reasonRequired: "Reason is required when status is not Available.",
+        reasonNotRequired: "No reason needed when available.",
+        noFacilitiesAdded: "No facilities added. Use Add Facility to set availability."
+      },
+      availability: {
+        infoBanner: "Audit diagnostic test availability at your facility. Changes are logged for district administrators.",
+        selectFacility: "Select Facility",
+        selectFacilityPlaceholder: "Choose a facility...",
+        selectFacilityHint: "Select a facility to view and audit test availability.",
+        loadError: "Failed to load availability.",
+        saveError: "Failed to update availability.",
+        saved: "Availability updated successfully.",
+        reasonRequired: "Please enter a reason when status is not Available."
+      },
+      audit: {
+        filterFacility: "Filter by Facility",
+        scopedToFacility: "Showing audit history for your assigned facility.",
+        empty: "No availability changes recorded yet.",
+        loadError: "Failed to load audit history.",
+        when: "When",
+        facility: "Facility",
+        change: "Change"
       }
     },
     notifications: {
@@ -930,4 +1012,5 @@ export const en = {
       staffDeassignedTitle: "Staff de-assigned from facility",
       staffDeassignedBody: "Staff member \"{{name}}\" has been de-assigned from {{facility}} by {{performedBy}}."
     }
-  };
+  }
+};

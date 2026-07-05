@@ -9,7 +9,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className, type, ...props }, ref) => {
+  ({ label, error, className, type, required, ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
 
     const isPassword = type === 'password';
@@ -18,19 +18,27 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="flex flex-col gap-1 w-full">
         {label && (
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            {label}
+            {required && (
+              <span className="text-red-500 ml-0.5" aria-hidden="true">
+                *
+              </span>
+            )}
+          </label>
         )}
         <div className="relative w-full">
           <input
             ref={ref}
             type={inputType}
+            required={required}
             className={clsx(
               'w-full rounded-lg border px-3 py-2 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700/50 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition',
               isPassword && 'pr-10',
               error
                 ? 'border-red-400 dark:border-red-500'
                 : 'border-slate-300 dark:border-slate-600',
-              className
+              className,
             )}
             {...props}
           />
@@ -48,7 +56,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = 'Input';
