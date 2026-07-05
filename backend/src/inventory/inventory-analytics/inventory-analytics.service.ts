@@ -53,6 +53,7 @@ export interface RedistributionRecommendation {
   toBranchName: string;
   recommendedQuantity: number;
   justification: string;
+  isAlreadyRequested?: boolean;
 }
 
 @Injectable()
@@ -273,6 +274,28 @@ export class InventoryAnalyticsService {
       }
     }
 
+    // Populate isAlreadyRequested flag dynamically by matching with pending request database entries
+    const pendingRequests = await this.requestRepo.findAll({
+      status: RequestStatus.PENDING,
+    });
+
+    for (const rec of recommendations) {
+      const match = pendingRequests.find((req) => {
+        const fromId = req.fromBranchId ? String(req.fromBranchId._id || req.fromBranchId) : '';
+        const toId = req.branchId ? String(req.branchId._id || req.branchId) : '';
+        const fromMatch = fromId === rec.fromBranchId;
+        const toMatch = toId === rec.toBranchId;
+        const itemMatch = req.items && req.items.some((i) => {
+          const itemIdStr = i.itemId ? String((i.itemId as any)._id || i.itemId) : '';
+          return itemIdStr === rec.itemId;
+        });
+        return fromMatch && toMatch && itemMatch;
+      });
+      if (match) {
+        rec.isAlreadyRequested = true;
+      }
+    }
+
     let targetBranchIds: string[] | null = null;
     if (hospitalId) {
       const activeHospitals = await this.hospitalRepo.findAll({
@@ -321,6 +344,20 @@ export class InventoryAnalyticsService {
       throw new NotFoundException(`Source branch ${fromBranchId} not found`);
     if (!toBranch)
       throw new NotFoundException(`Destination branch ${toBranchId} not found`);
+
+    // Check for an existing pending request with same fromBranch, toBranch and item
+    const existingPendingRequest = await this.requestRepo.findOne({
+      fromBranchId: new Types.ObjectId(fromBranchId),
+      branchId: new Types.ObjectId(toBranchId),
+      status: RequestStatus.PENDING,
+      'items.itemId': new Types.ObjectId(itemId),
+    });
+
+    if (existingPendingRequest) {
+      throw new BadRequestException(
+        `A pending transfer request for ${item.itemName} from ${fromBranch.name} to ${toBranch.name} already exists.`,
+      );
+    }
 
     const batches = await this.branchRepo.findByBranchAndItem(
       fromBranchId,

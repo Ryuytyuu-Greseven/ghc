@@ -39,7 +39,7 @@ export class EmailService {
 
     try {
       await this.transporter.sendMail({
-        from: this.fromAddress,
+        from: `GHC Portal <${this.fromAddress}>`,
         to: item.to,
         subject: item.subject,
         html: item.html,

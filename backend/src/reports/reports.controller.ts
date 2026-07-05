@@ -1,6 +1,7 @@
 import { Controller, Get, Query, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ReportsService } from './reports.service';
+import { UsersService } from '../users/users.service';
 import {
   ClinicalReportQueryDto,
   OccupancyReportQueryDto,
@@ -11,21 +12,29 @@ import {
 @Controller('reports')
 @UseGuards(JwtAuthGuard)
 export class ReportsController {
-  constructor(private readonly reportsService: ReportsService) {}
+  constructor(
+    private readonly reportsService: ReportsService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Get('clinical')
   async getClinicalReport(
     @Req() req: any,
     @Query() query: ClinicalReportQueryDto,
   ) {
-    const userRole = req.user.role;
-    if (userRole !== 'Admin' && userRole !== 'Doctor') {
+    const user = req.user;
+    if (user.role !== 'Admin' && user.role !== 'Doctor') {
       throw new ForbiddenException(
         'Access denied. Only Administrators and Doctors can access the clinical report.',
       );
     }
+    const assignedHospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
+    const branchId = assignedHospitalId || query.branchId;
     return this.reportsService.getClinicalReport(
-      query.branchId,
+      branchId,
       query.fromDate,
       query.toDate,
     );
@@ -36,17 +45,22 @@ export class ReportsController {
     @Req() req: any,
     @Query() query: OccupancyReportQueryDto,
   ) {
-    const userRole = req.user.role;
-    const allowed = ['Admin', 'Doctor', 'Nurse', 'Receptionist'];
-    if (!allowed.includes(userRole)) {
+    const user = req.user;
+    const allowed = ['Admin', 'Doctor'];
+    if (!allowed.includes(user.role)) {
       throw new ForbiddenException(
-        'Access denied. Only clinical staff and Administrators can access the bed occupancy report.',
+        'Access denied. Only Doctors and Administrators can access the bed occupancy report.',
       );
     }
+    const assignedHospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
+    const branchId = assignedHospitalId || query.branchId;
     const parsedPage = query.page ? parseInt(query.page, 10) : undefined;
     const parsedPageSize = query.pageSize ? parseInt(query.pageSize, 10) : undefined;
     return this.reportsService.getOccupancyReport(
-      query.branchId,
+      branchId,
       parsedPage,
       parsedPageSize,
     );
@@ -71,12 +85,17 @@ export class ReportsController {
     @Req() req: any,
     @Query() query: InventoryReportQueryDto,
   ) {
-    const userRole = req.user.role;
-    if (userRole !== 'Admin' && userRole !== 'Pharmacist') {
+    const user = req.user;
+    if (user.role !== 'Admin' && user.role !== 'Doctor') {
       throw new ForbiddenException(
-        'Access denied. Only Pharmacists and Administrators can access the inventory status report.',
+        'Access denied. Only Doctors and Administrators can access the inventory status report.',
       );
     }
-    return this.reportsService.getInventoryReport(query.branchId);
+    const assignedHospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
+    const branchId = assignedHospitalId || query.branchId;
+    return this.reportsService.getInventoryReport(branchId);
   }
 }

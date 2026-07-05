@@ -352,7 +352,9 @@ export function InventoryRequestsTab() {
                           </div>
                         </td>
                         <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
-                          {r.requestedBy}
+                          {r.requestedBy === 'Smart Redistribution Request' || r.requestedBy === 'AI Analytics Dashboard'
+                            ? t('inventory.analytics.redistributionRequestName', 'Smart Redistribution Request')
+                            : r.requestedBy}
                         </td>
                         <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 hidden md:table-cell font-mono">
                           {t('inventory.requests.itemsCountText', { count: r.items.length })}
