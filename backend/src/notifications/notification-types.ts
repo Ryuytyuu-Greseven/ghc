@@ -291,7 +291,7 @@ export const notificationTypeConfig: Record<
       return [{
         to: hospital.email,
         subject: 'Welcome to GHC — Facility Registration Successful',
-        html: hospitalOnboardedTemplate(hospital.name, hospital.type, hospital.city),
+        html: hospitalOnboardedTemplate(hospital.name, hospital.type, String(hospital.city)),
       }];
     },
   },

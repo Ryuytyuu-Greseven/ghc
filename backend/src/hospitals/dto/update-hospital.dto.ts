@@ -4,7 +4,8 @@ export class UpdateHospitalDto implements Partial<CreateHospitalDto> {
   name?: string;
   type?: any;
   address?: string;
-  city?: string;
+  city?: number;
+  state?: number;
   phone?: string;
   email?: string;
   totalBeds?: number;
