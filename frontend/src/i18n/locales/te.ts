@@ -86,7 +86,7 @@ export const te = {
       hospitals: "ఆసుపత్రులు & క్లినిక్‌లు",
       staff: "సిబ్బంది",
       patients: "రోగులు",
-      medicines: "మందులు & సామాగ్రి",
+      medicines: "ఇన్వెంటరీ & సామాగ్రి",
       "ai-analytics": "AI ఇన్వెంటరీ విశ్లేషణలు",
       "critical-alerts": "కీలక హెచ్చరికలు",
       availability: "నా అందుబాటు",
@@ -301,7 +301,7 @@ export const te = {
       healthAI: "జీహెచ్‌సీ హెల్త్ AI"
     },
     inventory: {
-      title: "మందులు & సామాగ్రి",
+      title: "ఇన్వెంటరీ & సామాగ్రి",
       subtitle: "ఇన్వెంటరీ, స్టాక్, అభ్యర్థనలు మరియు ఆడిట్ ట్రాక్‌ను నిర్వహించండి",
       tabs: {
         master: "ఇన్వెంటరీ మాస్టర్",

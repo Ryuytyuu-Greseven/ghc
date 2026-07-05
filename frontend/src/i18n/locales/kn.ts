@@ -86,7 +86,7 @@ export const kn = {
       hospitals: "ಆಸ್ಪತ್ರೆಗಳು ಮತ್ತು ಕ್ಲಿನಿಕ್‌ಗಳು",
       staff: "ಸಿಬ್ಬಂದಿ ನಿರ್ವಹಣೆ",
       patients: "ರೋಗಿಗಳು",
-      medicines: "ಔಷಧಿಗಳು ಮತ್ತು ಸರಬರಾಜು",
+      medicines: "ದಾಸ್ತಾನು ಮತ್ತು ಸರಬರಾಜು",
       "ai-analytics": "AI ಇನ್ವೆಂಟರಿ ಅನಾಲಿಟಿಕ್ಸ್",
       "critical-alerts": "ನಿರ್ಣಾಯಕ ಎಚ್ಚರಿಕೆಗಳು",
       availability: "ನನ್ನ ಲಭ್ಯತೆ",
@@ -301,7 +301,7 @@ export const kn = {
       healthAI: "GHC ಹೆಲ್ತ್ AI"
     },
     inventory: {
-      title: "ಔಷಧಿಗಳು ಮತ್ತು ಸರಬರಾಜು",
+      title: "ದಾಸ್ತಾನು ಮತ್ತು ಸರಬರಾಜು",
       subtitle: "ದಾಸ್ತಾನು, ಕೋರಿಕೆಗಳು ಮತ್ತು ವಹಿವಾಟು ಇತಿಹಾಸವನ್ನು ನಿರ್ವಹಿಸಿ",
       tabs: {
         master: "ದಾಸ್ತಾನು ಮಾಸ್ಟರ್",

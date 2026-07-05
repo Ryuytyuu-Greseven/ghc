@@ -86,7 +86,7 @@ export const hi = {
       hospitals: "अस्पताल और क्लीनिक",
       staff: "कर्मचारी",
       patients: "मरीज",
-      medicines: "दवाएं और आपूर्ति",
+      medicines: "इन्वेंटरी और आपूर्ति",
       "ai-analytics": "एआई इन्वेंटरी एनालिटिक्स",
       "critical-alerts": "गंभीर अलर्ट",
       availability: "मेरी उपलब्धता",
@@ -301,7 +301,7 @@ export const hi = {
       healthAI: "जीएचसी स्वास्थ्य एआई"
     },
     inventory: {
-      title: "दवाएं और आपूर्ति",
+      title: "इन्वेंटरी और आपूर्ति",
       subtitle: "इन्वेंट्री, स्टॉक, अनुरोध और ऑडिट ट्रेल प्रबंधित करें",
       tabs: {
         master: "इन्वेंट्री मास्टर",

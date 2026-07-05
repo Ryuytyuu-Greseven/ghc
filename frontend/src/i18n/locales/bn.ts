@@ -86,7 +86,7 @@ export const bn = {
       hospitals: "হাসপাতাল ও ক্লিনিক",
       staff: "কর্মী",
       patients: "রোগী",
-      medicines: "ওষুধ ও চিকিৎসা সরবরাহ",
+      medicines: "ইনভেন্টরি এবং সরবরাহ",
       "ai-analytics": "এআই ইনভেন্টরি অ্যানালিটিক্স",
       "critical-alerts": "গুরুতর সতর্কতা",
       availability: "আমার প্রাপ্যতা",
@@ -301,7 +301,7 @@ export const bn = {
       healthAI: "জিএইচসি স্বাস্থ্য এআই"
     },
     inventory: {
-      title: "ওষুধ ও চিকিৎসা সরবরাহ",
+      title: "ইনভেন্টরি এবং সরবরাহ",
       subtitle: "ইনভেন্টরি, স্টক, অনুরোধ এবং অডিট ট্রেইল পরিচালনা করুন",
       tabs: {
         master: "ইনভেন্টরি মাস্টার",

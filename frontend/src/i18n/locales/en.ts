@@ -86,7 +86,7 @@ export const en = {
       hospitals: "Hospitals & Clinics",
       staff: "Staff",
       patients: "Patients",
-      medicines: "Medicines & Supplies",
+      medicines: "Inventory & Supplies",
       "ai-analytics": "AI Inventory Analytics",
       "critical-alerts": "Critical Alerts",
       availability: "My Availability",
@@ -301,7 +301,7 @@ export const en = {
       healthAI: "GHC Health AI"
     },
     inventory: {
-      title: "Medicines & Supplies",
+      title: "Inventory & Supplies",
       subtitle: "Manage inventory, stock, requests, and audit trail",
       tabs: {
         master: "Inventory Master",

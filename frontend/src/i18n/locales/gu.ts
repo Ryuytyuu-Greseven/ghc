@@ -86,7 +86,7 @@ export const gu = {
     "hospitals": "હોસ્પિટલો અને ક્લિનિક્સ",
     "staff": "સ્ટાફ",
     "patients": "દર્દીઓ",
-    "medicines": "દવાઓ અને સપ્લાય",
+    "medicines": "ઈન્વેન્ટરી અને સપ્લાય",
     "ai-analytics": "AI ઇન્વેન્ટરી એનાલિટિક્સ",
     "critical-alerts": "મહત્વપૂર્ણ એલર્ટ્સ",
     "availability": "મારી ઉપલબ્ધતા",
@@ -301,7 +301,7 @@ export const gu = {
     "healthAI": "આરોગ્ય AI"
   },
   "inventory": {
-    "title": "દવાઓ અને સપ્લાય",
+    "title": "ઈન્વેન્ટરી અને સપ્લાય",
     "subtitle": "કેન્દ્રીય સ્ટોર અને બ્રાન્ચ ઇન્વેન્ટરીનું સંચાલન કરો",
     "tabs": {
       "master": "માસ્ટર કેટલોગ",
