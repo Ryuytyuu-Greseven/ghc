@@ -1,6 +1,9 @@
 class PatientMedicineDto {
   name: string;
   quantity: number;
+  days?: number;
+  sessions?: string[];
+  quantityPerSession?: number;
 }
 
 export class CreatePatientDataDto {
@@ -11,6 +14,9 @@ export class CreatePatientDataDto {
   medicines?: PatientMedicineDto[];
   doctor: string;
   doctorUserId?: string;
+  nurse?: string;
+  nurseUserId?: string;
   notes?: string;
+  recommendedTests?: string[];
   isActive?: boolean;
 }
