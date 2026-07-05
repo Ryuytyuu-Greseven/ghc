@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CalendarDays, Pill, Plus, UserRound } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Pill, Plus, UserRound, FileText, X, Pencil, Activity, Sparkles } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/Button';
@@ -11,7 +11,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { authFetch, useApp } from '../../context/AppContext';
 import { environment } from '@env/environment';
-import type { PatientData } from '../../types';
+import type { PatientData, PatientMedicine } from '../../types';
 
 const API_BASE = environment.mainBackendUrl;
 
@@ -22,6 +22,41 @@ const categoryOptions = [
   { id: '-4', value: 'Surgical', label: 'Surgical' },
   { id: '-5', value: 'Diagnostic', label: 'Diagnostic' },
   { id: '-6', value: 'Other', label: 'Other' },
+];
+
+const HOSPITAL_TESTS = [
+  'Complete Blood Count (CBC)',
+  'Blood Glucose / HbA1c',
+  'Lipid Profile',
+  'Liver Function Test (LFT)',
+  'Kidney Function Test (KFT)',
+  'Thyroid Profile (T3, T4, TSH)',
+  'Urine Routine Analysis',
+  'Chest X-Ray',
+  'Electrocardiogram (ECG)',
+  'Abdomen Ultrasound (USG)',
+  'CT Scan Brain',
+  'CT Scan Chest',
+  'CT Scan Abdomen',
+  'MRI Brain',
+  'MRI Spine',
+  'Dengue NS1 Antigen',
+  'Malaria Smear',
+  'COVID-19 RT-PCR',
+  'Electrolytes Panel (Na, K, Cl)',
+  'C-Reactive Protein (CRP)',
+  'Rheumatoid Factor (RA Factor)',
+  'Hemoglobin (Hb) Test',
+  'Packed Cell Volume (PCV)',
+  'Erythrocyte Sedimentation Rate (ESR)'
+];
+
+const SESSIONS = [
+  { id: 'mng', key: 'patients.detail.sessions.mng', defaultLabel: 'Morning' },
+  { id: 'afternoon', key: 'patients.detail.sessions.afternoon', defaultLabel: 'Afternoon' },
+  { id: 'evening', key: 'patients.detail.sessions.evening', defaultLabel: 'Evening' },
+  { id: 'night', key: 'patients.detail.sessions.night', defaultLabel: 'Night' },
+  { id: 'midnight', key: 'patients.detail.sessions.midnight', defaultLabel: 'Midnight' },
 ];
 
 type MedicineOption = {
@@ -36,11 +71,16 @@ type MedicineOption = {
 type MedicineDraft = {
   category: string;
   medicines: string[];
+  medicineDetails?: Record<string, MedicineOption>;
   medicineQuantities: Record<string, number>;
+  medicineDays?: Record<string, number>;
+  medicineSessions?: Record<string, string[]>;
+  medicineQtysPerSession?: Record<string, number>;
   notes: string;
+  recommendedTests: string[];
 };
 
-function normalizePatientMedicine(medicine: any): { name: string; quantity: number } | null {
+function normalizePatientMedicine(medicine: any): PatientMedicine | null {
   if (typeof medicine === 'string') {
     const trimmed = medicine.trim();
     if (!trimmed) return null;
@@ -55,11 +95,31 @@ function normalizePatientMedicine(medicine: any): { name: string; quantity: numb
   const quantity = Number(medicine?.quantity ?? 1);
   if (!name || !Number.isFinite(quantity) || quantity <= 0) return null;
 
-  return { name, quantity };
+  return {
+    name,
+    quantity,
+    days: medicine?.days ? Number(medicine.days) : undefined,
+    sessions: Array.isArray(medicine?.sessions) ? medicine.sessions.map(String) : undefined,
+    quantityPerSession: medicine?.quantityPerSession ? Number(medicine.quantityPerSession) : undefined,
+  };
 }
 
-function formatPatientMedicine(medicine: { name: string; quantity: number }) {
-  return `${medicine.name} x ${medicine.quantity}`;
+function formatPatientMedicine(medicine: PatientMedicine, t: any) {
+  let details = `${medicine.name} x ${medicine.quantity}`;
+  if (medicine.days && medicine.sessions && medicine.sessions.length > 0 && medicine.quantityPerSession) {
+    const sessionLabels = medicine.sessions.map(s => {
+      switch (s) {
+        case 'mng': return t('patients.detail.sessions.mng', 'Morning');
+        case 'afternoon': return t('patients.detail.sessions.afternoon', 'Afternoon');
+        case 'evening': return t('patients.detail.sessions.evening', 'Evening');
+        case 'night': return t('patients.detail.sessions.night', 'Night');
+        case 'midnight': return t('patients.detail.sessions.midnight', 'Midnight');
+        default: return s;
+      }
+    });
+    details += ` (${medicine.quantityPerSession} per session, ${sessionLabels.join('/')} for ${medicine.days} days)`;
+  }
+  return details;
 }
 
 function getCategoryByIdOrValue(category: string) {
@@ -87,7 +147,10 @@ function mapPatientDataFromBackend(item: any): PatientData {
       .map(normalizePatientMedicine)
       .filter((medicine: { name: string; quantity: number } | null): medicine is { name: string; quantity: number } => medicine !== null),
     doctor: item.doctor ?? '',
+    nurse: item.nurse ?? '',
+    nurseUserId: item.nurseUserId?._id ?? item.nurseUserId ?? '',
     notes: item.notes ?? '',
+    recommendedTests: Array.isArray(item.recommendedTests) ? item.recommendedTests.map(String) : [],
   };
 }
 
@@ -170,25 +233,62 @@ export function PatientDetail() {
   const { id } = useParams();
   const { patients, loading: appLoading, currentUser } = useApp();
   const patient = patients.find(p => p.id === id);
-  const canManageVisits = ['Admin', 'Doctor', 'Nurse', 'Receptionist'].includes(currentUser?.role ?? '');
+  const canManageVisits = ['Doctor', 'Nurse', 'Receptionist'].includes(currentUser?.role ?? '');
   const [history, setHistory] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [medicineVisit, setMedicineVisit] = useState<PatientData | null>(null);
+  const [prescriptionGroupToView, setPrescriptionGroupToView] = useState<{ problem: string; visits: PatientData[] } | null>(null);
   const [medicineError, setMedicineError] = useState('');
   const [medicineDrafts, setMedicineDrafts] = useState<
     Record<string, MedicineDraft>
   >({});
+  const [editingMedicineId, setEditingMedicineId] = useState<string | null>(null);
+  const [newTestInput, setNewTestInput] = useState('');
+  const [isOtherTestSelected, setIsOtherTestSelected] = useState(false);
+
+  const addRecommendedTest = (visitId: string) => {
+    if (!newTestInput.trim()) return;
+    const current = medicineDrafts[visitId]?.recommendedTests ?? [];
+    if (!current.includes(newTestInput.trim())) {
+      setMedicineDraft(visitId, {
+        recommendedTests: [...current, newTestInput.trim()],
+      });
+    }
+    setNewTestInput('');
+    setIsOtherTestSelected(false);
+  };
+
+  const removeRecommendedTest = (visitId: string, test: string) => {
+    const current = medicineDrafts[visitId]?.recommendedTests ?? [];
+    setMedicineDraft(visitId, {
+      recommendedTests: current.filter(t => t !== test),
+    });
+  };
+
   const [medicineOptions, setMedicineOptions] = useState<MedicineOption[]>([]);
   const [loadingMedicines, setLoadingMedicines] = useState(false);
   const [doctorOptions, setDoctorOptions] = useState<{ value: string; label: string }[]>([]);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
+  const [nurseOptions, setNurseOptions] = useState<{ value: string; label: string }[]>([]);
+  const [loadingNurses, setLoadingNurses] = useState(false);
   const [form, setForm] = useState({
     problem: '',
     visitDate: new Date().toISOString().split('T')[0],
     doctor: '',
+    nurse: '',
   });
   const [visitTouched, setVisitTouched] = useState(false);
+
+  // AI Suggestions & Profiling state
+  const [aiRiskProfile, setAiRiskProfile] = useState<{ potentialRisks: string[]; recommendedVitalsMonitoring: string[]; generalHealthGuidelines: string } | null>(null);
+  const [showAiRiskProfile, setShowAiRiskProfile] = useState(false);
+  const [aiVisitSuggestions, setAiVisitSuggestions] = useState<{ potentialDiagnoses: string[]; suggestedMedicineCategories: string[]; recommendedVitalsToCheck: string[] } | null>(null);
+  const [showAiVisitSuggestions, setShowAiVisitSuggestions] = useState(false);
+  const [loadingVisitSuggestions, setLoadingVisitSuggestions] = useState(false);
+  const [aiPrescriptionValidation, setAiPrescriptionValidation] = useState<{ safetyWarnings: string[]; dietaryAdvice: string; suggestedAlternatives: { prescribed: string; alternative: string; reason: string }[] } | null>(null);
+  const [showAiPrescriptionValidation, setShowAiPrescriptionValidation] = useState(false);
+  const [loadingPrescriptionValidation, setLoadingPrescriptionValidation] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -209,6 +309,61 @@ export function PatientDetail() {
 
     loadHistory();
   }, [id]);
+
+  const [loadingRiskProfile, setLoadingRiskProfile] = useState(false);
+
+  const handleTriggerRiskProfile = async () => {
+    if (aiRiskProfile) {
+      setShowAiRiskProfile(!showAiRiskProfile);
+      return;
+    }
+    try {
+      setLoadingRiskProfile(true);
+      const res = await authFetch(`${API_BASE}/patients/${id}/ai-risk-profile`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setAiRiskProfile(data);
+        setShowAiRiskProfile(true);
+      }
+    } catch (err) {
+      console.error('Failed to load AI health risk profile', err);
+    } finally {
+      setLoadingRiskProfile(false);
+    }
+  };
+
+  const handleTriggerVisitSuggestions = async () => {
+    if (aiVisitSuggestions) {
+      setShowAiVisitSuggestions(!showAiVisitSuggestions);
+      return;
+    }
+    const query = form.problem.trim();
+    if (query.length < 3) return;
+    try {
+      setLoadingVisitSuggestions(true);
+      const res = await authFetch(`${API_BASE}/patient-data/ai-visit-suggestions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ problem: query }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAiVisitSuggestions(data);
+        setShowAiVisitSuggestions(true);
+      }
+    } catch (err) {
+      console.error('Failed to load visit suggestions', err);
+    } finally {
+      setLoadingVisitSuggestions(false);
+    }
+  };
+
+  useEffect(() => {
+    if (form.problem.trim().length < 3) {
+      setAiVisitSuggestions(null);
+      setShowAiVisitSuggestions(false);
+    }
+  }, [form.problem]);
 
   useEffect(() => {
     if (!form.visitDate) {
@@ -254,6 +409,50 @@ export function PatientDetail() {
     };
   }, [form.visitDate]);
 
+  useEffect(() => {
+    if (!form.visitDate) {
+      setNurseOptions([]);
+      return;
+    }
+
+    let active = true;
+    async function loadAvailableNurses() {
+      try {
+        setLoadingNurses(true);
+        const res = await authFetch(`${API_BASE}/staff/available-nurses?date=${encodeURIComponent(form.visitDate)}`);
+        if (!res.ok) throw new Error(t('patients.detail.loadNursesError', 'Failed to load available nurses'));
+        const data = await res.json();
+        if (!active) return;
+
+        const options = (Array.isArray(data) ? data : [])
+          .map((nurse: any) => {
+            const label = nurse.nurseName ?? nurse.displayName ?? nurse.name ?? '';
+            const userId = nurse.userId ?? '';
+            return { value: userId, label };
+          })
+          .filter(option => option.value && option.label);
+
+        setNurseOptions(options);
+        setForm(current => (
+          current.nurse && !options.some(option => option.value === current.nurse)
+            ? { ...current, nurse: '' }
+            : current
+        ));
+      } catch (err) {
+        if (!active) return;
+        setNurseOptions([]);
+        setError(err instanceof Error ? err.message : t('patients.detail.loadNursesError', 'Failed to load available nurses'));
+      } finally {
+        if (active) setLoadingNurses(false);
+      }
+    }
+
+    loadAvailableNurses();
+    return () => {
+      active = false;
+    };
+  }, [form.visitDate]);
+
   const groupedHistory = useMemo(() => {
     const groups = new Map<string, PatientData[]>();
     history.forEach(item => {
@@ -278,8 +477,13 @@ export function PatientDetail() {
     medicineDrafts[visit.id] ?? {
       category: getCategoryId(visit.category ?? ''),
       medicines: [],
+      medicineDetails: {},
       medicineQuantities: {},
+      medicineDays: {},
+      medicineSessions: {},
+      medicineQtysPerSession: {},
       notes: visit.notes ?? '',
+      recommendedTests: visit.recommendedTests ?? [],
     };
 
   const loadMedicinesForCategory = async (categoryId: string) => {
@@ -329,15 +533,51 @@ export function PatientDetail() {
     const category = getCategoryId(visit.category ?? '');
     setMedicineVisit(visit);
     setMedicineError('');
-    setMedicineDrafts(current => ({
-      ...current,
-      [visit.id]: current[visit.id] ?? {
-        category,
-        medicines: [],
-        medicineQuantities: {},
-        notes: visit.notes ?? '',
-      },
-    }));
+    setEditingMedicineId(null);
+    setNewTestInput('');
+    setIsOtherTestSelected(false);
+    setMedicineDrafts(current => {
+      if (current[visit.id]) return current;
+
+      const initialMedicines: string[] = [];
+      const initialDetails: Record<string, MedicineOption> = {};
+      const initialQuantities: Record<string, number> = {};
+      const initialDays: Record<string, number> = {};
+      const initialSessions: Record<string, string[]> = {};
+      const initialQtysPerSession: Record<string, number> = {};
+
+      (visit.medicines ?? []).forEach((m, idx) => {
+        const key = `existing:${m.name}:${idx}`;
+        initialMedicines.push(key);
+        initialDetails[key] = {
+          value: key,
+          label: m.name,
+          itemId: 'existing',
+          batchNo: 'Existing',
+          expiryDate: null,
+          availableQty: m.quantity,
+        };
+        initialQuantities[key] = m.quantity;
+        initialDays[key] = m.days ?? 1;
+        initialSessions[key] = m.sessions ?? ['mng'];
+        initialQtysPerSession[key] = m.quantityPerSession ?? 1;
+      });
+
+      return {
+        ...current,
+        [visit.id]: {
+          category,
+          medicines: initialMedicines,
+          medicineDetails: initialDetails,
+          medicineQuantities: initialQuantities,
+          medicineDays: initialDays,
+          medicineSessions: initialSessions,
+          medicineQtysPerSession: initialQtysPerSession,
+          notes: visit.notes ?? '',
+          recommendedTests: visit.recommendedTests ?? [],
+        },
+      };
+    });
     void loadMedicinesForCategory(category);
   };
 
@@ -350,72 +590,218 @@ export function PatientDetail() {
       [visitId]: {
         category: current[visitId]?.category ?? '',
         medicines: current[visitId]?.medicines ?? [],
+        medicineDetails: current[visitId]?.medicineDetails ?? {},
         medicineQuantities: current[visitId]?.medicineQuantities ?? {},
+        medicineDays: current[visitId]?.medicineDays ?? {},
+        medicineSessions: current[visitId]?.medicineSessions ?? {},
+        medicineQtysPerSession: current[visitId]?.medicineQtysPerSession ?? {},
         notes: current[visitId]?.notes ?? '',
+        recommendedTests: current[visitId]?.recommendedTests ?? [],
         ...next,
       },
     }));
   };
 
   const toggleMedicine = (visitId: string, medicine: string) => {
-    const current = medicineDrafts[visitId] ?? { category: '', medicines: [], medicineQuantities: {}, notes: '' };
+    const current = medicineDrafts[visitId] ?? {
+      category: '',
+      medicines: [],
+      medicineDetails: {},
+      medicineQuantities: {},
+      medicineDays: {},
+      medicineSessions: {},
+      medicineQtysPerSession: {},
+      notes: '',
+    };
     const isSelected = current.medicines.includes(medicine);
     const remainingQuantities = { ...current.medicineQuantities };
     delete remainingQuantities[medicine];
     setMedicineError('');
 
-    setMedicineDraft(visitId, {
-      medicines: isSelected
-        ? current.medicines.filter(item => item !== medicine)
-        : [...current.medicines, medicine],
-      medicineQuantities: isSelected
-        ? remainingQuantities
-        : { ...current.medicineQuantities, [medicine]: current.medicineQuantities[medicine] ?? 1 },
-    });
+    const nextDays = { ...current.medicineDays };
+    const nextSessions = { ...current.medicineSessions };
+    const nextQtysPerSession = { ...current.medicineQtysPerSession };
+    const nextDetails = { ...current.medicineDetails };
+
+    if (isSelected) {
+      delete nextDays[medicine];
+      delete nextSessions[medicine];
+      delete nextQtysPerSession[medicine];
+      delete nextDetails[medicine];
+      if (editingMedicineId === medicine) {
+        setEditingMedicineId(null);
+      }
+    } else {
+      nextDays[medicine] = 1;
+      nextSessions[medicine] = ['mng'];
+      nextQtysPerSession[medicine] = 1;
+      const option = medicineOptions.find(opt => opt.value === medicine);
+      if (option) {
+        nextDetails[medicine] = option;
+      }
+    }
+
+    const calculatedQty = isSelected ? 0 : 1 * 1 * 1;
+
+    const nextMedicines = isSelected
+      ? current.medicines.filter(item => item !== medicine)
+      : [...current.medicines, medicine];
+
+    setMedicineDrafts(currentDrafts => ({
+      ...currentDrafts,
+      [visitId]: {
+        ...currentDrafts[visitId],
+        medicines: nextMedicines,
+        medicineQuantities: isSelected
+          ? remainingQuantities
+          : { ...current.medicineQuantities, [medicine]: calculatedQty },
+        medicineDays: nextDays,
+        medicineSessions: nextSessions,
+        medicineQtysPerSession: nextQtysPerSession,
+        medicineDetails: nextDetails,
+      },
+    }));
+
+    setAiPrescriptionValidation(null);
+    setShowAiPrescriptionValidation(false);
   };
 
-  const setMedicineQuantity = (visitId: string, medicine: string, quantity: number) => {
-    const current = medicineDrafts[visitId] ?? { category: '', medicines: [], medicineQuantities: {}, notes: '' };
-    setMedicineError('');
-    setMedicineDraft(visitId, {
-      medicineQuantities: {
-        ...current.medicineQuantities,
-        [medicine]: quantity,
+  const handleTriggerPrescriptionValidation = async (visitId: string) => {
+    if (aiPrescriptionValidation) {
+      setShowAiPrescriptionValidation(!showAiPrescriptionValidation);
+      return;
+    }
+    const draft = medicineDrafts[visitId];
+    if (!draft || draft.medicines.length === 0) return;
+
+    const matchedVisit = history.find(v => v.id === visitId);
+    const diagnosis = matchedVisit ? matchedVisit.problem : '';
+    const medicinesPayload = draft.medicines.map(m => ({
+      name: draft.medicineDetails?.[m]?.label ?? m,
+      quantity: 1,
+    }));
+
+    try {
+      setLoadingPrescriptionValidation(true);
+      const res = await authFetch(`${API_BASE}/patient-data/ai-prescription-validation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ diagnosis, medicines: medicinesPayload }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAiPrescriptionValidation(data);
+        setShowAiPrescriptionValidation(true);
+      }
+    } catch (err) {
+      console.error('Failed to validate prescription via AI', err);
+    } finally {
+      setLoadingPrescriptionValidation(false);
+    }
+  };
+
+  const updatePrescription = (
+    visitId: string,
+    medicine: string,
+    field: 'days' | 'sessions' | 'quantityPerSession',
+    value: any
+  ) => {
+    const current = medicineDrafts[visitId] ?? {
+      category: '',
+      medicines: [],
+      medicineDetails: {},
+      medicineQuantities: {},
+      medicineDays: {},
+      medicineSessions: {},
+      medicineQtysPerSession: {},
+      notes: '',
+    };
+
+    const nextDays = { ...current.medicineDays, [medicine]: current.medicineDays?.[medicine] ?? 1 };
+    const nextSessions = { ...current.medicineSessions, [medicine]: current.medicineSessions?.[medicine] ?? ['mng'] };
+    const nextQtysPerSession = { ...current.medicineQtysPerSession, [medicine]: current.medicineQtysPerSession?.[medicine] ?? 1 };
+
+    if (field === 'days') {
+      nextDays[medicine] = Math.max(1, Number(value));
+    } else if (field === 'sessions') {
+      nextSessions[medicine] = value as string[];
+    } else if (field === 'quantityPerSession') {
+      nextQtysPerSession[medicine] = Math.max(1, Number(value));
+    }
+
+    const calculatedQty = nextDays[medicine] * nextSessions[medicine].length * nextQtysPerSession[medicine];
+
+    setMedicineDrafts(currentDrafts => ({
+      ...currentDrafts,
+      [visitId]: {
+        ...currentDrafts[visitId],
+        medicineDays: nextDays,
+        medicineSessions: nextSessions,
+        medicineQtysPerSession: nextQtysPerSession,
+        medicineQuantities: {
+          ...(currentDrafts[visitId]?.medicineQuantities ?? {}),
+          [medicine]: calculatedQty,
+        },
       },
-    });
+    }));
+    setAiPrescriptionValidation(null);
+    setShowAiPrescriptionValidation(false);
   };
 
   const saveMedicineDetails = async (visit: PatientData) => {
     const draft = getMedicineDraft(visit);
     setMedicineError('');
     const selectedOptions = draft.medicines
-      .map(value => medicineOptions.find(option => option.value === value))
+      .map(value => draft.medicineDetails?.[value] ?? medicineOptions.find(option => option.value === value))
       .filter((option): option is MedicineOption => option !== undefined);
 
     for (const option of selectedOptions) {
-      const quantity = Number(draft.medicineQuantities[option.value] ?? 0);
-      if (!Number.isFinite(quantity) || quantity <= 0) {
-        setMedicineError(`Quantity is required for ${option.label}`);
+      const key = option.value;
+      const days = draft.medicineDays?.[key] ?? 1;
+      const sessions = draft.medicineSessions?.[key] ?? [];
+      const quantityPerSession = draft.medicineQtysPerSession?.[key] ?? 1;
+      const quantity = Number(draft.medicineQuantities[key] ?? 0);
+
+      if (days <= 0 || quantityPerSession <= 0) {
+        setMedicineError(`Days and quantity per session must be greater than 0 for ${option.label}`);
         return;
       }
-      if (quantity > option.availableQty) {
-        setMedicineError(`Only ${option.availableQty} available for ${option.label}`);
+      if (sessions.length === 0) {
+        setMedicineError(`Please select at least one session/time for ${option.label}`);
+        return;
+      }
+      if (option.itemId !== 'existing' && quantity > option.availableQty) {
+        setMedicineError(`Calculated quantity (${quantity}) exceeds available stock (${option.availableQty}) for ${option.label}`);
         return;
       }
     }
 
     const medicineSummaries = selectedOptions.map(option => {
-      const quantity = Number(draft.medicineQuantities[option.value] ?? 0);
-      return { name: option.label, quantity };
+      const key = option.value;
+      const days = draft.medicineDays?.[key] ?? 1;
+      const sessions = draft.medicineSessions?.[key] ?? [];
+      const quantityPerSession = draft.medicineQtysPerSession?.[key] ?? 1;
+      const quantity = Number(draft.medicineQuantities[key] ?? 0);
+
+      return {
+        name: option.label,
+        quantity,
+        days,
+        sessions,
+        quantityPerSession,
+      };
     });
+
     const branchInventoryAdjustments = patient?.hospitalId
-      ? selectedOptions.map(option => ({
-        branchId: patient.hospitalId,
-        itemId: option.itemId,
-        quantity: Number(draft.medicineQuantities[option.value] ?? 0),
-        batchNo: option.batchNo,
-        expiryDate: option.expiryDate ?? undefined,
-      }))
+      ? selectedOptions
+          .filter(option => option.itemId !== 'existing')
+          .map(option => ({
+            branchId: patient.hospitalId,
+            itemId: option.itemId,
+            quantity: Number(draft.medicineQuantities[option.value] ?? 0),
+            batchNo: option.batchNo,
+            expiryDate: option.expiryDate ?? undefined,
+          }))
       : [];
 
     try {
@@ -424,8 +810,9 @@ export function PatientDetail() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           category: draft.category,
-          medicines: medicineSummaries.length > 0 ? medicineSummaries : visit.medicines,
+          medicines: medicineSummaries,
           notes: draft.notes,
+          recommendedTests: draft.recommendedTests,
           branchInventoryAdjustments,
         }),
       });
@@ -448,8 +835,6 @@ export function PatientDetail() {
     setMedicineError('');
     setMedicineDraft(visitId, {
       category,
-      medicines: [],
-      medicineQuantities: {},
     });
     void loadMedicinesForCategory(category);
   };
@@ -466,6 +851,7 @@ export function PatientDetail() {
     }
 
     const selectedDoctor = doctorOptions.find(option => option.value === form.doctor);
+    const selectedNurse = nurseOptions.find(option => option.value === form.nurse);
 
     try {
       const res = await authFetch(`${API_BASE}/patient-data`, {
@@ -477,6 +863,8 @@ export function PatientDetail() {
           visitDate: form.visitDate,
           doctor: selectedDoctor?.label ?? form.doctor,
           doctorUserId: form.doctor,
+          nurse: selectedNurse?.label ?? form.nurse,
+          nurseUserId: form.nurse || undefined,
         }),
       });
 
@@ -487,6 +875,7 @@ export function PatientDetail() {
         problem: '',
         visitDate: new Date().toISOString().split('T')[0],
         doctor: '',
+        nurse: '',
       });
       setVisitTouched(false);
     } catch (err) {
@@ -521,12 +910,65 @@ export function PatientDetail() {
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-5">
           <div className="max-w-screen-2xl mx-auto space-y-5">
-            <Link
-              to="/patients"
-              className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary-600"
-            >
-              <ArrowLeft size={16} /> {t('patients.detail.backToPatients')}
-            </Link>
+            <div className="flex items-center justify-between gap-4">
+              <Link
+                to="/patients"
+                className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary-600"
+              >
+                <ArrowLeft size={16} /> {t('patients.detail.backToPatients')}
+              </Link>
+              {patient && canManageVisits && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={handleTriggerRiskProfile}
+                    disabled={loadingRiskProfile}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-250 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-950/40 transition duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm disabled:opacity-50 animate-flicker"
+                  >
+                    {loadingRiskProfile && (
+                      <div className="h-3 w-3 rounded-full border-2 border-emerald-600 dark:border-emerald-400 border-t-transparent animate-spin" />
+                    )}
+                    <Sparkles size={13} className={`text-emerald-600 dark:text-emerald-400 ${loadingRiskProfile ? 'animate-spin' : ''}`} />
+                    {loadingRiskProfile ? t('patients.detail.analyzingSymptoms', 'Analyzing...') : t('patients.detail.clinicalOnboardingAnalysis', 'Clinical Onboarding Analysis')}
+                  </button>
+
+                  {/* Onboarding Analysis Speech Bubble Popover */}
+                  {showAiRiskProfile && aiRiskProfile && !loadingRiskProfile && (
+                    <div className="absolute right-0 mt-2.5 z-30 w-80 sm:w-[480px] bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl p-5 space-y-3 animate-fadeIn text-slate-800 dark:text-slate-200">
+                      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/80 pb-2">
+                        <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 uppercase tracking-wide">
+                          ✨ {t('patients.detail.clinicalOnboardingAnalysis', 'Clinical Onboarding Analysis')}
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setShowAiRiskProfile(false)}
+                          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                        <div className="space-y-1">
+                          <p className="font-semibold text-slate-700 dark:text-slate-250">Identified Health Risks</p>
+                          <ul className="list-disc list-inside text-slate-650 dark:text-slate-400 space-y-1">
+                            {aiRiskProfile.potentialRisks.map((r, i) => <li key={i}>{r}</li>)}
+                          </ul>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-slate-700 dark:text-slate-250">Recommended Vitals Monitoring</p>
+                          <ul className="list-disc list-inside text-slate-650 dark:text-slate-400 space-y-1">
+                            {aiRiskProfile.recommendedVitalsMonitoring.map((v, i) => <li key={i}>{v}</li>)}
+                          </ul>
+                        </div>
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/80 pt-2.5">
+                        <strong>{t('patients.detail.guidelinesCareProtocol', 'Guidelines & Care Protocol')}:</strong> {aiRiskProfile.generalHealthGuidelines}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className={`grid grid-cols-1 ${canManageVisits ? 'xl:grid-cols-[1fr_360px]' : ''} gap-5`}>
               <div className="space-y-5">
@@ -569,31 +1011,44 @@ export function PatientDetail() {
                     <VisitHistorySkeleton />
                   ) : groupedHistory.length > 0 ? (
                     groupedHistory.map((group, index) => {
+                      const hasAnyPrescriptionData = group.visits.some(v => v.medicines.length > 0 || (v.recommendedTests && v.recommendedTests.length > 0));
                       return (
                         <section
                           key={group.problem}
                           className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"
                         >
-                          <div className="p-5 border-b border-slate-100 dark:border-slate-700">
+                          <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-3">
                             <h3 className="font-semibold text-slate-800 dark:text-slate-100">
                               {t('patients.detail.visitHeading', { count: index + 1, problem: group.problem })}
                             </h3>
+                            {hasAnyPrescriptionData && (
+                              <button
+                                type="button"
+                                onClick={() => setPrescriptionGroupToView({ problem: group.problem, visits: group.visits })}
+                                title={t('patients.detail.prescription.viewButtonTitle')}
+                                className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 border border-primary-200 dark:border-primary-800/50 hover:border-primary-300 dark:hover:border-primary-700 transition"
+                              >
+                                <FileText size={13} />
+                                {t('patients.detail.prescription.viewButton')}
+                              </button>
+                            )}
                           </div>
                           <div className="divide-y divide-slate-100 dark:divide-slate-700">
                             {group.visits.length > 0 ? (
                               group.visits.map(visit => {
                                 return (
-                                  <div key={visit.id} className="p-5 space-y-4">
+                                  <div key={visit.id} className="p-5">
                                     <button
                                       type="button"
                                       onClick={() => canManageVisits && openMedicineModal(visit)}
-                                      className={`w-full text-left space-y-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${canManageVisits ? 'cursor-pointer' : 'cursor-default'}`}
+                                      className={`w-full text-left space-y-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800 ${canManageVisits ? 'cursor-pointer' : 'cursor-default'}`}
                                       disabled={!canManageVisits}
                                     >
                                       <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                                         <CalendarDays size={15} />
                                         <span className="tabular-nums">{visit.visitDate}</span>
                                         {visit.doctor && <span>· {visit.doctor}</span>}
+                                        {visit.nurse && <span>· Nurse: {visit.nurse}</span>}
                                       </div>
                                       <div className="flex items-start gap-2 text-sm">
                                         <Pill size={15} className="text-primary-500 mt-0.5" />
@@ -602,12 +1057,28 @@ export function PatientDetail() {
                                             {visit.category ? t(`inventory.categories.${getCategoryLabel(visit.category)}`) : t('patients.detail.medicinePending')}
                                           </p>
                                           <p className="text-slate-500 dark:text-slate-400">
-                                            {visit.medicines.length > 0 ? visit.medicines.map(formatPatientMedicine).join(', ') : t('patients.detail.clickToAdd')}
+                                            {visit.medicines.length > 0 ? visit.medicines.map(m => formatPatientMedicine(m, t)).join(', ') : t('patients.detail.clickToAdd')}
                                           </p>
                                         </div>
                                       </div>
+                                      {visit.recommendedTests && visit.recommendedTests.length > 0 && (
+                                        <div className="flex items-start gap-2 text-sm">
+                                          <Activity size={15} className="text-primary-500 mt-0.5" />
+                                          <div>
+                                            <p className="font-medium text-slate-700 dark:text-slate-200">
+                                              {t('patients.detail.recommendedTestsHeader', 'Recommended Tests')}
+                                            </p>
+                                            <p className="text-slate-500 dark:text-slate-400">
+                                              {visit.recommendedTests.join(', ')}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      )}
                                       {visit.notes && (
-                                        <p className="text-sm text-slate-500 dark:text-slate-400">{visit.notes}</p>
+                                        <div className="text-sm">
+                                          <p className="font-semibold text-slate-700 dark:text-slate-300">{t('patients.detail.notesLabel', 'Notes')}:</p>
+                                          <p className="text-slate-500 dark:text-slate-400 italic mt-0.5 whitespace-pre-line">{visit.notes}</p>
+                                        </div>
                                       )}
                                     </button>
                                   </div>
@@ -633,9 +1104,55 @@ export function PatientDetail() {
                   onSubmit={handleSubmit}
                   className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 h-fit space-y-4"
                 >
-                  <div>
-                    <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('patients.detail.addVisit')}</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{t('patients.detail.recordVisitDesc')}</p>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="font-semibold text-slate-800 dark:text-slate-100">{t('patients.detail.addVisit')}</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">{t('patients.detail.recordVisitDesc')}</p>
+                    </div>
+                    {form.problem.trim().length >= 3 && (
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={handleTriggerVisitSuggestions}
+                          disabled={loadingVisitSuggestions}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/40 dark:bg-blue-950/20 text-blue-800 dark:text-blue-400 text-[10px] font-bold hover:bg-blue-100 dark:hover:bg-blue-950/40 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm disabled:opacity-50 shrink-0 animate-flicker-blue"
+                        >
+                          {loadingVisitSuggestions && (
+                            <div className="h-2.5 w-2.5 rounded-full border border-blue-600 dark:border-blue-400 border-t-transparent animate-spin" />
+                          )}
+                          <Sparkles size={11} className={`text-blue-600 dark:text-blue-400 ${loadingVisitSuggestions ? 'animate-spin' : ''}`} />
+                          {loadingVisitSuggestions ? t('patients.detail.analyzingSymptoms', 'Analyzing...') : t('patients.detail.diagnosticAssistant', 'Diagnostic Assistant')}
+                        </button>
+
+                        {/* Diagnostic Assistant Popover Bubble */}
+                        {showAiVisitSuggestions && aiVisitSuggestions && !loadingVisitSuggestions && (
+                          <div className="absolute right-0 mt-2.5 z-30 w-72 sm:w-80 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl p-4 space-y-2 text-xs text-slate-800 dark:text-slate-200 animate-fadeIn">
+                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-1.5">
+                              <p className="font-bold text-blue-800 dark:text-blue-400 uppercase tracking-wider">✨ {t('patients.detail.diagnosticAssistant', 'Diagnostic Assistant')}</p>
+                              <button
+                                type="button"
+                                onClick={() => setShowAiVisitSuggestions(false)}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                            <div>
+                              <span className="font-semibold text-slate-700 dark:text-slate-200">Predicted Diagnoses: </span>
+                              <span className="text-slate-600 dark:text-slate-450">{aiVisitSuggestions.potentialDiagnoses.join(', ')}</span>
+                            </div>
+                            <div>
+                              <span className="font-semibold text-slate-700 dark:text-slate-200">Suggested Categories: </span>
+                              <span className="text-slate-600 dark:text-slate-450">{aiVisitSuggestions.suggestedMedicineCategories.join(', ')}</span>
+                            </div>
+                            <div>
+                              <span className="font-semibold text-slate-700 dark:text-slate-200">Required Vitals Checks: </span>
+                              <span className="text-slate-655 dark:text-slate-450">{aiVisitSuggestions.recommendedVitalsToCheck.join(', ')}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <Input
                     label={t('patients.detail.problemLabel')}
@@ -669,6 +1186,20 @@ export function PatientDetail() {
                   {!loadingDoctors && form.visitDate && doctorOptions.length === 0 && (
                     <p className="text-xs text-slate-400">{t('patients.detail.noDoctors')}</p>
                   )}
+                  <Select
+                    label={t('patients.detail.nurseLabel', 'Assign Nurse')}
+                    value={form.nurse}
+                    onChange={event => setForm(current => ({ ...current, nurse: event.target.value }))}
+                    options={nurseOptions}
+                    placeholder={loadingNurses ? t('patients.detail.loadingNurses', 'Loading nurses...') : t('patients.detail.selectNurse', '— Select nurse —')}
+                    dropdownPlacement="up"
+                  />
+                  {!loadingNurses && form.visitDate && nurseOptions.length === 0 && (
+                    <p className="text-xs text-slate-400">{t('patients.detail.noNurses', 'No available nurses found for this date.')}</p>
+                  )}
+
+
+
                   <Button type="submit" className="w-full justify-center">
                     <Plus size={15} /> {t('patients.detail.saveVisit')}
                   </Button>
@@ -720,16 +1251,13 @@ export function PatientDetail() {
               <div className="flex flex-wrap gap-2">
                 {loadingMedicines ? (
                   <p className="text-sm text-slate-400">{t('patients.detail.loadingMedicines')}</p>
-                ) : medicineOptions.length > 0 ? (
-                  medicineOptions.map(option => (
+                ) : medicineOptions.filter(opt => !medicineDraft.medicines.includes(opt.value)).length > 0 ? (
+                  medicineOptions.filter(opt => !medicineDraft.medicines.includes(opt.value)).map(option => (
                     <button
                       key={option.value}
                       type="button"
                       onClick={() => toggleMedicine(medicineVisit.id, option.value)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${medicineDraft.medicines.includes(option.value)
-                          ? 'bg-primary-600 text-white border-primary-600'
-                          : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300'
-                        }`}
+                      className="px-3 py-1.5 rounded-full text-xs font-medium border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-colors"
                     >
                       {option.label} · {option.availableQty} available
                     </button>
@@ -743,44 +1271,295 @@ export function PatientDetail() {
             </div>
 
             {medicineDraft.medicines.length > 0 && (
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Quantities</p>
-                {medicineDraft.medicines.map(selectedMedicine => {
-                  const option = medicineOptions.find(item => item.value === selectedMedicine);
+              <div className="space-y-4">
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{t('patients.detail.prescription.prescriptionDetails')}</p>
+                 {medicineDraft.medicines.map(selectedMedicine => {
+                  const option = medicineDraft.medicineDetails?.[selectedMedicine] ?? medicineOptions.find(item => item.value === selectedMedicine);
                   if (!option) return null;
 
-                  return (
-                    <div key={selectedMedicine} className="grid grid-cols-[1fr_110px] gap-3 items-end">
-                      <div>
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{option.label}</p>
-                        <p className="text-xs text-slate-400">
-                          Batch {option.batchNo} · Available {option.availableQty}
-                        </p>
+                  const currentQty = medicineDraft.medicineQuantities[selectedMedicine] ?? 0;
+                  const exceedsStock = option.itemId !== 'existing' && currentQty > option.availableQty;
+                  const isEditing = editingMedicineId === selectedMedicine;
+
+                  if (!isEditing) {
+                    const days = medicineDraft.medicineDays?.[selectedMedicine] ?? 1;
+                    const qtyPerSession = medicineDraft.medicineQtysPerSession?.[selectedMedicine] ?? 1;
+                    const sessions = medicineDraft.medicineSessions?.[selectedMedicine] ?? [];
+                    const sessionLabels = sessions.map(s => {
+                      switch (s) {
+                        case 'mng': return t('patients.detail.sessions.mng', 'Morning');
+                        case 'afternoon': return t('patients.detail.sessions.afternoon', 'Afternoon');
+                        case 'evening': return t('patients.detail.sessions.evening', 'Evening');
+                        case 'night': return t('patients.detail.sessions.night', 'Night');
+                        case 'midnight': return t('patients.detail.sessions.midnight', 'Midnight');
+                        default: return s;
+                      }
+                    });
+
+                    return (
+                      <div key={selectedMedicine} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/40 flex items-center justify-between gap-3 shadow-sm hover:border-primary-300 dark:hover:border-primary-800 transition">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{option.label}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            {qtyPerSession} per session · {sessionLabels.join('/') || 'No timing'} · {days} days (Total: {currentQty} units)
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setEditingMedicineId(selectedMedicine)}
+                            className="p-1.5 text-slate-400 hover:text-primary-600 dark:text-slate-500 dark:hover:text-primary-405 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
+                            title="Edit details"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleMedicine(medicineVisit.id, selectedMedicine)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-450 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
+                            title={t('patients.detail.prescription.removeFromPrescription')}
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
                       </div>
-                      <Input
-                        label="Qty"
-                        type="number"
-                        min="1"
-                        max={option.availableQty}
-                        value={String(medicineDraft.medicineQuantities[selectedMedicine] ?? 1)}
-                        onChange={event => setMedicineQuantity(
-                          medicineVisit.id,
-                          selectedMedicine,
-                          Number(event.target.value)
-                        )}
-                      />
+                    );
+                  }
+
+                  return (
+                    <div key={selectedMedicine} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{option.label}</p>
+                          <p className="text-xs text-slate-400">
+                            {option.itemId === 'existing'
+                              ? t('patients.detail.prescription.previouslyPrescribed')
+                              : t('patients.detail.prescription.batchAvailable', { batchNo: option.batchNo, qty: option.availableQty })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setEditingMedicineId(null)}
+                            className="px-2 py-1 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition"
+                          >
+                            {t('patients.detail.doneEditing', 'Done')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleMedicine(medicineVisit.id, selectedMedicine)}
+                            className="p-1 text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-450 rounded transition-colors"
+                            title={t('patients.detail.prescription.removeFromPrescription')}
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <Input
+                          label={t('patients.detail.prescription.daysToTake')}
+                          type="number"
+                          min="1"
+                          value={String(medicineDraft.medicineDays?.[selectedMedicine] ?? 1)}
+                          onChange={event => updatePrescription(
+                            medicineVisit.id,
+                            selectedMedicine,
+                            'days',
+                            event.target.value
+                          )}
+                        />
+                        <Input
+                          label={t('patients.detail.prescription.qtyPerSession')}
+                          type="number"
+                          min="1"
+                          value={String(medicineDraft.medicineQtysPerSession?.[selectedMedicine] ?? 1)}
+                          onChange={event => updatePrescription(
+                            medicineVisit.id,
+                            selectedMedicine,
+                            'quantityPerSession',
+                            event.target.value
+                          )}
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('patients.detail.prescription.sessionsTimings')}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {SESSIONS.map(session => {
+                            const isSessionSelected = (medicineDraft.medicineSessions?.[selectedMedicine] ?? []).includes(session.id);
+                            return (
+                              <button
+                                key={session.id}
+                                type="button"
+                                onClick={() => {
+                                  const currentSessions = medicineDraft.medicineSessions?.[selectedMedicine] ?? [];
+                                  const nextSessions = currentSessions.includes(session.id)
+                                    ? currentSessions.filter(s => s !== session.id)
+                                    : [...currentSessions, session.id];
+                                  updatePrescription(medicineVisit.id, selectedMedicine, 'sessions', nextSessions);
+                                }}
+                                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                                  isSessionSelected
+                                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-primary-300 dark:border-primary-800'
+                                    : 'bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-450 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                }`}
+                              >
+                                {t(session.key, session.defaultLabel)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700/60">
+                        <span className="text-slate-500 font-medium">{t('patients.detail.prescription.calculatedTotalQty')}</span>
+                        <span className={`font-bold tabular-nums ${
+                          exceedsStock
+                            ? 'text-rose-600 dark:text-rose-450'
+                            : 'text-slate-800 dark:text-slate-200'
+                        }`}>
+                          {currentQty}
+                          {exceedsStock && (
+                            <span className="ml-1.5 text-[10px] font-semibold text-rose-500 animate-pulse">
+                              {t('patients.detail.prescription.exceedsAvailable', { qty: option.availableQty })}
+                            </span>
+                          )}
+                        </span>
+                      </div>
                     </div>
                   );
                 })}
               </div>
             )}
+            {medicineDraft.medicines.length > 0 && (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => handleTriggerPrescriptionValidation(medicineVisit.id)}
+                  disabled={loadingPrescriptionValidation}
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-amber-250 dark:border-amber-800 bg-amber-50/40 dark:bg-amber-950/20 text-amber-800 dark:text-amber-400 text-xs font-bold hover:bg-amber-100/50 dark:hover:bg-amber-950/40 transition duration-300 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm disabled:opacity-50 animate-flicker-amber"
+                >
+                  {loadingPrescriptionValidation && (
+                    <div className="h-3 w-3 rounded-full border-2 border-amber-600 dark:border-amber-400 border-t-transparent animate-spin" />
+                  )}
+                  <Sparkles size={14} className={`text-amber-600 dark:text-amber-400 ${loadingPrescriptionValidation ? 'animate-spin' : ''}`} />
+                  {loadingPrescriptionValidation ? t('patients.detail.checkingPrescriptionSafety', 'Checking prescription safety...') : t('patients.detail.prescriptionSafetyValidator', 'Prescription Safety Validator')}
+                </button>
 
-            <Input
-              label={t('patients.detail.notesLabel')}
-              value={medicineDraft.notes}
-              onChange={event => setMedicineDraft(medicineVisit.id, { notes: event.target.value })}
-              placeholder={t('patients.detail.notesPlaceholder')}
-            />
+                {/* Prescription Safety Popover Bubble */}
+                {showAiPrescriptionValidation && aiPrescriptionValidation && !loadingPrescriptionValidation && (
+                  <div className="absolute left-0 bottom-full mb-2.5 z-30 w-80 sm:w-96 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl p-4 space-y-3 text-xs text-slate-800 dark:text-slate-200 animate-fadeIn">
+                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
+                      <p className="font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider">✨ {t('patients.detail.prescriptionSafetyValidator', 'Prescription Safety Validator')}</p>
+                      <button
+                        type="button"
+                        onClick={() => setShowAiPrescriptionValidation(false)}
+                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                    {aiPrescriptionValidation.safetyWarnings.length > 0 && (
+                      <div>
+                        <p className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Safety Warnings:</p>
+                        <ul className="list-disc list-inside text-rose-600 dark:text-rose-450 space-y-0.5">
+                          {aiPrescriptionValidation.safetyWarnings.map((w, i) => <li key={i}>{w}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                    {aiPrescriptionValidation.suggestedAlternatives.length > 0 && (
+                      <div>
+                        <p className="font-semibold text-slate-700 dark:text-slate-300 mb-1">Suggested Alternatives:</p>
+                        <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-0.5">
+                          {aiPrescriptionValidation.suggestedAlternatives.map((alt, i) => (
+                            <li key={i}>Use <strong>{alt.alternative}</strong> instead of {alt.prescribed} ({alt.reason})</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div className="border-t border-slate-100 dark:border-slate-700 pt-2">
+                      <span className="font-semibold text-slate-700 dark:text-slate-300">Dietary & Dosage Advice: </span>
+                      <span className="text-slate-600 dark:text-slate-400">{aiPrescriptionValidation.dietaryAdvice}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* End of Prescription Validation */}
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                {t('patients.detail.recommendedTestsLabel', 'Recommended Diagnostic Tests')}
+              </label>
+              <div className="flex gap-2 items-center">
+                <div className="flex-1">
+                  <Select
+                    value={isOtherTestSelected ? 'Other' : newTestInput}
+                    onChange={e => {
+                      if (e.target.value === 'Other') {
+                        setIsOtherTestSelected(true);
+                        setNewTestInput('');
+                      } else {
+                        setIsOtherTestSelected(false);
+                        setNewTestInput(e.target.value);
+                      }
+                    }}
+                    options={[
+                      ...HOSPITAL_TESTS.filter(test => !(medicineDraft.recommendedTests ?? []).includes(test)).map(test => ({ value: test, label: test })),
+                      { value: 'Other', label: t('patients.detail.otherCustomTest', 'Other / Custom Test') }
+                    ]}
+                    placeholder={t('patients.detail.selectTestPlaceholder', 'Select diagnostic test...')}
+                  />
+                </div>
+                <Button type="button" onClick={() => addRecommendedTest(medicineVisit.id)} disabled={!newTestInput.trim()}>
+                  {t('patients.detail.addTest', 'Add')}
+                </Button>
+              </div>
+              {isOtherTestSelected && (
+                <div className="pt-1.5">
+                  <input
+                    type="text"
+                    value={newTestInput}
+                    onChange={e => setNewTestInput(e.target.value)}
+                    placeholder={t('patients.detail.customTestPlaceholder', 'Enter custom diagnostic test name...')}
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                  />
+                </div>
+              )}
+              {medicineDraft.recommendedTests && medicineDraft.recommendedTests.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {medicineDraft.recommendedTests.map(test => (
+                    <span
+                      key={test}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700"
+                    >
+                      {test}
+                      <button
+                        type="button"
+                        onClick={() => removeRecommendedTest(medicineVisit.id, test)}
+                        className="text-slate-400 hover:text-rose-600 rounded transition"
+                      >
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                {t('patients.detail.notesLabel')}
+              </label>
+              <textarea
+                value={medicineDraft.notes}
+                onChange={event => setMedicineDraft(medicineVisit.id, { notes: event.target.value })}
+                placeholder={t('patients.detail.notesPlaceholder')}
+                rows={3}
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700/50 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition resize-y"
+              />
+            </div>
 
             <div className="flex justify-end gap-3 pt-2">
               <Button
@@ -795,6 +1574,124 @@ export function PatientDetail() {
               </Button>
               <Button type="button" onClick={() => saveMedicineDetails(medicineVisit)}>
                 {t('patients.detail.saveMedicineDetails')}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={!!prescriptionGroupToView}
+        onClose={() => setPrescriptionGroupToView(null)}
+        title={prescriptionGroupToView ? t('patients.detail.prescription.viewTitle', { problem: prescriptionGroupToView.problem }) : t('patients.detail.prescription.viewButton')}
+        size="md"
+      >
+        {prescriptionGroupToView && (
+          <div className="space-y-5">
+            {prescriptionGroupToView.visits.filter(v => v.medicines.length > 0 || (v.recommendedTests && v.recommendedTests.length > 0)).map((visit, vIdx) => {
+              const totalPrescriptionVisitsCount = prescriptionGroupToView.visits.filter(v => v.medicines.length > 0 || (v.recommendedTests && v.recommendedTests.length > 0)).length;
+              return (
+                <div key={visit.id} className="space-y-3">
+                  {/* Visit date header */}
+                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    <CalendarDays size={13} />
+                    <span className="tabular-nums">{visit.visitDate}</span>
+                    {visit.doctor && <span>· {visit.doctor}</span>}
+                    {visit.category && (
+                      <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium normal-case tracking-normal">
+                        {t(`inventory.categories.${getCategoryLabel(visit.category)}`)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Medicines list */}
+                  {visit.medicines.length > 0 && (
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-900/30">
+                      {visit.medicines.map((m, idx) => {
+                        const hasDetails = m.days && m.sessions && m.sessions.length > 0 && m.quantityPerSession;
+                        const sessionLabels = m.sessions?.map(s => {
+                          switch (s) {
+                            case 'mng': return t('patients.detail.sessions.mng', 'Morning');
+                            case 'afternoon': return t('patients.detail.sessions.afternoon', 'Afternoon');
+                            case 'evening': return t('patients.detail.sessions.evening', 'Evening');
+                            case 'night': return t('patients.detail.sessions.night', 'Night');
+                            case 'midnight': return t('patients.detail.sessions.midnight', 'Midnight');
+                            default: return s;
+                          }
+                        }) ?? [];
+                        return (
+                          <div key={idx} className="p-4 flex items-start gap-4">
+                            {/* Medicine info */}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{m.name}</p>
+                              {hasDetails ? (
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-medium border border-blue-100 dark:border-blue-800/50">
+                                    {t('patients.detail.prescription.day_one', { count: m.days })}
+                                  </span>
+                                  {sessionLabels.map(label => (
+                                    <span key={label} className="inline-flex items-center px-2 py-0.5 rounded-md bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 text-xs font-medium border border-violet-100 dark:border-violet-800/50">
+                                      {label}
+                                    </span>
+                                  ))}
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 text-xs font-medium border border-amber-100 dark:border-amber-800/50">
+                                    {t('patients.detail.prescription.perDose', { count: m.quantityPerSession })}
+                                  </span>
+                                </div>
+                              ) : (
+                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{t('patients.detail.prescription.noTimingSpecified')}</p>
+                              )}
+                            </div>
+                            {/* Total qty badge */}
+                            <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-500/10 text-primary-700 dark:text-primary-450 border border-primary-100 dark:border-primary-500/20">
+                              <span className="text-xs font-semibold uppercase tracking-wider opacity-90">{t('patients.detail.prescription.qtyLabel')}:</span>
+                              <span className="text-sm font-extrabold tabular-nums leading-none">{m.quantity}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Recommended Diagnostic Tests */}
+                  {visit.recommendedTests && visit.recommendedTests.length > 0 && (
+                    <div className="px-1 mt-2">
+                      <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 mb-1.5 flex items-center gap-1.5">
+                        <Activity size={12} className="text-primary-500" />
+                        {t('patients.detail.recommendedTestsHeader', 'Recommended Tests')}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {visit.recommendedTests.map(test => (
+                          <span
+                            key={test}
+                            className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700"
+                          >
+                            {test}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Notes */}
+                  {visit.notes && (
+                    <div className="px-1">
+                      <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 mb-1">{t('patients.detail.prescription.notesHeading')}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300 italic">{visit.notes}</p>
+                    </div>
+                  )}
+
+                  {/* Separator between visits */}
+                  {vIdx < totalPrescriptionVisitsCount - 1 && (
+                    <hr className="border-slate-200 dark:border-slate-700" />
+                  )}
+                </div>
+              );
+            })}
+
+            <div className="flex justify-end pt-2">
+              <Button type="button" onClick={() => setPrescriptionGroupToView(null)}>
+                {t('common.close')}
               </Button>
             </div>
           </div>

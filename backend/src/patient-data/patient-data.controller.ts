@@ -34,4 +34,14 @@ export class PatientDataController {
   remove(@Param('id') id: string) {
     return this.patientDataService.remove(id);
   }
+
+  @Post('ai-visit-suggestions')
+  async getAiVisitSuggestions(@Body('problem') problem: string) {
+    return this.patientDataService.getVisitSuggestions(problem);
+  }
+
+  @Post('ai-prescription-validation')
+  async getAiPrescriptionValidation(@Body() body: { diagnosis: string; medicines: { name: string; quantity: number }[] }) {
+    return this.patientDataService.getPrescriptionValidation(body);
+  }
 }

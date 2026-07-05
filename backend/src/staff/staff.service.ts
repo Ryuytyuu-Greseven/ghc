@@ -723,4 +723,48 @@ export class StaffService {
       };
     });
   }
+
+  async getAvailableNurses(date: string) {
+    if (!date) {
+      throw new BadRequestException('Date is required');
+    }
+
+    let dateStr = date;
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      // Date is already in YYYY-MM-DD format
+    } else {
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        throw new BadRequestException(
+          'Invalid date format. Expected YYYY-MM-DD.',
+        );
+      }
+      const yyyy = parsedDate.getFullYear();
+      const mm = String(parsedDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(parsedDate.getDate()).padStart(2, '0');
+      dateStr = `${yyyy}-${mm}-${dd}`;
+    }
+
+    const staffList = await this.staffRepository.findAll({
+      unavailableOnDays: { $ne: dateStr },
+    });
+
+    const availableNurses = staffList.filter((s) => {
+      const user = s.userId as any;
+      return user && user.role === UserRole.NURSE;
+    });
+
+    return availableNurses.map((s) => {
+      const nurseName =
+        s.displayName || `${s.firstName} ${s.lastName || ''}`.trim();
+      const userId =
+        s.userId && (s.userId as any)._id
+          ? (s.userId as any)._id.toString()
+          : s.userId.toString();
+      return {
+        nurseName: `${nurseName} - ${s.department}`,
+        userId,
+      };
+    });
+  }
 }

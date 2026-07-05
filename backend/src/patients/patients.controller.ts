@@ -126,6 +126,11 @@ export class PatientsController {
     return this.patientsService.update(id, body);
   }
 
+  @Post(':id/ai-risk-profile')
+  async getAiRiskProfile(@Param('id') id: string) {
+    return this.patientsService.getRiskProfile(id);
+  }
+
   private async applyHospitalScope(req: any, query: SearchPatientsDto) {
     const hospitalId = await this.getAssignedHospitalId(req);
     return hospitalId ? { ...query, hospitalId } : query;

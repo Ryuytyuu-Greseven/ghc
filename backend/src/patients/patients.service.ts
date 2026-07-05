@@ -14,6 +14,8 @@ import { HospitalsCommonService } from '../common/services/hospitals.service';
 import { HospitalRepository } from '../repositories/hospital.repository';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-types';
+import { llmInstance } from '../google/vertex.config';
+import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 
 const requiredCreateFields: (keyof CreatePatientDto)[] = [
   'name',
@@ -220,8 +222,48 @@ export class PatientsService {
     if (hospitalId) patient.hospitalId = new Types.ObjectId(hospitalId);
     if (admittedAt)
       patient.admittedAt =
-        admittedAt instanceof Date ? admittedAt : new Date(admittedAt);
+          admittedAt instanceof Date ? admittedAt : new Date(admittedAt);
 
     return patient;
+  }
+
+  async getRiskProfile(patientId: string): Promise<any> {
+    const patient = await this.patientRepository.findById(patientId);
+    if (!patient) throw new NotFoundException(`Patient ${patientId} not found`);
+
+    try {
+      const prompt = `Analyze this patient's profile to predict potential clinical health risks and recommend screening checks.
+Patient Name: ${patient.name}
+Age: ${patient.age}
+Gender: ${patient.gender}
+Blood Group: ${patient.bloodGroup || 'Not specified'}
+Bed Required / Admitted: ${patient.bedRequired ? 'Yes' : 'No'}
+
+Return ONLY valid JSON with this exact shape:
+{
+  "potentialRisks": ["Risk 1", "Risk 2"],
+  "recommendedVitalsMonitoring": ["Vitals check 1", "Vitals check 2"],
+  "generalHealthGuidelines": "Age and gender specific guidelines summary"
+}`;
+
+      const response = await llmInstance.invoke([
+        new SystemMessage('You are a helpful clinical risk analysis assistant. Respond in JSON only.'),
+        new HumanMessage(prompt),
+      ]);
+
+      const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+    } catch (err) {
+      // Fallback
+    }
+
+    return {
+      potentialRisks: ['Routine monitoring required based on age group'],
+      recommendedVitalsMonitoring: ['Blood Pressure', 'Heart Rate', 'Body Temperature'],
+      generalHealthGuidelines: 'Maintain a balanced diet and regular screening checks.',
+    };
   }
 }

@@ -23,6 +23,7 @@ export enum NotificationType {
   STAFF_UPDATED = 'STAFF_UPDATED',
   STAFF_ASSIGNED_TO_FACILITY = 'STAFF_ASSIGNED_TO_FACILITY',
   STAFF_DEASSIGNED_FROM_FACILITY = 'STAFF_DEASSIGNED_FROM_FACILITY',
+  PATIENT_MEDICINE_SERVE_REMINDER = 'PATIENT_MEDICINE_SERVE_REMINDER',
 }
 
 export type InAppNotificationItem = {
@@ -101,6 +102,14 @@ export type StaffDeassignedPayload = {
   hospitalName: string;
   targetUserIds?: string[];
   performedBy?: string;
+};
+
+export type PatientMedicineServeReminderPayload = {
+  nurseUserId: string;
+  patientName: string;
+  medicineName: string;
+  quantity: number;
+  session: string;
 };
 
 type NotificationTypeConfig = {
@@ -216,6 +225,29 @@ export const notificationTypeConfig: Record<
         },
       ];
     },
+  },
+
+  [NotificationType.PATIENT_MEDICINE_SERVE_REMINDER]: {
+    category: 'warning',
+    buildInApp: (payload: unknown) => {
+      const { nurseUserId, patientName, medicineName, quantity, session } =
+        payload as PatientMedicineServeReminderPayload;
+      if (!nurseUserId) return [];
+      return [
+        {
+          userId: nurseUserId,
+          title: 'Serve Medicine Reminder',
+          body: `Please serve ${quantity}x ${medicineName} to patient ${patientName} for the ${session} session.`,
+          metadata: {
+            patientName,
+            medicineName,
+            quantity,
+            session,
+          },
+        },
+      ];
+    },
+    buildEmails: () => [],
   },
 
   [NotificationType.HOSPITAL_ONBOARDED]: {

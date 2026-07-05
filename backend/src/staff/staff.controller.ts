@@ -65,6 +65,32 @@ export class StaffController {
     return this.staffService.getAvailableDoctors(date);
   }
 
+  @Get('available-nurses')
+  getAvailableNurses(@Query('date') date: string) {
+    if (!date) {
+      throw new BadRequestException('date query parameter is required');
+    }
+    return this.staffService.getAvailableNurses(date);
+  }
+
+  @Get(':id')
+  async findOne(@Req() req: any, @Param('id') id: string) {
+    const user = req.user;
+    const hospitalId = await this.usersService.getAssignedHospitalId(
+      user.userId,
+      user.role,
+    );
+    const staff = await this.staffService.findOne(id);
+    if (
+      hospitalId &&
+      staff.hospitalId &&
+      staff.hospitalId.toString() !== hospitalId
+    ) {
+      throw new ForbiddenException('Access denied to this staff member');
+    }
+    return staff;
+  }
+
   @Get('me/availability')
   getAvailability(@Req() req: any) {
     const userId = req.user.userId;
@@ -100,23 +126,6 @@ export class StaffController {
     );
   }
 
-  @Get(':id')
-  async findOne(@Req() req: any, @Param('id') id: string) {
-    const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(
-      user.userId,
-      user.role,
-    );
-    const staff = await this.staffService.findOne(id);
-    if (
-      hospitalId &&
-      staff.hospitalId &&
-      staff.hospitalId.toString() !== hospitalId
-    ) {
-      throw new ForbiddenException('Access denied to this staff member');
-    }
-    return staff;
-  }
 
   @Post()
   async create(@Req() req: any, @Body() body: CreateStaffDto) {

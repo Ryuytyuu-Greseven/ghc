@@ -34,13 +34,13 @@ const allNavItems = [
 
 const roleNavItemsMap: Record<string, string[]> = {
   Admin: ['/', '/hospitals', '/staff', '/patients', '/medicines', '/ai-analytics', '/critical-alerts', '/transfers', '/audits','/reports'],
-  Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
-  Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
-  Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
-  Pharmacist: ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts','/reports'],
-  Compounder: ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts'],
-  'Lab Technician': ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts'],
-  Cashier: ['/', '/medicines', '/availability', '/ai-analytics', '/critical-alerts'],
+  Doctor: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/critical-alerts','/reports'],
+  Nurse: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/critical-alerts'],
+  Receptionist: ['/', '/hospitals', '/patients', '/medicines', '/availability', '/critical-alerts'],
+  Pharmacist: ['/', '/medicines', '/availability', '/critical-alerts'],
+  Compounder: ['/', '/medicines', '/availability', '/critical-alerts'],
+  'Lab Technician': ['/', '/medicines', '/availability', '/critical-alerts'],
+  Cashier: ['/', '/medicines', '/availability', '/critical-alerts'],
 };
 
 export function Sidebar() {

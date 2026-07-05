@@ -169,7 +169,7 @@ export function AIInventoryAnalyticsTab() {
         toBranchId: rec.toBranchId,
         itemId: rec.itemId,
         quantity: rec.recommendedQuantity,
-        performedBy: 'AI Analytics Dashboard',
+        performedBy: 'Smart Redistribution Request',
       });
       setSuccessMessage(t('inventory.analytics.applySuccess'));
       await loadRecommendations();
@@ -437,13 +437,16 @@ export function AIInventoryAnalyticsTab() {
                             <Button
                               size="sm"
                               onClick={() => handleApplyTransfer(rec)}
-                              disabled={applyingKey === key}
+                              disabled={applyingKey === key || rec.isAlreadyRequested}
+                              variant={rec.isAlreadyRequested ? 'secondary' : 'primary'}
                             >
                               {applyingKey === key ? (
                                 <>
                                   <Loader2 size={14} className="animate-spin" />
                                   {t('inventory.analytics.applyingTransfer')}
                                 </>
+                              ) : rec.isAlreadyRequested ? (
+                                t('inventory.analytics.alreadyRequested')
                               ) : (
                                 t('inventory.analytics.applyTransfer')
                               )}

@@ -5,12 +5,14 @@ import {
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { PatientDataRepository } from '../repositories/patient-data.repository';
-import { PatientData } from '../schemas/patient-data.schema';
+import { PatientData, PatientMedicine } from '../schemas/patient-data.schema';
 import { BranchInventoryService } from '../inventory/branch-inventory/branch-inventory.service';
 import { PatientRepository } from '../repositories/patient.repository';
 import { StaffRepository } from '../repositories/staff.repository';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-types';
+import { llmInstance } from '../google/vertex.config';
+import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 
 type BranchInventoryAdjustment = {
   branchId: string;
@@ -193,7 +195,24 @@ export class PatientDataService {
       }
       patientData.doctorUserId = new Types.ObjectId(String(data.doctorUserId));
     }
+    if (data.nurse !== undefined)
+      patientData.nurse = String(data.nurse).trim();
+    if (
+      data.nurseUserId !== undefined &&
+      data.nurseUserId !== null &&
+      String(data.nurseUserId).trim() !== ''
+    ) {
+      if (!Types.ObjectId.isValid(String(data.nurseUserId))) {
+        throw new BadRequestException('nurseUserId is invalid');
+      }
+      patientData.nurseUserId = new Types.ObjectId(String(data.nurseUserId));
+    }
     if (data.notes !== undefined) patientData.notes = String(data.notes).trim();
+    if (data.recommendedTests !== undefined) {
+      patientData.recommendedTests = Array.isArray(data.recommendedTests)
+        ? data.recommendedTests.map((t: unknown) => String(t).trim()).filter(t => t !== '')
+        : [];
+    }
     if (data.isActive !== undefined)
       patientData.isActive = Boolean(data.isActive);
 
@@ -202,7 +221,7 @@ export class PatientDataService {
 
   private normalizeMedicine(
     medicine: unknown,
-  ): { name: string; quantity: number } | null {
+  ): PatientMedicine | null {
     if (typeof medicine === 'string') {
       const trimmed = medicine.trim();
       if (!trimmed) return null;
@@ -216,12 +235,18 @@ export class PatientDataService {
 
     if (!medicine || typeof medicine !== 'object') return null;
 
-    const item = medicine as PatientMedicineInput;
+    const item = medicine as any;
     const name = String(item.name ?? item.medicineName ?? '').trim();
     const quantity = Number(item.quantity ?? 1);
     if (!name || !Number.isFinite(quantity) || quantity <= 0) return null;
 
-    return { name, quantity };
+    return {
+      name,
+      quantity,
+      days: item.days ? Number(item.days) : undefined,
+      sessions: Array.isArray(item.sessions) ? item.sessions.map(String) : undefined,
+      quantityPerSession: item.quantityPerSession ? Number(item.quantityPerSession) : undefined,
+    };
   }
 
   private async applyBranchInventoryAdjustments(adjustments: unknown) {
@@ -249,6 +274,14 @@ export class PatientDataService {
         throw new BadRequestException('quantity must be greater than 0');
       }
 
+      // Check available stock in branch inventory before deducting
+      const stocks = await this.branchInventoryService.findByBranchAndItem(item.branchId, item.itemId);
+      const batchStock = stocks.find(s => s.batchNo === item.batchNo);
+      const availableQty = batchStock ? batchStock.availableQty : 0;
+      if (availableQty < quantity) {
+        throw new BadRequestException(`Calculated quantity (${quantity}) exceeds available stock (${availableQty})`);
+      }
+
       await this.branchInventoryService.adjustStock(
         item.branchId,
         item.itemId,
@@ -257,5 +290,78 @@ export class PatientDataService {
         item.expiryDate ? new Date(item.expiryDate) : null,
       );
     }
+  }
+
+  async getVisitSuggestions(problem: string): Promise<any> {
+    try {
+      const prompt = `Analyze these patient symptoms/problems and provide potential diagnoses, suggested medication categories, and recommended vital signs checks.
+Symptom/Problem: ${problem}
+
+Return ONLY valid JSON with this exact shape:
+{
+  "potentialDiagnoses": ["Diagnosis 1", "Diagnosis 2"],
+  "suggestedMedicineCategories": ["Category 1", "Category 2"],
+  "recommendedVitalsToCheck": ["Vital check 1", "Vital check 2"]
+}`;
+
+      const response = await llmInstance.invoke([
+        new SystemMessage('You are a helpful clinical diagnostics helper. Respond in JSON only.'),
+        new HumanMessage(prompt),
+      ]);
+
+      const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+    } catch (err) {
+      // Fallback
+    }
+
+    return {
+      potentialDiagnoses: ['Underlying viral infection', 'General symptom check required'],
+      suggestedMedicineCategories: ['Analgesics', 'Antipyretics'],
+      recommendedVitalsToCheck: ['Body Temperature', 'Blood Pressure', 'Pulse Rate'],
+    };
+  }
+
+  async getPrescriptionValidation(data: { diagnosis: string; medicines: { name: string; quantity: number }[] }): Promise<any> {
+    try {
+      const prompt = `Validate this prescription against the patient diagnosis for safety warning alerts, potential drug interactions, and dietary/serving advice.
+Diagnosis: ${data.diagnosis}
+Medicines: ${JSON.stringify(data.medicines)}
+
+Return ONLY valid JSON with this exact shape:
+{
+  "safetyWarnings": ["Warning 1", "Warning 2"],
+  "dietaryAdvice": "Dietary guidelines summary",
+  "suggestedAlternatives": [
+    {
+      "prescribed": "Medicine Name",
+      "alternative": "Alternative Medicine Name",
+      "reason": "Lower interactions or general match suggestion"
+    }
+  ]
+}`;
+
+      const response = await llmInstance.invoke([
+        new SystemMessage('You are a clinical pharmacologist validator. Respond in JSON only.'),
+        new HumanMessage(prompt),
+      ]);
+
+      const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+    } catch (err) {
+      // Fallback
+    }
+
+    return {
+      safetyWarnings: ['Ensure dosage fits the severity of symptoms'],
+      dietaryAdvice: 'Take medications after meals with water.',
+      suggestedAlternatives: [],
+    };
   }
 }
