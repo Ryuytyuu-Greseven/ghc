@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Req } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ReportsService } from './reports.service';
 import {
@@ -18,13 +18,8 @@ export class ReportsController {
     @Req() req: any,
     @Query() query: ClinicalReportQueryDto,
   ) {
-    const userRole = req.user.role;
-    if (userRole !== 'Admin' && userRole !== 'Doctor') {
-      throw new ForbiddenException(
-        'Access denied. Only Administrators and Doctors can access the clinical report.',
-      );
-    }
     return this.reportsService.getClinicalReport(
+      req.user,
       query.branchId,
       query.fromDate,
       query.toDate,
@@ -36,16 +31,10 @@ export class ReportsController {
     @Req() req: any,
     @Query() query: OccupancyReportQueryDto,
   ) {
-    const userRole = req.user.role;
-    const allowed = ['Admin', 'Doctor', 'Nurse', 'Receptionist'];
-    if (!allowed.includes(userRole)) {
-      throw new ForbiddenException(
-        'Access denied. Only clinical staff and Administrators can access the bed occupancy report.',
-      );
-    }
     const parsedPage = query.page ? parseInt(query.page, 10) : undefined;
     const parsedPageSize = query.pageSize ? parseInt(query.pageSize, 10) : undefined;
     return this.reportsService.getOccupancyReport(
+      req.user,
       query.branchId,
       parsedPage,
       parsedPageSize,
@@ -57,13 +46,7 @@ export class ReportsController {
     @Req() req: any,
     @Query() query: StaffingReportQueryDto,
   ) {
-    const userRole = req.user.role;
-    if (userRole !== 'Admin') {
-      throw new ForbiddenException(
-        'Access denied. Only Administrators can access the staffing report.',
-      );
-    }
-    return this.reportsService.getStaffingReport(query.branchId);
+    return this.reportsService.getStaffingReport(req.user, query.branchId);
   }
 
   @Get('inventory')
@@ -71,12 +54,6 @@ export class ReportsController {
     @Req() req: any,
     @Query() query: InventoryReportQueryDto,
   ) {
-    const userRole = req.user.role;
-    if (userRole !== 'Admin' && userRole !== 'Pharmacist') {
-      throw new ForbiddenException(
-        'Access denied. Only Pharmacists and Administrators can access the inventory status report.',
-      );
-    }
-    return this.reportsService.getInventoryReport(query.branchId);
+    return this.reportsService.getInventoryReport(req.user, query.branchId);
   }
 }

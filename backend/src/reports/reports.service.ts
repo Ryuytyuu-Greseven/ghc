@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model, Types } from 'mongoose';
 import { PatientData, PatientDataDocument } from '../schemas/patient-data.schema';
@@ -17,6 +17,19 @@ export class ReportsService {
     @InjectModel(BranchInventory.name) private readonly branchInventoryModel: Model<BranchInventoryDocument>,
     @InjectConnection() private readonly connection: Connection,
   ) {}
+
+  private async resolveBranchScope(user: any, requestedBranchId?: string): Promise<string | undefined> {
+    if (user.role === 'Admin') {
+      return requestedBranchId;
+    }
+    const staff = await this.staffModel
+      .findOne({ userId: new Types.ObjectId(user.userId) })
+      .exec();
+    if (!staff || !staff.hospitalId) {
+      throw new ForbiddenException('Access denied. No assigned facility found for this user.');
+    }
+    return staff.hospitalId.toString();
+  }
 
   private async getHospitalVersionIds(branchId?: string): Promise<Types.ObjectId[] | null> {
     if (!branchId) return null;
@@ -37,11 +50,12 @@ export class ReportsService {
     return [new Types.ObjectId(branchId)];
   }
 
-  async getClinicalReport(branchId?: string, fromDate?: string, toDate?: string) {
+  async getClinicalReport(user: any, branchId?: string, fromDate?: string, toDate?: string) {
+    const resolvedBranchId = await this.resolveBranchScope(user, branchId);
     const match: any = {};
 
-    if (branchId) {
-      const hospitalIds = await this.getHospitalVersionIds(branchId);
+    if (resolvedBranchId) {
+      const hospitalIds = await this.getHospitalVersionIds(resolvedBranchId);
       if (hospitalIds) {
         const patients = await this.patientModel
           .find({ hospitalId: { $in: hospitalIds } })
@@ -128,10 +142,11 @@ export class ReportsService {
     };
   }
 
-  async getOccupancyReport(branchId?: string, page?: number, pageSize?: number) {
+  async getOccupancyReport(user: any, branchId?: string, page?: number, pageSize?: number) {
+    const resolvedBranchId = await this.resolveBranchScope(user, branchId);
     const filter: any = { isCurrent: { $ne: false } };
-    if (branchId) {
-      filter._id = new Types.ObjectId(branchId);
+    if (resolvedBranchId) {
+      filter._id = new Types.ObjectId(resolvedBranchId);
     }
 
     const hospitals = await this.hospitalModel.find(filter).exec();
@@ -186,10 +201,11 @@ export class ReportsService {
     };
   }
 
-  async getStaffingReport(branchId?: string) {
+  async getStaffingReport(user: any, branchId?: string) {
+    const resolvedBranchId = await this.resolveBranchScope(user, branchId);
     const match: any = {};
-    if (branchId) {
-      const hospitalIds = await this.getHospitalVersionIds(branchId);
+    if (resolvedBranchId) {
+      const hospitalIds = await this.getHospitalVersionIds(resolvedBranchId);
       if (hospitalIds) {
         match.hospitalId = { $in: hospitalIds };
       }
@@ -274,10 +290,11 @@ export class ReportsService {
     };
   }
 
-  async getInventoryReport(branchId?: string) {
+  async getInventoryReport(user: any, branchId?: string) {
+    const resolvedBranchId = await this.resolveBranchScope(user, branchId);
     const match: any = {};
-    if (branchId) {
-      const hospitalIds = await this.getHospitalVersionIds(branchId);
+    if (resolvedBranchId) {
+      const hospitalIds = await this.getHospitalVersionIds(resolvedBranchId);
       if (hospitalIds) {
         match.branchId = { $in: hospitalIds };
       }

@@ -25,14 +25,44 @@ type TabType = 'clinical' | 'occupancy' | 'staffing' | 'inventory';
 
 export function Reports() {
   const { t } = useTranslation();
-  const { currentUser, hospitals } = useApp();
-  const userRole = currentUser?.role || 'Admin';
+  const { currentUser, hospitals, staff, loading: appLoading } = useApp();
+  const userRole = currentUser?.role || '';
+
+  const currentStaff = staff.find((s) => {
+    const uId = typeof s.userId === 'object' && s.userId ? (s.userId as any)._id : s.userId;
+    const uName = typeof s.userId === 'object' && s.userId ? (s.userId as any).username : s.username;
+    return uId === currentUser?.id || uName === currentUser?.username;
+  });
+  const userHospitalId = currentStaff?.assignedHospitalId || '';
 
   // State
   const [activeTab, setActiveTab] = useState<TabType>('occupancy');
   const [selectedBranch, setSelectedBranch] = useState<string>('');
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
+
+  useEffect(() => {
+    if (userRole && userRole !== 'Admin') {
+      setSelectedBranch(userHospitalId);
+    }
+  }, [userHospitalId, userRole]);
+
+  if (!currentUser || appLoading) {
+    return (
+      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+        <Header 
+          title={t('nav.reports') || 'Analytics & Reports'} 
+          subtitle={t('reports.subtitle', 'Access system breakdowns, clinical statistics, bed availability, and stock checks.')} 
+        />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 text-slate-500">
+            <RefreshCw size={24} className="animate-spin text-primary-500" />
+            <span>{t('reports.loading', 'Compiling Report Analytics...')}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,13 +96,8 @@ export function Reports() {
   }, [activeTab, selectedBranch]);
 
   // Determine allowed tabs
-  const isAllowed = (tab: TabType): boolean => {
-    if (userRole === 'Admin') return true;
-    if (tab === 'clinical') return userRole === 'Doctor';
-    if (tab === 'occupancy') return ['Doctor', 'Nurse', 'Receptionist'].includes(userRole);
-    if (tab === 'staffing') return false; // Admin only
-    if (tab === 'inventory') return userRole === 'Pharmacist';
-    return false;
+  const isAllowed = (_tab: TabType): boolean => {
+    return true;
   };
 
   const fetchReportData = async () => {
@@ -420,16 +445,26 @@ export function Reports() {
               {/* Branch Selector */}
               <div className="flex items-center gap-2">
                 <Building size={16} className="text-slate-400 dark:text-slate-500" />
-                <select
-                  value={selectedBranch}
-                  onChange={(e) => setSelectedBranch(e.target.value)}
-                  className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition"
-                >
-                  <option value="">{t('reports.allBranches', 'All Branches')}</option>
-                  {hospitals.map((h: any) => (
-                    <option key={h._id} value={h._id}>{h.name}</option>
-                  ))}
-                </select>
+                {userRole === 'Admin' ? (
+                  <select
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition"
+                  >
+                    <option value="">{t('reports.allBranches', 'All Branches')}</option>
+                    {hospitals.map((h: any) => (
+                      <option key={h.id || h._id} value={h.id || h._id}>{h.name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-350 rounded-xl text-sm font-medium border border-slate-200 dark:border-slate-700">
+                    <span>
+                      {hospitals.find(
+                        (h: any) => h.id === userHospitalId || h._id === userHospitalId,
+                      )?.name || t('common.unknown', 'Unknown Branch')}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Date Filters (Only shown for Clinical Tab) */}
@@ -777,8 +812,8 @@ export function Reports() {
                   </div>
                 </div>
 
-                {/* Branch Distribution — full width below */}
-                {staffingData.branchDistribution && staffingData.branchDistribution.length > 0 && (
+                {/* Branch Distribution — only visible to Admins */}
+                {userRole === 'Admin' && staffingData.branchDistribution && staffingData.branchDistribution.length > 0 && (
                   <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
                       <Building className="text-primary-500" size={16} />
