@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CalendarDays, Pill, Plus, UserRound, FileText, X, Pencil, Activity, Sparkles, Mail, Check } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Pill, Plus, UserRound, FileText, X, Pencil, Activity, Sparkles, Mail, Check, Eye } from 'lucide-react';
 import { Header } from '../../components/layout/Header';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/Button';
@@ -125,6 +125,9 @@ function mapPatientDataFromBackend(item: any): PatientData {
     nurseUserId: item.nurseUserId?._id ?? item.nurseUserId ?? '',
     notes: item.notes ?? '',
     recommendedTests: Array.isArray(item.recommendedTests) ? item.recommendedTests.map(String) : [],
+    status: item.status ?? 'General Visit',
+    admittedAt: item.admittedAt ? new Date(item.admittedAt).toISOString().split('T')[0] : undefined,
+    dischargedAt: item.dischargedAt ? new Date(item.dischargedAt).toISOString().split('T')[0] : undefined,
   };
 }
 
@@ -210,10 +213,17 @@ export function PatientDetail() {
   const assignedHospital = hospitals.find(
     h => h.id === patient?.hospitalId || h._id === patient?.hospitalId,
   );
+  const hospital = assignedHospital;
   const canManageVisits = ['Doctor', 'Nurse', 'Receptionist'].includes(currentUser?.role ?? '');
   const [history, setHistory] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!error) return undefined;
+    const timer = window.setTimeout(() => setError(''), 4500);
+    return () => window.clearTimeout(timer);
+  }, [error]);
   const [medicineVisit, setMedicineVisit] = useState<PatientData | null>(null);
   const [prescriptionGroupToView, setPrescriptionGroupToView] = useState<{ problem: string; visits: PatientData[] } | null>(null);
   const [medicineError, setMedicineError] = useState('');
@@ -235,7 +245,8 @@ export function PatientDetail() {
     if (!prescriptionGroupToView || !patient?.email) return;
     setSendingPrescriptionEmail(true);
     try {
-      const visits = prescriptionGroupToView.visits
+      const visits = history
+        .filter(v => v.problem.trim() === prescriptionGroupToView.problem.trim())
         .filter(v => v.medicines.length > 0 || (v.recommendedTests && v.recommendedTests.length > 0))
         .map(v => ({
           visitDate: v.visitDate,
@@ -293,8 +304,12 @@ export function PatientDetail() {
     visitDate: new Date().toISOString().split('T')[0],
     doctor: '',
     nurse: '',
+    bedRequired: false,
+    admittedAt: new Date().toISOString().split('T')[0],
+    dischargedAt: new Date().toISOString().split('T')[0],
   });
   const [visitTouched, setVisitTouched] = useState(false);
+  const [showNoBedsModal, setShowNoBedsModal] = useState(false);
 
   // AI Suggestions & Profiling state
   const [aiRiskProfile, setAiRiskProfile] = useState<{ potentialRisks: string[]; recommendedVitalsMonitoring: string[]; generalHealthGuidelines: string } | null>(null);
@@ -444,7 +459,8 @@ export function PatientDetail() {
     async function loadAvailableDoctors() {
       try {
         setLoadingDoctors(true);
-        const res = await authFetch(`${API_BASE}/staff/available-doctors?date=${encodeURIComponent(form.visitDate)}`);
+        const hospitalIdParam = patient?.hospitalId ? `&hospitalId=${encodeURIComponent(patient.hospitalId)}` : '';
+        const res = await authFetch(`${API_BASE}/staff/available-doctors?date=${encodeURIComponent(form.visitDate)}${hospitalIdParam}`);
         if (!res.ok) throw new Error(t('patients.detail.loadDoctorsError'));
         const data = await res.json();
         if (!active) return;
@@ -476,7 +492,7 @@ export function PatientDetail() {
     return () => {
       active = false;
     };
-  }, [form.visitDate]);
+  }, [form.visitDate, patient?.hospitalId]);
 
   useEffect(() => {
     if (!form.visitDate) {
@@ -488,7 +504,8 @@ export function PatientDetail() {
     async function loadAvailableNurses() {
       try {
         setLoadingNurses(true);
-        const res = await authFetch(`${API_BASE}/staff/available-nurses?date=${encodeURIComponent(form.visitDate)}`);
+        const hospitalIdParam = patient?.hospitalId ? `&hospitalId=${encodeURIComponent(patient.hospitalId)}` : '';
+        const res = await authFetch(`${API_BASE}/staff/available-nurses?date=${encodeURIComponent(form.visitDate)}${hospitalIdParam}`);
         if (!res.ok) throw new Error(t('patients.detail.loadNursesError', 'Failed to load available nurses'));
         const data = await res.json();
         if (!active) return;
@@ -520,7 +537,7 @@ export function PatientDetail() {
     return () => {
       active = false;
     };
-  }, [form.visitDate]);
+  }, [form.visitDate, patient?.hospitalId]);
 
   const groupedHistory = useMemo(() => {
     const groups = new Map<string, PatientData[]>();
@@ -934,17 +951,34 @@ export function PatientDetail() {
           doctorUserId: form.doctor,
           nurse: selectedNurse?.label ?? form.nurse,
           nurseUserId: form.nurse || undefined,
+          bedRequired: form.bedRequired,
+          admittedAt: form.bedRequired ? form.admittedAt : undefined,
+          dischargedAt: form.bedRequired ? form.dischargedAt : undefined,
+          status: form.bedRequired ? 'Admitted' : 'General Visit',
         }),
       });
 
-      if (!res.ok) throw new Error(t('patients.detail.saveVisitError'));
+      if (!res.ok) {
+        const errorJson = await res.json().catch(() => ({}));
+        const msg = errorJson.message || t('patients.detail.saveVisitError');
+        if (msg.includes('No beds available')) {
+          setShowNoBedsModal(true);
+          return;
+        }
+        throw new Error(msg);
+      }
       const created = mapPatientDataFromBackend(await res.json());
       setHistory(current => [...current, created]);
+      // Reload page or update patient context since bed allocation status has changed
+      window.location.reload();
       setForm({
         problem: '',
         visitDate: new Date().toISOString().split('T')[0],
         doctor: '',
         nurse: '',
+        bedRequired: false,
+        admittedAt: new Date().toISOString().split('T')[0],
+        dischargedAt: new Date().toISOString().split('T')[0],
       });
       setVisitTouched(false);
     } catch (err) {
@@ -974,6 +1008,12 @@ export function PatientDetail() {
 
   return (
     <>
+      {error && (
+        <div className="fixed top-4 right-4 z-50 p-4 bg-red-100 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg shadow-lg flex items-center justify-between max-w-sm">
+          <span>{error}</span>
+          <button onClick={() => setError('')} className="ml-3 text-red-500 hover:text-red-700 font-bold">×</button>
+        </div>
+      )}
       <div className="flex flex-col h-full">
         <Header title={patient.name} subtitle={t('patients.detail.subtitle')} />
 
@@ -1051,7 +1091,7 @@ export function PatientDetail() {
                       {patient.bedRequired ? t('patients.bedAllocated') : t('patients.noBedNeeded')}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mt-5 text-sm">
                     <div>
                       <p className="text-slate-400">{t('patients.phoneLabel')}</p>
                       <p className="font-medium text-slate-700 dark:text-slate-200">{patient.phone}</p>
@@ -1061,17 +1101,21 @@ export function PatientDetail() {
                       <p className="font-medium text-slate-700 dark:text-slate-200">{patient.aadhaarNumber}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">{t('patients.admitted')}</p>
-                      <p className="font-medium text-slate-700 dark:text-slate-200">{patient.admittedAt}</p>
+                      <p className="text-slate-400">{t('patients.emailLabel')}</p>
+                      <p className="font-medium text-slate-700 dark:text-slate-200 truncate" title={patient.email}>{patient.email || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">{t('patients.facility')}</p>
+                      <p className="font-medium text-slate-700 dark:text-slate-200 truncate" title={hospital?.name}>{hospital?.name ?? '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">{t('patients.addressLabel', 'Address')}</p>
+                      <p className="font-medium text-slate-700 dark:text-slate-200 truncate" title={patient.address}>{patient.address || '—'}</p>
                     </div>
                   </div>
                 </div>
 
-                {error && (
-                  <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
-                    {error}
-                  </div>
-                )}
+
 
                 <div className="space-y-4">
                   {loading ? (
@@ -1088,17 +1132,30 @@ export function PatientDetail() {
                             <h3 className="font-semibold text-slate-800 dark:text-slate-100">
                               {t('patients.detail.visitHeading', { count: index + 1, problem: group.problem })}
                             </h3>
-                            {hasAnyPrescriptionData && (
-                              <button
-                                type="button"
-                                onClick={() => setPrescriptionGroupToView({ problem: group.problem, visits: group.visits })}
-                                title={t('patients.detail.prescription.viewButtonTitle')}
-                                className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 border border-primary-200 dark:border-primary-800/50 hover:border-primary-300 dark:hover:border-primary-700 transition"
-                              >
-                                <FileText size={13} />
-                                {t('patients.detail.prescription.viewButton')}
-                              </button>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {hasAnyPrescriptionData && (
+                                <button
+                                  type="button"
+                                  onClick={() => setPrescriptionGroupToView({ problem: group.problem, visits: group.visits })}
+                                  title={t('patients.detail.prescription.viewButtonTitle')}
+                                  className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 border border-primary-200 dark:border-primary-800/50 hover:border-primary-300 dark:hover:border-primary-700 transition"
+                                >
+                                  <FileText size={13} />
+                                  {t('patients.detail.prescription.viewButton')}
+                                </button>
+                              )}
+                              {group.visits[0]?.status && (
+                                <span className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold leading-4 whitespace-nowrap ${
+                                  group.visits[0].status === 'Admitted'
+                                    ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-450'
+                                    : group.visits[0].status === 'Discharged'
+                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-450'
+                                    : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-450'
+                                }`}>
+                                  {group.visits[0].status}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="divide-y divide-slate-100 dark:divide-slate-700">
                             {group.visits.length > 0 ? (
@@ -1117,6 +1174,24 @@ export function PatientDetail() {
                                         {visit.doctor && <span>· {visit.doctor}</span>}
                                         {visit.nurse && <span>· Nurse: {visit.nurse}</span>}
                                       </div>
+                                      {(visit.admittedAt || ((visit.status === 'Admitted' || visit.status === 'Discharged') && patient.admittedAt)) && (
+                                        <div className="flex items-center gap-6 text-xs bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700/60 w-fit">
+                                          <div>
+                                            <span className="text-slate-400 block mb-0.5">Admit Date</span>
+                                            <span className="font-semibold text-slate-700 dark:text-slate-205 tabular-nums">
+                                              {visit.admittedAt || patient.admittedAt}
+                                            </span>
+                                          </div>
+                                          {(visit.dischargedAt || ((visit.status === 'Admitted' || visit.status === 'Discharged') && patient.dischargedAt)) && (
+                                            <div>
+                                              <span className="text-slate-400 block mb-0.5">Discharge Date</span>
+                                              <span className="font-semibold text-slate-700 dark:text-slate-205 tabular-nums">
+                                                {visit.dischargedAt || patient.dischargedAt}
+                                              </span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
                                       <div className="flex items-start gap-2 text-sm">
                                         <Pill size={15} className="text-primary-500 mt-0.5" />
                                         <div>
@@ -1166,7 +1241,18 @@ export function PatientDetail() {
                 </div>
               </div>
 
-              {canManageVisits && (
+              {canManageVisits && patient.bedRequired && (
+                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-xl p-5 text-amber-800 dark:text-amber-400 text-sm space-y-2">
+                  <p className="font-semibold flex items-center gap-1.5">
+                    <span className="text-base">⚠️</span> Patient Admitted
+                  </p>
+                  <p className="opacity-90">
+                    This patient is currently admitted to the hospital. New visit records cannot be added until the patient is discharged.
+                  </p>
+                </div>
+              )}
+
+              {canManageVisits && !patient.bedRequired && (
                 <form
                   onSubmit={handleSubmit}
                   className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 h-fit space-y-4"
@@ -1261,6 +1347,38 @@ export function PatientDetail() {
                   />
                   {!loadingNurses && form.visitDate && nurseOptions.length === 0 && (
                     <p className="text-xs text-slate-400">{t('patients.detail.noNurses', 'No available nurses found for this date.')}</p>
+                  )}
+
+                  <div className="flex items-center gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
+                    <input
+                      type="checkbox"
+                      id="bedRequired"
+                      checked={form.bedRequired}
+                      onChange={e => setForm(current => ({ ...current, bedRequired: e.target.checked }))}
+                      className="w-4 h-4 accent-primary-600 cursor-pointer"
+                    />
+                    <label htmlFor="bedRequired" className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                      {t('patients.form.allocateBed', 'Allocate Bed')}
+                    </label>
+                  </div>
+
+                  {form.bedRequired && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        label={t('patients.detail.admitDateLabel', 'Admit Date')}
+                        type="date"
+                        required
+                        value={form.admittedAt}
+                        onChange={e => setForm(current => ({ ...current, admittedAt: e.target.value }))}
+                      />
+                      <Input
+                        label={t('patients.detail.dischargeDateLabel', 'Discharge Date')}
+                        type="date"
+                        required
+                        value={form.dischargedAt}
+                        onChange={e => setForm(current => ({ ...current, dischargedAt: e.target.value }))}
+                      />
+                    </div>
                   )}
 
 
@@ -1369,27 +1487,41 @@ export function PatientDetail() {
                             {qtyPerSession} per session · {sessionLabels.join('/') || 'No timing'} · {days} days (Total: {currentQty} units)
                           </p>
                         </div>
-                        <div className="flex items-center gap-1">
+                        {selectedMedicine.startsWith('existing:') ? (
                           <button
                             type="button"
                             onClick={() => setEditingMedicineId(selectedMedicine)}
-                            className="p-1.5 text-slate-400 hover:text-primary-600 dark:text-slate-500 dark:hover:text-primary-405 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
-                            title="Edit details"
+                            className="p-1.5 text-slate-400 hover:text-primary-600 dark:text-slate-500 dark:hover:text-primary-405 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition flex items-center gap-1 shrink-0"
+                            title="View details"
                           >
-                            <Pencil size={14} />
+                            <Eye size={14} className="text-slate-400" />
+                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">View</span>
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => toggleMedicine(medicineVisit.id, selectedMedicine)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-450 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
-                            title={t('patients.detail.prescription.removeFromPrescription')}
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => setEditingMedicineId(selectedMedicine)}
+                              className="p-1.5 text-slate-400 hover:text-primary-600 dark:text-slate-500 dark:hover:text-primary-405 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
+                              title="Edit details"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => toggleMedicine(medicineVisit.id, selectedMedicine)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-450 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
+                              title={t('patients.detail.prescription.removeFromPrescription')}
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     );
                   }
+
+                  const isPreviouslySaved = selectedMedicine.startsWith('existing:');
 
                   return (
                     <div key={selectedMedicine} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 space-y-3">
@@ -1408,16 +1540,18 @@ export function PatientDetail() {
                             onClick={() => setEditingMedicineId(null)}
                             className="px-2 py-1 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition"
                           >
-                            {t('patients.detail.doneEditing', 'Done')}
+                            {isPreviouslySaved ? t('patients.detail.doneEditing', 'Close') : t('patients.detail.doneEditing', 'Done')}
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => toggleMedicine(medicineVisit.id, selectedMedicine)}
-                            className="p-1 text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-450 rounded transition-colors"
-                            title={t('patients.detail.prescription.removeFromPrescription')}
-                          >
-                            <X size={16} />
-                          </button>
+                          {!isPreviouslySaved && (
+                            <button
+                              type="button"
+                              onClick={() => toggleMedicine(medicineVisit.id, selectedMedicine)}
+                              className="p-1 text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-450 rounded transition-colors"
+                              title={t('patients.detail.prescription.removeFromPrescription')}
+                            >
+                              <X size={16} />
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -1426,6 +1560,7 @@ export function PatientDetail() {
                           label={t('patients.detail.prescription.daysToTake')}
                           type="number"
                           min="1"
+                          disabled={isPreviouslySaved}
                           value={String(medicineDraft.medicineDays?.[selectedMedicine] ?? 1)}
                           onChange={event => updatePrescription(
                             medicineVisit.id,
@@ -1438,6 +1573,7 @@ export function PatientDetail() {
                           label={t('patients.detail.prescription.qtyPerSession')}
                           type="number"
                           min="1"
+                          disabled={isPreviouslySaved}
                           value={String(medicineDraft.medicineQtysPerSession?.[selectedMedicine] ?? 1)}
                           onChange={event => updatePrescription(
                             medicineVisit.id,
@@ -1458,6 +1594,7 @@ export function PatientDetail() {
                                 key={session.id}
                                 type="button"
                                 onClick={() => {
+                                  if (isPreviouslySaved) return;
                                   const currentSessions = medicineDraft.medicineSessions?.[selectedMedicine] ?? [];
                                   const nextSessions = currentSessions.includes(session.id)
                                     ? currentSessions.filter(s => s !== session.id)
@@ -1468,7 +1605,7 @@ export function PatientDetail() {
                                   isSessionSelected
                                     ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-primary-300 dark:border-primary-800'
                                     : 'bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-450 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
-                                }`}
+                                } ${isPreviouslySaved ? 'cursor-default opacity-80' : ''}`}
                               >
                                 {t(session.key, session.defaultLabel)}
                               </button>
@@ -1811,6 +1948,33 @@ export function PatientDetail() {
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        open={showNoBedsModal}
+        onClose={() => setShowNoBedsModal(false)}
+        title="⚠️ No Beds Available"
+        size="md"
+      >
+        <div className="space-y-4 p-1">
+          <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-250 dark:border-amber-900 rounded-lg text-amber-800 dark:text-amber-400">
+            <span className="text-xl">⚠️</span>
+            <div className="text-sm">
+              <p className="font-semibold">Capacity Warning</p>
+              <p className="mt-1">
+                There are no beds available at this hospital for the selected dates.
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              type="button"
+              onClick={() => setShowNoBedsModal(false)}
+            >
+              Close
+            </Button>
+          </div>
+        </div>
       </Modal>
     </>
   );

@@ -274,7 +274,12 @@ Return ONLY a valid JSON object with this exact shape:
     const resolvedBranchId = await this.resolveBranchScope(user, branchId);
     const filter: any = { isCurrent: { $ne: false } };
     if (resolvedBranchId) {
-      filter._id = new Types.ObjectId(resolvedBranchId);
+      const hospitalIds = await this.getHospitalVersionIds(resolvedBranchId);
+      if (hospitalIds && hospitalIds.length > 0) {
+        filter._id = { $in: hospitalIds };
+      } else {
+        filter._id = new Types.ObjectId(resolvedBranchId);
+      }
     }
 
     const hospitals = await this.hospitalModel.find(filter).exec();
@@ -331,24 +336,24 @@ Return ONLY a valid JSON object with this exact shape:
 
   async getStaffingReport(user: any, branchId?: string) {
     const resolvedBranchId = await this.resolveBranchScope(user, branchId);
-    const match: any = {};
+    const rawMatch: any = {};
     if (resolvedBranchId) {
       const hospitalIds = await this.getHospitalVersionIds(resolvedBranchId);
       if (hospitalIds) {
-        match.hospitalId = { $in: hospitalIds };
+        rawMatch.hospitalId = { $in: hospitalIds.map((id) => id.toString()) };
       }
     }
 
-    const totalStaff = await this.staffModel.countDocuments(match);
+    const totalStaff = await this.staffModel.collection.countDocuments(rawMatch);
 
-    const departmentsDistribution = await this.staffModel.aggregate([
-      { $match: match },
+    const departmentsDistribution = await this.staffModel.collection.aggregate([
+      { $match: rawMatch },
       { $group: { _id: '$department', count: { $sum: 1 } } },
       { $project: { department: '$_id', count: 1, _id: 0 } },
-    ]);
+    ]).toArray();
 
-    const rolesDistribution = await this.staffModel.aggregate([
-      { $match: match },
+    const rolesDistribution = await this.staffModel.collection.aggregate([
+      { $match: rawMatch },
       {
         $lookup: {
           from: 'users',
@@ -365,15 +370,7 @@ Return ONLY a valid JSON object with this exact shape:
         },
       },
       { $project: { role: '$_id', count: 1, _id: 0 } },
-    ]);
-
-    // Use raw native driver to avoid Mongoose casting hospitalId string→ObjectId
-    // which breaks the $toObjectId coercion inside $lookup $let.
-    const rawMatch: any = {};
-    if (match.hospitalId) {
-      // match.hospitalId was built as { $in: ObjectId[] }, convert to string array for raw query
-      rawMatch.hospitalId = { $in: match.hospitalId.$in.map((id: Types.ObjectId) => id.toString()) };
-    }
+    ]).toArray();
 
     const branchDistribution = await this.connection.db!
       .collection('staffs')

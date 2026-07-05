@@ -229,6 +229,7 @@ function mapPatientFromBackend(item: any): Patient {
     cityCode: item.cityCode,
     bedRequired: item.bedRequired ?? false,
     admittedAt: item.admittedAt ? new Date(item.admittedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    dischargedAt: item.dischargedAt ? new Date(item.dischargedAt).toISOString().split('T')[0] : undefined,
   };
 }
 

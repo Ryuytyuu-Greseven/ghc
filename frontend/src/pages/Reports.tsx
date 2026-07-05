@@ -118,7 +118,7 @@ export function Reports() {
   const userHospitalId = currentStaff?.assignedHospitalId || '';
 
   // State
-  const [activeTab, setActiveTab] = useState<TabType>('occupancy');
+  const [activeTab, setActiveTab] = useState<TabType>('clinical');
   const [selectedBranch, setSelectedBranch] = useState<string>('');
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
@@ -161,7 +161,7 @@ export function Reports() {
 
   // Set default tab based on role permissions
   useEffect(() => {
-    if (userRole === 'Doctor') {
+    if (userRole === 'Doctor' || userRole === 'Admin') {
       setActiveTab('clinical');
     } else {
       setActiveTab('occupancy');
@@ -578,18 +578,6 @@ export function Reports() {
 
           {/* Role-Based Navigation Tabs */}
           <div className="flex border-b border-slate-200 dark:border-slate-700 gap-1 overflow-x-auto select-none">
-            {isAllowed('occupancy') && (
-              <button
-                onClick={() => setActiveTab('occupancy')}
-                className={`flex items-center gap-2 px-5 py-3 border-b-2 font-semibold text-sm transition-all whitespace-nowrap ${
-                  activeTab === 'occupancy'
-                    ? 'border-primary-500 text-primary-600 dark:text-primary-400 bg-primary-50/20'
-                    : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                }`}
-              >
-                <BedDouble size={16} /> {t('reports.tabOccupancy', 'Bed Occupancy Capacity')}
-              </button>
-            )}
             {isAllowed('clinical') && (
               <button
                 onClick={() => setActiveTab('clinical')}
@@ -600,6 +588,18 @@ export function Reports() {
                 }`}
               >
                 <Activity size={16} /> {t('reports.tabClinical', 'Clinical Diagnostics')}
+              </button>
+            )}
+            {isAllowed('occupancy') && (
+              <button
+                onClick={() => setActiveTab('occupancy')}
+                className={`flex items-center gap-2 px-5 py-3 border-b-2 font-semibold text-sm transition-all whitespace-nowrap ${
+                  activeTab === 'occupancy'
+                    ? 'border-primary-500 text-primary-600 dark:text-primary-400 bg-primary-50/20'
+                    : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                }`}
+              >
+                <BedDouble size={16} /> {t('reports.tabOccupancy', 'Bed Occupancy Capacity')}
               </button>
             )}
             {isAllowed('staffing') && (

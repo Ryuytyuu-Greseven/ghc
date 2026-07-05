@@ -3,8 +3,12 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { PatientData, PatientDataDocument } from '../schemas/patient-data.schema';
 import { PatientRepository } from '../repositories/patient.repository';
 import { Patient } from '../schemas/patient.schema';
 import { CreatePatientDto } from './dto/create-patient.dto';
@@ -42,6 +46,8 @@ export class PatientsService {
     private readonly hospitalRepository: HospitalRepository,
     private readonly notificationsService: NotificationsService,
     private readonly locationsService: LocationsService,
+    @InjectModel(PatientData.name)
+    private readonly patientDataModel: Model<PatientDataDocument>,
   ) { }
 
   private mapLocationNames(patient: any) {
@@ -105,18 +111,6 @@ export class PatientsService {
     const createdPatient = await this.patientRepository.create(
       this.toPatientPersistence(patient),
     );
-    if (patient.bedRequired && patient.hospitalId) {
-      try {
-        await this.hospitalsCommonService.allocateBed(
-          patient.hospitalId,
-          createdPatient._id.toString(),
-        );
-      } catch (err) {
-        // Rollback patient registration if bed allocation fails
-        await this.patientRepository.delete(createdPatient._id.toString());
-        throw err;
-      }
-    }
 
     const hospital = patient.hospitalId
       ? await this.hospitalRepository.findById(patient.hospitalId)
@@ -299,5 +293,53 @@ Return ONLY valid JSON with this exact shape:
       recommendedVitalsMonitoring: ['Blood Pressure', 'Heart Rate', 'Body Temperature'],
       generalHealthGuidelines: 'Maintain a balanced diet and regular screening checks.',
     };
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async autoDischargePatients() {
+    const logger = new Logger('AutoDischargeCron');
+    logger.log('Starting auto-discharge cron check...');
+    
+    try {
+      const today = new Date();
+      // Find active patients (bedRequired = true) whose discharge date is <= today
+      const patientsToDischarge = await this.patientRepository.findAll({
+        bedRequired: true,
+        dischargedAt: { $lte: today },
+      });
+
+      logger.log(`Found ${patientsToDischarge.length} patients to discharge.`);
+
+      for (const patient of patientsToDischarge) {
+        logger.log(`Auto-discharging patient ${patient.name} (${patient._id})`);
+        
+        // 1. Deallocate bed in the hospital
+        if (patient.hospitalId) {
+          try {
+            const hospId = (patient.hospitalId as any)._id?.toString() || patient.hospitalId.toString();
+            await this.hospitalsCommonService.deallocateBed(hospId, patient._id.toString());
+          } catch (err) {
+            logger.error(`Failed to deallocate bed for patient ${patient._id}: ${err.message}`);
+          }
+        }
+
+        // 2. Mark bedRequired as false on patient
+        await this.patientRepository.update(patient._id.toString(), {
+          bedRequired: false,
+        });
+
+        // 3. Mark the active 'Admitted' visit as 'Discharged'
+        try {
+          await this.patientDataModel.updateMany(
+            { patientId: patient._id, status: 'Admitted' },
+            { $set: { status: 'Discharged' } },
+          );
+        } catch (err) {
+          logger.error(`Failed to update visit status to Discharged for patient ${patient._id}: ${err.message}`);
+        }
+      }
+    } catch (err) {
+      logger.error(`Error in autoDischargePatients cron: ${err.message}`);
+    }
   }
 }

@@ -19,4 +19,9 @@ export class CreatePatientDataDto {
   notes?: string;
   recommendedTests?: string[];
   isActive?: boolean;
+  bedRequired?: boolean;
+  admittedAt?: string;
+  dischargedAt?: string;
+  status?: string;
+  forceAdmit?: boolean;
 }

@@ -9,6 +9,8 @@ import { PatientsModule } from '../patients/patients.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { StaffModule } from '../staff/staff.module';
 import { MedicineReminderService } from './medicine-reminder.service';
+import { HospitalsModule } from '../hospitals/hospitals.module';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { MedicineReminderService } from './medicine-reminder.service';
     PatientsModule,
     NotificationsModule,
     StaffModule,
+    HospitalsModule,
+    AuditLogsModule,
   ],
   controllers: [PatientDataController],
   providers: [PatientDataService, PatientDataRepository, MedicineReminderService],
