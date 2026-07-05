@@ -27,12 +27,23 @@ export function MedicineList() {
     ? allTabs
     : allTabs.filter((tab) => tab.id === 'branch' || tab.id === 'requests');
 
-  const [activeTab, setActiveTab] = useState<'master' | 'central' | 'branch' | 'requests' | 'transactions'>(
-    isAdmin ? 'master' : 'branch'
-  );
+  const [activeTab, setActiveTab] = useState<'master' | 'central' | 'branch' | 'requests' | 'transactions'>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initialTab = params.get('tab') as any;
+    if (initialTab && allTabs.some((tab) => tab.id === initialTab)) {
+      return initialTab;
+    }
+    return isAdmin ? 'master' : 'branch';
+  });
 
   useEffect(() => {
-    setActiveTab(isAdmin ? 'master' : 'branch');
+    const params = new URLSearchParams(window.location.search);
+    const initialTab = params.get('tab') as any;
+    if (initialTab && allTabs.some((tab) => tab.id === initialTab)) {
+      setActiveTab(initialTab);
+    } else {
+      setActiveTab(isAdmin ? 'master' : 'branch');
+    }
   }, [isAdmin]);
 
   return (
