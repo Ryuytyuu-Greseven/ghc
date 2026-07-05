@@ -1,6 +1,7 @@
 import type {
   DiagnosticTest,
   FacilityAvailabilityEntry,
+  FacilityTestAvailabilityRow,
   PaginatedResponse,
   TestAvailabilityAudit,
 } from '../types';
@@ -30,6 +31,12 @@ const del = <T>(path: string) => request<T>('DELETE', path);
 export const diagnosticTestApi = {
   getTests: (params = '') =>
     get<PaginatedResponse<DiagnosticTest>>(`/diagnostic-tests${params ? '?' + params : ''}`),
+  getTestsByHospital: (hospitalId: string) =>
+    get<FacilityTestAvailabilityRow[]>(`/facility-test-availability/hospital/${hospitalId}`),
+  getAvailableTestsByHospital: (hospitalId: string) =>
+    get<FacilityTestAvailabilityRow[]>(
+      `/facility-test-availability/hospital/${hospitalId}?availableOnly=true`,
+    ),
   getTest: (id: string) => get<DiagnosticTest>(`/diagnostic-tests/${id}`),
   searchTests: (q: string) =>
     get<DiagnosticTest[]>(`/diagnostic-tests/search?q=${encodeURIComponent(q)}`),

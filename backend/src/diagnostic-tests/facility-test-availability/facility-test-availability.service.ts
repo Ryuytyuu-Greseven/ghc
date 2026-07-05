@@ -61,6 +61,48 @@ export class FacilityTestAvailabilityService {
     });
   }
 
+  async getAvailableByHospital(hospitalId: string) {
+    if (!Types.ObjectId.isValid(hospitalId)) {
+      throw new BadRequestException('hospitalId is invalid');
+    }
+
+    const records =
+      await this.availabilityRepo.findAvailableByHospital(hospitalId);
+
+    return records
+      .map((record) => {
+        const populatedTest = record.testId as {
+          _id?: Types.ObjectId;
+          testName?: string;
+          testCode?: string;
+          category?: string;
+          sampleType?: string;
+          status?: DiagnosticTestStatus;
+        };
+        const testId =
+          populatedTest?._id?.toString?.() ?? record.testId?.toString?.();
+        const testName = populatedTest?.testName;
+        const testStatus = populatedTest?.status ?? DiagnosticTestStatus.Active;
+
+        if (!testId || !testName || testStatus !== DiagnosticTestStatus.Active) {
+          return null;
+        }
+
+        return {
+          testId,
+          testName,
+          testCode: populatedTest?.testCode,
+          category: populatedTest?.category,
+          sampleType: populatedTest?.sampleType,
+          status: record.status,
+          reason: record.reason ?? '',
+          lastAuditedAt: record.lastAuditedAt ?? null,
+          availabilityId: record._id?.toString() ?? null,
+        };
+      })
+      .filter((row): row is NonNullable<typeof row> => row !== null);
+  }
+
   async updateAvailability(
     hospitalId: string,
     testId: string,
@@ -149,13 +191,60 @@ export class FacilityTestAvailabilityService {
     return buildPaginatedResponse(data, total, page, pageSize);
   }
 
-  assertHospitalAccess(
+  async hospitalsShareIdentity(
+    hospitalIdA: string,
+    hospitalIdB: string,
+  ): Promise<boolean> {
+    if (hospitalIdA === hospitalIdB) return true;
+    const [idsA, idsB] = await Promise.all([
+      this.availabilityRepo.resolveHospitalIdStrings(hospitalIdA),
+      this.availabilityRepo.resolveHospitalIdStrings(hospitalIdB),
+    ]);
+    const setA = new Set(idsA);
+    return idsB.some((id) => setA.has(id));
+  }
+
+  async assertHospitalAccessForUser(
     userRole: string,
     userHospitalId: string | null,
     targetHospitalId: string,
   ) {
     if (userRole === 'Admin') return;
-    if (!userHospitalId || userHospitalId !== targetHospitalId) {
+    if (!userHospitalId) {
+      throw new ForbiddenException('Access denied to this facility');
+    }
+
+    const sharesIdentity = await this.hospitalsShareIdentity(
+      userHospitalId,
+      targetHospitalId,
+    );
+    if (!sharesIdentity) {
+      throw new ForbiddenException('Access denied to this facility');
+    }
+  }
+
+  assertHospitalAccess(
+    userRole: string,
+    userHospitalId: string | null,
+    targetHospitalId: string,
+    resolvedUserHospitalIds?: string[],
+    resolvedTargetHospitalIds?: string[],
+  ) {
+    if (userRole === 'Admin') return;
+    if (!userHospitalId) {
+      throw new ForbiddenException('Access denied to this facility');
+    }
+
+    if (resolvedUserHospitalIds?.length && resolvedTargetHospitalIds?.length) {
+      const userIdSet = new Set(resolvedUserHospitalIds);
+      const hasOverlap = resolvedTargetHospitalIds.some((id) => userIdSet.has(id));
+      if (!hasOverlap) {
+        throw new ForbiddenException('Access denied to this facility');
+      }
+      return;
+    }
+
+    if (userHospitalId !== targetHospitalId) {
       throw new ForbiddenException('Access denied to this facility');
     }
   }

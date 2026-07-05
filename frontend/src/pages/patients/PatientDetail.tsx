@@ -11,6 +11,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { authFetch, useApp } from '../../context/AppContext';
 import { environment } from '@env/environment';
+import { diagnosticTestApi } from '../../services/diagnosticTestApi';
 import type { PatientData, PatientMedicine } from '../../types';
 
 const API_BASE = environment.mainBackendUrl;
@@ -22,33 +23,6 @@ const categoryOptions = [
   { id: '-4', value: 'Surgical', label: 'Surgical' },
   { id: '-5', value: 'Diagnostic', label: 'Diagnostic' },
   { id: '-6', value: 'Other', label: 'Other' },
-];
-
-const HOSPITAL_TESTS = [
-  'Complete Blood Count (CBC)',
-  'Blood Glucose / HbA1c',
-  'Lipid Profile',
-  'Liver Function Test (LFT)',
-  'Kidney Function Test (KFT)',
-  'Thyroid Profile (T3, T4, TSH)',
-  'Urine Routine Analysis',
-  'Chest X-Ray',
-  'Electrocardiogram (ECG)',
-  'Abdomen Ultrasound (USG)',
-  'CT Scan Brain',
-  'CT Scan Chest',
-  'CT Scan Abdomen',
-  'MRI Brain',
-  'MRI Spine',
-  'Dengue NS1 Antigen',
-  'Malaria Smear',
-  'COVID-19 RT-PCR',
-  'Electrolytes Panel (Na, K, Cl)',
-  'C-Reactive Protein (CRP)',
-  'Rheumatoid Factor (RA Factor)',
-  'Hemoglobin (Hb) Test',
-  'Packed Cell Volume (PCV)',
-  'Erythrocyte Sedimentation Rate (ESR)'
 ];
 
 const SESSIONS = [
@@ -231,8 +205,11 @@ function VisitHistorySkeleton() {
 export function PatientDetail() {
   const { t } = useTranslation();
   const { id } = useParams();
-  const { patients, loading: appLoading, currentUser } = useApp();
+  const { patients, loading: appLoading, currentUser, hospitals } = useApp();
   const patient = patients.find(p => p.id === id);
+  const assignedHospital = hospitals.find(
+    h => h.id === patient?.hospitalId || h._id === patient?.hospitalId,
+  );
   const canManageVisits = ['Doctor', 'Nurse', 'Receptionist'].includes(currentUser?.role ?? '');
   const [history, setHistory] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -246,6 +223,11 @@ export function PatientDetail() {
   const [editingMedicineId, setEditingMedicineId] = useState<string | null>(null);
   const [newTestInput, setNewTestInput] = useState('');
   const [isOtherTestSelected, setIsOtherTestSelected] = useState(false);
+  const [facilityTestOptions, setFacilityTestOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [loadingFacilityTests, setLoadingFacilityTests] = useState(false);
+  const [facilityTestsError, setFacilityTestsError] = useState('');
   const [sendingPrescriptionEmail, setSendingPrescriptionEmail] = useState(false);
   const [prescriptionEmailSent, setPrescriptionEmailSent] = useState(false);
 
@@ -343,6 +325,59 @@ export function PatientDetail() {
 
     loadHistory();
   }, [id]);
+
+  useEffect(() => {
+    const hospitalId = patient?.hospitalId;
+    if (!hospitalId) {
+      setFacilityTestOptions([]);
+      setFacilityTestsError('');
+      return;
+    }
+
+    const matchedHospital = hospitals.find(
+      (h) => h.id === hospitalId || h._id === hospitalId,
+    );
+    const facilityId = matchedHospital?.id ?? hospitalId;
+
+    let active = true;
+    async function loadFacilityTests(facilityId: string) {
+      setLoadingFacilityTests(true);
+      setFacilityTestsError('');
+      try {
+        const data = await diagnosticTestApi.getAvailableTestsByHospital(facilityId);
+        if (!active) return;
+
+        const sorted = [...data].sort((a, b) =>
+          a.testName.localeCompare(b.testName, undefined, { sensitivity: 'base' }),
+        );
+
+        setFacilityTestOptions(
+          sorted.map((test) => ({
+            value: test.testName,
+            label: test.testCode
+              ? `${test.testName} (${test.testCode})`
+              : test.testName,
+          })),
+        );
+      } catch (err) {
+        if (!active) return;
+        console.error('Failed to load diagnostic tests for facility', err);
+        setFacilityTestOptions([]);
+        setFacilityTestsError(
+          err instanceof Error
+            ? err.message
+            : t('patients.detail.loadFacilityTestsError', 'Failed to load tests for this facility.'),
+        );
+      } finally {
+        if (active) setLoadingFacilityTests(false);
+      }
+    }
+
+    loadFacilityTests(facilityId);
+    return () => {
+      active = false;
+    };
+  }, [patient?.hospitalId, hospitals, t]);
 
   const [loadingRiskProfile, setLoadingRiskProfile] = useState(false);
 
@@ -1520,6 +1555,22 @@ export function PatientDetail() {
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 {t('patients.detail.recommendedTestsLabel', 'Recommended Diagnostic Tests')}
               </label>
+              {assignedHospital && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {t('patients.detail.testsForFacility', {
+                    facility: assignedHospital.name,
+                    defaultValue: 'Available tests at {{facility}}',
+                  })}
+                </p>
+              )}
+              {!patient.hospitalId && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  {t('patients.detail.noFacilityForTests', 'Assign a facility to this patient to load available tests.')}
+                </p>
+              )}
+              {facilityTestsError && (
+                <p className="text-xs text-red-600 dark:text-red-400">{facilityTestsError}</p>
+              )}
               <div className="flex gap-2 items-center">
                 <div className="flex-1">
                   <Select
@@ -1534,13 +1585,27 @@ export function PatientDetail() {
                       }
                     }}
                     options={[
-                      ...HOSPITAL_TESTS.filter(test => !(medicineDraft.recommendedTests ?? []).includes(test)).map(test => ({ value: test, label: test })),
-                      { value: 'Other', label: t('patients.detail.otherCustomTest', 'Other / Custom Test') }
+                      ...facilityTestOptions.filter(
+                        (test) => !(medicineDraft.recommendedTests ?? []).includes(test.value),
+                      ),
+                      {
+                        value: 'Other',
+                        label: t('patients.detail.otherCustomTest', 'Other / Custom Test'),
+                      },
                     ]}
-                    placeholder={t('patients.detail.selectTestPlaceholder', 'Select diagnostic test...')}
+                    placeholder={
+                      loadingFacilityTests
+                        ? t('patients.detail.loadingTests', 'Loading tests...')
+                        : t('patients.detail.selectTestPlaceholder', 'Select diagnostic test...')
+                    }
+                    disabled={!patient.hospitalId || loadingFacilityTests}
                   />
                 </div>
-                <Button type="button" onClick={() => addRecommendedTest(medicineVisit.id)} disabled={!newTestInput.trim()}>
+                <Button
+                  type="button"
+                  onClick={() => addRecommendedTest(medicineVisit.id)}
+                  disabled={!newTestInput.trim()}
+                >
                   {t('patients.detail.addTest', 'Add')}
                 </Button>
               </div>
