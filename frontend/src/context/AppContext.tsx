@@ -103,6 +103,8 @@ function mapHospitalFromBackend(item: any): Hospital {
     version: item.version ?? 1,
     isCurrent: item.isCurrent ?? true,
     updatedAt: item.updatedAt ? new Date(item.updatedAt).toLocaleString() : undefined,
+    stateCode: item.stateCode,
+    cityCode: item.cityCode,
   };
 }
 
@@ -158,6 +160,8 @@ function mapStaffFromBackend(item: any): Staff {
     isMedicalIncharge: item.isMedicalIncharge ?? false,
     isActive: item.isActive ?? true,
     unavailableOnDays: item.unavailableOnDays || [],
+    stateCode: item.stateCode,
+    cityCode: item.cityCode,
   };
 }
 
@@ -219,6 +223,10 @@ function mapPatientFromBackend(item: any): Patient {
     aadhaarNumber: item.aadhaarNumber ?? '',
     address: item.address ?? '',
     hospitalId: getPatientHospitalId(item.hospitalId),
+    state: item.state,
+    city: item.city,
+    stateCode: item.stateCode,
+    cityCode: item.cityCode,
     bedRequired: item.bedRequired ?? false,
     admittedAt: item.admittedAt ? new Date(item.admittedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
   };
@@ -234,6 +242,8 @@ function mapPatientToBackend(p: any): any {
     email: p.email ?? '',
     aadhaarNumber: p.aadhaarNumber ?? '',
     address: p.address ?? '',
+    state: p.state ? Number(p.state) : undefined,
+    city: p.city ? Number(p.city) : undefined,
     hospitalId: p.hospitalId || null,
     bedRequired: p.bedRequired ?? false,
     ...(p.admittedAt ? { admittedAt: new Date(p.admittedAt) } : {}),

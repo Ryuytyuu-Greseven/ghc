@@ -8,6 +8,7 @@ import type { Staff, StaffRole, Department } from '../../types';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '../../components/ui/Modal';
 import { Pencil, Plus } from 'lucide-react';
+import { locationApi } from '../../services/locationApi';
 
 interface Props {
   initial: Staff | null;
@@ -18,6 +19,9 @@ export function StaffForm({ initial, onClose }: Props) {
   const { t } = useTranslation();
   const { addStaff, updateStaff } = useApp();
   const [pendingData, setPendingData] = useState<any | null>(null);
+
+  const [states, setStates] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
 
   const roleOptions = [
     { value: 'Doctor', label: t('roles.Doctor') },
@@ -71,14 +75,50 @@ export function StaffForm({ initial, onClose }: Props) {
     emergencyContactMobile: initial?.emergencyContactMobile ?? '',
     addressLine1: initial?.addressLine1 ?? '',
     addressLine2: initial?.addressLine2 ?? '',
-    city: initial?.city ?? '',
-    state: initial?.state ?? '',
+    city: (initial as any)?.cityCode ? String((initial as any).cityCode) : '',
+    state: (initial as any)?.stateCode ? String((initial as any).stateCode) : '',
     pincode: initial?.pincode ?? '',
     assignedHospitalId: initial?.assignedHospitalId ?? '',
     isMedicalIncharge: initial?.isMedicalIncharge ?? false,
   });
 
-  const set = (key: string, value: string) => setForm(f => ({ ...f, [key]: value }));
+  const set = (key: string, value: any) => setForm(f => ({ ...f, [key]: value }));
+
+  const handleStateChange = (stateCode: string) => {
+    setForm(f => ({
+      ...f,
+      state: stateCode,
+      city: '',
+    }));
+  };
+
+  useEffect(() => {
+    async function loadStates() {
+      try {
+        const data = await locationApi.getStates();
+        setStates(data);
+      } catch (err) {
+        console.error('Failed to load states:', err);
+      }
+    }
+    loadStates();
+  }, []);
+
+  useEffect(() => {
+    if (!form.state) {
+      setDistricts([]);
+      return;
+    }
+    async function loadDistricts() {
+      try {
+        const data = await locationApi.getDistricts(form.state);
+        setDistricts(data);
+      } catch (err) {
+        console.error('Failed to load districts:', err);
+      }
+    }
+    loadDistricts();
+  }, [form.state]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,8 +148,8 @@ export function StaffForm({ initial, onClose }: Props) {
       emergencyContactMobile: form.emergencyContactMobile || undefined,
       addressLine1: form.addressLine1 || undefined,
       addressLine2: form.addressLine2 || undefined,
-      city: form.city || undefined,
-      state: form.state || undefined,
+      city: form.city ? Number(form.city) : undefined,
+      state: form.state ? Number(form.state) : undefined,
       pincode: form.pincode || undefined,
       assignedHospitalId: form.assignedHospitalId || null,
       isMedicalIncharge: form.isMedicalIncharge,
@@ -310,17 +350,24 @@ export function StaffForm({ initial, onClose }: Props) {
           />
 
           <div className="grid grid-cols-3 gap-4">
-            <Input
-              label={t('staff.form.labels.city')}
+            <Select
+              label={t('staff.form.labels.state', 'State')}
+              value={form.state}
+              onChange={e => handleStateChange(e.target.value)}
+              options={[
+                { value: '', label: '— Select State —' },
+                ...states.map(s => ({ value: String(s.code), label: s.name })),
+              ]}
+            />
+            <Select
+              label={t('staff.form.labels.city', 'District')}
+              disabled={!form.state}
               value={form.city}
               onChange={e => set('city', e.target.value)}
-              placeholder={t('staff.form.placeholders.city')}
-            />
-            <Input
-              label={t('staff.form.labels.state')}
-              value={form.state}
-              onChange={e => set('state', e.target.value)}
-              placeholder={t('staff.form.placeholders.state')}
+              options={[
+                { value: '', label: '— Select District —' },
+                ...districts.map(d => ({ value: String(d.code), label: d.name })),
+              ]}
             />
             <Input
               label={t('staff.form.labels.pincode')}

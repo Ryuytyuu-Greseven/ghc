@@ -153,10 +153,16 @@ export function DistrictInterventionAlerts({ mode = 'banner' }: DistrictInterven
         </div>
         <div>
           <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">
-            {t('dashboard.intervention.title', 'District Intervention Alerts')}
+            {isAdmin 
+              ? t('dashboard.intervention.title', 'District Intervention Alerts') 
+              : t('dashboard.intervention.title_facility', 'Intervention Alerts for your Facility')
+            }
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            {t('dashboard.intervention.subtitle', 'Health centres flagging critical resource bottlenecks')}
+            {isAdmin 
+              ? t('dashboard.intervention.subtitle', 'Health centres flagging critical resource bottlenecks') 
+              : t('dashboard.intervention.subtitle_facility', 'Resource status alerts flagged for your assigned facility')
+            }
           </p>
         </div>
       </div>

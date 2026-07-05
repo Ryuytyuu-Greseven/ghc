@@ -87,7 +87,7 @@ export const en = {
       hospitals: "Hospitals & Clinics",
       staff: "Staff",
       patients: "Patients",
-      medicines: "Medicines & Supplies",
+      medicines: "Inventory & Supplies",
       "ai-analytics": "AI Inventory Analytics",
       "critical-alerts": "Critical Alerts",
       availability: "My Availability",
@@ -111,6 +111,11 @@ export const en = {
     dashboard: {
       title: "Dashboard",
       subtitle: "GHC Health Care Management Overview",
+      organization_view: "Organization View",
+      viewing_hospital: "Assigned Hospital: {{name}}",
+      in_facility_inventory: "in facility inventory",
+      in_hospital_inventory: "in {{name}} inventory",
+      in_this_facility: "in this facility",
       totalPatients: "Total Patients",
       activeStaff: "Active Staff",
       bedsAvailable: "Beds Available",
@@ -134,9 +139,18 @@ export const en = {
       beds_free: "beds free",
       unassigned: "unassigned",
       requiringBeds: "requiring beds",
+      pending_requests_title: "Pending Inventory Requests",
+      no_pending_requests: "No pending inventory requests",
+      view_all_requests: "Manage All Requests",
+      view_my_requests: "View My Requests",
+      raise_request: "Raise Request",
+      action: "Action",
+      review: "Review",
       intervention: {
         title: "Critical Alerts",
+        title_facility: "Intervention Alerts for your Facility",
         subtitle: "Health centres flagging critical resource bottlenecks",
+        subtitle_facility: "Resource status alerts flagged for your assigned facility",
         severity_high: "High",
         severity_medium: "Medium",
         bed_shortage: "Bed Shortage",
@@ -307,7 +321,7 @@ export const en = {
       healthAI: "GHC Health AI"
     },
     inventory: {
-      title: "Medicines & Supplies",
+      title: "Inventory & Supplies",
       subtitle: "Manage inventory, stock, requests, and audit trail",
       tabs: {
         master: "Inventory Master",

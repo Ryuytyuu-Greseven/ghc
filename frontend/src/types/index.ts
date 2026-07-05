@@ -6,7 +6,8 @@ export interface Hospital {
   name: string;
   type: FacilityType;
   address: string;
-  city: string;
+  city: string | number;
+  state?: string | number | null;
   phone: string;
   email: string;
   totalBeds: number;
@@ -22,6 +23,8 @@ export interface Hospital {
   version?: number;
   isCurrent?: boolean;
   updatedAt?: string;
+  stateCode?: number;
+  cityCode?: number;
 }
 
 export type StaffRole = 'Doctor' | 'Nurse' | 'Receptionist' | 'Pharmacist' | 'Lab Technician' | 'Compounder' | 'Cashier';
@@ -76,13 +79,15 @@ export interface Staff {
   // Address
   addressLine1?: string;
   addressLine2?: string;
-  city?: string;
-  state?: string;
+  city?: string | number;
+  state?: string | number;
   pincode?: string;
   assignedHospitalId: string | null;
   isMedicalIncharge?: boolean;
   unavailableOnDays?: string[];
   createdAt: string;
+  stateCode?: number;
+  cityCode?: number;
 }
 
 export type Gender = 'male' | 'female' | 'other';
@@ -98,6 +103,10 @@ export interface Patient {
   email: string;
   aadhaarNumber: string;
   address: string;
+  state?: string | number;
+  city?: string | number;
+  stateCode?: number;
+  cityCode?: number;
   hospitalId: string;
   bedRequired: boolean;
   admittedAt: string;
@@ -114,6 +123,8 @@ export interface PatientFormValues {
   email: string;
   aadhaarNumber: string;
   address: string;
+  state: string;
+  city: string;
   hospitalId: string;
   bedRequired: boolean;
 }
@@ -136,6 +147,7 @@ export interface PatientData {
   doctor?: string;
   nurse?: string;
   nurseUserId?: string;
+  nurse?: string;
   notes?: string;
   recommendedTests?: string[];
 }

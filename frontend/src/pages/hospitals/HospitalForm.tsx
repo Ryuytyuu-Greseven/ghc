@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ShieldCheck, Pencil, Building2, Plus } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
@@ -8,6 +8,7 @@ import { Modal } from '../../components/ui/Modal';
 import { useApp } from '../../context/AppContext';
 import { SPECIALIST_LIST } from '../../data/specialists';
 import { useTranslation } from 'react-i18next';
+import { locationApi } from '../../services/locationApi';
 import type { Hospital, FacilityType } from '../../types';
 
 interface Props {
@@ -19,11 +20,15 @@ export function HospitalForm({ initial, onClose }: Props) {
   const { t } = useTranslation();
   const { addHospital, updateHospital, hospitals, staff } = useApp();
 
+  const [states, setStates] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+
   const [form, setForm] = useState({
     name: initial?.name ?? '',
     type: initial?.type ?? ('PHC' as FacilityType),
     address: initial?.address ?? '',
-    city: initial?.city ?? '',
+    state: (initial as any)?.stateCode ? String((initial as any).stateCode) : '',
+    city: (initial as any)?.cityCode ? String((initial as any).cityCode) : '',
     phone: initial?.phone ?? '',
     email: initial?.email ?? '',
     totalBeds: String(initial?.totalBeds ?? ''),
@@ -40,6 +45,42 @@ export function HospitalForm({ initial, onClose }: Props) {
 
   const set = (key: string, value: any) => setForm(f => ({ ...f, [key]: value }));
 
+  const handleStateChange = (stateCode: string) => {
+    setForm(f => ({
+      ...f,
+      state: stateCode,
+      city: '',
+    }));
+  };
+
+  useEffect(() => {
+    async function loadStates() {
+      try {
+        const data = await locationApi.getStates();
+        setStates(data);
+      } catch (err) {
+        console.error('Failed to load states:', err);
+      }
+    }
+    loadStates();
+  }, []);
+
+  useEffect(() => {
+    if (!form.state) {
+      setDistricts([]);
+      return;
+    }
+    async function loadDistricts() {
+      try {
+        const data = await locationApi.getDistricts(form.state);
+        setDistricts(data);
+      } catch (err) {
+        console.error('Failed to load districts:', err);
+      }
+    }
+    loadDistricts();
+  }, [form.state]);
+
   const chcs = hospitals.filter(h => h.type === 'CHC' && h.id !== initial?.id);
   const doctors = staff.filter(s => s.isMedicalIncharge === true);
 
@@ -49,7 +90,8 @@ export function HospitalForm({ initial, onClose }: Props) {
       name: form.name,
       type: form.type,
       address: form.address,
-      city: form.city,
+      state: form.state ? Number(form.state) : null,
+      city: Number(form.city),
       phone: form.phone,
       email: form.email,
       totalBeds: Number(form.totalBeds),
@@ -104,13 +146,30 @@ export function HospitalForm({ initial, onClose }: Props) {
         onChange={e => set('address', e.target.value)}
         placeholder={t('hospitals.form.addressPlaceholder')}
       />
-      <Input
-        label={t('hospitals.form.city')}
-        required
-        value={form.city}
-        onChange={e => set('city', e.target.value)}
-        placeholder={t('hospitals.form.city')}
-      />
+      <div className="grid grid-cols-2 gap-4">
+        <Select
+          label={t('staff.form.labels.state', 'State')}
+          required
+          value={form.state}
+          onChange={e => handleStateChange(e.target.value)}
+          options={[
+            { value: '', label: '— Select State —' },
+            ...states.map(s => ({ value: String(s.code), label: s.name })),
+          ]}
+        />
+
+        <Select
+          label={t('staff.form.labels.city', 'District')}
+          required
+          disabled={!form.state}
+          value={form.city}
+          onChange={e => set('city', e.target.value)}
+          options={[
+            { value: '', label: '— Select District —' },
+            ...districts.map(d => ({ value: String(d.code), label: d.name })),
+          ]}
+        />
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <Input

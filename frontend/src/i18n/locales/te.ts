@@ -87,7 +87,7 @@ export const te = {
       hospitals: "ఆసుపత్రులు & క్లినిక్‌లు",
       staff: "సిబ్బంది",
       patients: "రోగులు",
-      medicines: "మందులు & సామాగ్రి",
+      medicines: "ఇన్వెంటరీ & సామాగ్రి",
       "ai-analytics": "AI ఇన్వెంటరీ విశ్లేషణలు",
       "critical-alerts": "కీలక హెచ్చరికలు",
       availability: "నా అందుబాటు",
@@ -111,6 +111,11 @@ export const te = {
     dashboard: {
       title: "డాష్‌బోర్డ్",
       subtitle: "జీహెచ్‌సీ ఆరోగ్య నిర్వహణ అవలోకనం",
+      organization_view: "సంస్థ వీక్షణ",
+      viewing_hospital: "కేటాయించిన ఆసుపత్రి: {{name}}",
+      in_facility_inventory: "సదుపాయం ఇన్వెంటరీలో",
+      in_hospital_inventory: "{{name}} ఇన్వెంటరీలో",
+      in_this_facility: "ఈ సదుపాయంలో",
       totalPatients: "మొత్తం రోగులు",
       activeStaff: "యాక్టివ్ సిబ్బంది",
       bedsAvailable: "అందుబాటులో ఉన్న పడకలు",
@@ -134,9 +139,18 @@ export const te = {
       beds_free: "పడకలు ఖాళీగా ఉన్నాయి",
       unassigned: "కేటాయించని",
       requiringBeds: "పడకలు అవసరమైనవి",
+      pending_requests_title: "పెండింగ్ ఇన్వెంటరీ అభ్యర్థనలు",
+      no_pending_requests: "పెండింగ్ ఇన్వెంటరీ అభ్యర్థనలు ఏవీ లేవు",
+      view_all_requests: "అన్ని అభ్యర్థనలను నిర్వహించండి",
+      view_my_requests: "నా అభ్యర్థనలను చూడండి",
+      raise_request: "అభ్యర్థనను పంపండి",
+      action: "చర్య",
+      review: "సమీక్షించండి",
       intervention: {
         title: "కీలక హెచ్చరికలు",
+        title_facility: "మీ సదుపాయానికి సంబంధించిన కీలక హెచ్చరికలు",
         subtitle: "తీవ్రమైన వనరుల కొరత ఎదుర్కొంటున్న ఆరోగ్య కేంద్రాలు",
+        subtitle_facility: "మీకు కేటాయించిన సదుపాయం కోసం వనరుల స్థితి హెచ్చరికలు",
         severity_high: "అధిక",
         severity_medium: "మధ్యస్థ",
         bed_shortage: "బెడ్ కొరత",
@@ -304,7 +318,7 @@ export const te = {
       healthAI: "జీహెచ్‌సీ హెల్త్ AI"
     },
     inventory: {
-      title: "మందులు & సామాగ్రి",
+      title: "ఇన్వెంటరీ & సామాగ్రి",
       subtitle: "ఇన్వెంటరీ, స్టాక్, అభ్యర్థనలు మరియు ఆడిట్ ట్రాక్‌ను నిర్వహించండి",
       tabs: {
         master: "ఇన్వెంటరీ మాస్టర్",

@@ -87,7 +87,7 @@ export const hi = {
       hospitals: "अस्पताल और क्लीनिक",
       staff: "कर्मचारी",
       patients: "मरीज",
-      medicines: "दवाएं और आपूर्ति",
+      medicines: "इन्वेंटरी और आपूर्ति",
       "ai-analytics": "एआई इन्वेंटरी एनालिटिक्स",
       "critical-alerts": "गंभीर अलर्ट",
       availability: "मेरी उपलब्धता",
@@ -111,6 +111,11 @@ export const hi = {
     dashboard: {
       title: "डैशबोर्ड",
       subtitle: "जीएचसी स्वास्थ्य सेवा प्रबंधन अवलोकन",
+      organization_view: "संगठन दृश्य",
+      viewing_hospital: "आवंटित अस्पताल: {{name}}",
+      in_facility_inventory: "सुविधा इन्वेंट्री में",
+      in_hospital_inventory: "{{name}} इन्वेंट्री में",
+      in_this_facility: "इस सुविधा में",
       totalPatients: "कुल मरीज",
       activeStaff: "सक्रिय कर्मचारी",
       bedsAvailable: "उपलब्ध बिस्तर",
@@ -134,9 +139,18 @@ export const hi = {
       beds_free: "बिस्तर खाली",
       unassigned: "बिना आवंटन के",
       requiringBeds: "बिस्तर की आवश्यकता",
+      pending_requests_title: "लंबित इन्वेंट्री अनुरोध",
+      no_pending_requests: "कोई लंबित इन्वेंट्री अनुरोध नहीं",
+      view_all_requests: "सभी अनुरोध प्रबंधित करें",
+      view_my_requests: "मेरे अनुरोध देखें",
+      raise_request: "अनुरोध दर्ज करें",
+      action: "कार्रवाई",
+      review: "समीक्षा",
       intervention: {
         title: "गंभीर अलर्ट",
+        title_facility: "आपकी सुविधा के लिए गंभीर अलर्ट",
         subtitle: "गंभीर संसाधन संकट का सामना कर रहे स्वास्थ्य केंद्र",
+        subtitle_facility: "आपकी आवंटित सुविधा के लिए संसाधन स्थिति अलर्ट",
         severity_high: "उच्च",
         severity_medium: "मध्यम",
         bed_shortage: "बिस्तरों की कमी",
@@ -304,7 +318,7 @@ export const hi = {
       healthAI: "जीएचसी स्वास्थ्य एआई"
     },
     inventory: {
-      title: "दवाएं और आपूर्ति",
+      title: "इन्वेंटरी और आपूर्ति",
       subtitle: "इन्वेंट्री, स्टॉक, अनुरोध और ऑडिट ट्रेल प्रबंधित करें",
       tabs: {
         master: "इन्वेंट्री मास्टर",

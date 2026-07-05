@@ -32,6 +32,12 @@ export class Patient {
   @Prop({ required: true, trim: true })
   address: string;
 
+  @Prop({ type: Number })
+  state: number;
+
+  @Prop({ type: Number })
+  city: number;
+
   @Prop({ type: Types.ObjectId, ref: 'Hospital', required: true })
   hospitalId: Types.ObjectId;
 

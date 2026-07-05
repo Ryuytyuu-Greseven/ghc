@@ -23,6 +23,8 @@ export enum NotificationType {
   STAFF_UPDATED = 'STAFF_UPDATED',
   STAFF_ASSIGNED_TO_FACILITY = 'STAFF_ASSIGNED_TO_FACILITY',
   STAFF_DEASSIGNED_FROM_FACILITY = 'STAFF_DEASSIGNED_FROM_FACILITY',
+  INVENTORY_REQUEST_PROCESSED = 'INVENTORY_REQUEST_PROCESSED',
+  INVENTORY_REQUEST_RAISED = 'INVENTORY_REQUEST_RAISED',
   PATIENT_MEDICINE_SERVE_REMINDER = 'PATIENT_MEDICINE_SERVE_REMINDER',
 }
 
@@ -104,6 +106,20 @@ export type StaffDeassignedPayload = {
   performedBy?: string;
 };
 
+export type InventoryRequestProcessedPayload = {
+  request: any;
+  performedBy: string;
+  status: string;
+  userId: string;
+  email?: string;
+};
+
+export type InventoryRequestRaisedPayload = {
+  request: any;
+  performedBy: string;
+  branchName?: string;
+  targetAdmins: { id: string; email?: string }[];
+};
 export type PatientMedicineServeReminderPayload = {
   nurseUserId: string;
   patientName: string;
@@ -275,7 +291,7 @@ export const notificationTypeConfig: Record<
       return [{
         to: hospital.email,
         subject: 'Welcome to GHC — Facility Registration Successful',
-        html: hospitalOnboardedTemplate(hospital.name, hospital.type, hospital.city),
+        html: hospitalOnboardedTemplate(hospital.name, hospital.type, String(hospital.city)),
       }];
     },
   },
@@ -407,5 +423,123 @@ export const notificationTypeConfig: Record<
       }));
     },
     buildEmails: () => [],
+  },
+
+  [NotificationType.INVENTORY_REQUEST_PROCESSED]: {
+    category: 'info',
+    buildInApp: (payload: unknown) => {
+      const { request, performedBy, status, userId } =
+        payload as InventoryRequestProcessedPayload;
+      if (!userId) return [];
+      const statusLower = status.toLowerCase();
+      return [
+        {
+          userId,
+          title: `Inventory Request ${status}`,
+          body: `Your inventory request #${request.requestNumber} was ${statusLower} by ${performedBy}.`,
+          metadata: {
+            requestId: request._id.toString(),
+            requestNumber: request.requestNumber,
+            status,
+            performedBy,
+          },
+        },
+      ];
+    },
+    buildEmails: (payload: unknown) => {
+      const { request, performedBy, status, email } =
+        payload as InventoryRequestProcessedPayload;
+      if (!email) return [];
+      const statusLower = status.toLowerCase();
+      const loginUrl = process.env.LOGIN_FRONTEND_URL || 'http://localhost:4005';
+      return [
+        {
+          to: email,
+          subject: `Inventory Request #${request.requestNumber}: ${status}`,
+          html: `
+            <h3>Inventory Request Update</h3>
+            <p>Hello,</p>
+            <p>Your inventory request <strong>#${request.requestNumber}</strong> has been <strong>${statusLower}</strong> by ${performedBy}.</p>
+            <p><strong>Details:</strong></p>
+            <ul>
+              <li>Request Number: #${request.requestNumber}</li>
+              <li>Status: ${status}</li>
+              <li>Remarks: ${request.remarks || 'No remarks provided.'}</li>
+            </ul>
+            <p>Please log in to the GHC platform to view the request details.</p>
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 20px 0;">
+              <tr>
+                <td align="center" style="border-radius: 4px; background-color: #0d9488;">
+                  <a href="${loginUrl}" target="_blank" style="border: 1px solid #0d9488; border-radius: 4px; display: inline-block; font-size: 14px; font-weight: bold; color: #ffffff; text-decoration: none; padding: 12px 24px; font-family: Arial, sans-serif;">
+                    Log In & View Details
+                  </a>
+                </td>
+              </tr>
+            </table>
+            <p>Best regards,<br>Government Health Connect (GHC) Team</p>
+          `,
+        },
+      ];
+    },
+  },
+
+  [NotificationType.INVENTORY_REQUEST_RAISED]: {
+    category: 'info',
+    buildInApp: (payload: unknown) => {
+      const { request, performedBy, branchName, targetAdmins } =
+        payload as InventoryRequestRaisedPayload;
+      if (!targetAdmins || targetAdmins.length === 0) return [];
+      const facility = branchName ? ` for branch "${branchName}"` : '';
+      return targetAdmins.map((admin) => ({
+        userId: admin.id,
+        title: 'New Inventory Request Raised',
+        body: `A new inventory request #${request.requestNumber} was raised by ${performedBy}${facility}.`,
+        metadata: {
+          requestId: request._id.toString(),
+          requestNumber: request.requestNumber,
+          branchId: request.branchId.toString(),
+          performedBy,
+        },
+      }));
+    },
+    buildEmails: (payload: unknown) => {
+      const { request, performedBy, branchName, targetAdmins } =
+        payload as InventoryRequestRaisedPayload;
+      const emails: EmailNotificationItem[] = [];
+      const facility = branchName ? ` branch "${branchName}"` : ' branch';
+      const loginUrl = process.env.LOGIN_FRONTEND_URL || 'http://localhost:4005';
+      
+      for (const admin of targetAdmins) {
+        if (admin.email) {
+          emails.push({
+            to: admin.email,
+            subject: `New Inventory Request Raised: #${request.requestNumber}`,
+            html: `
+              <h3>New Inventory Request Raised</h3>
+              <p>Hello Admin,</p>
+              <p>A new inventory request <strong>#${request.requestNumber}</strong> has been raised by <strong>${performedBy}</strong> for ${facility}.</p>
+              <p><strong>Request Overview:</strong></p>
+              <ul>
+                <li>Request Number: #${request.requestNumber}</li>
+                <li>Raised By: ${performedBy}</li>
+                <li>Status: Pending</li>
+              </ul>
+              <p>Please log in to the GHC platform to approve, reject, or partially approve the requested items.</p>
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 20px 0;">
+                <tr>
+                  <td align="center" style="border-radius: 4px; background-color: #0d9488;">
+                    <a href="${loginUrl}" target="_blank" style="border: 1px solid #0d9488; border-radius: 4px; display: inline-block; font-size: 14px; font-weight: bold; color: #ffffff; text-decoration: none; padding: 12px 24px; font-family: Arial, sans-serif;">
+                      Log In & Review Request
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p>Best regards,<br>Government Health Connect (GHC) Team</p>
+            `,
+          });
+        }
+      }
+      return emails;
+    },
   },
 };

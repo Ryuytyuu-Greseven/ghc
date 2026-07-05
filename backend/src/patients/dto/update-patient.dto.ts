@@ -9,6 +9,8 @@ export class UpdatePatientDto implements Partial<CreatePatientDto> {
   email?: string;
   aadhaarNumber?: string;
   address?: string;
+  state?: number;
+  city?: number;
   hospitalId?: string;
   bedRequired?: boolean;
   admittedAt?: Date | string;

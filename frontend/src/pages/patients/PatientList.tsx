@@ -33,6 +33,10 @@ function mapPatientFromBackendForList(item: any): Patient {
     aadhaarNumber: item.aadhaarNumber ?? '',
     address: item.address ?? '',
     hospitalId: getPatientHospitalId(item.hospitalId),
+    state: item.state,
+    city: item.city,
+    stateCode: item.stateCode,
+    cityCode: item.cityCode,
     bedRequired: item.bedRequired ?? false,
     admittedAt: item.admittedAt ? new Date(item.admittedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
   };
