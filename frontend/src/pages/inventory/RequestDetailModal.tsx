@@ -155,7 +155,11 @@ export function RequestDetailModal({ request, onClose }: Props) {
           <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
             {t('inventory.requests.requestedBy')}
           </p>
-          <p className="text-sm text-slate-700 dark:text-slate-300">{request.requestedBy}</p>
+          <p className="text-sm text-slate-700 dark:text-slate-300">
+            {request.requestedBy === 'Smart Redistribution Request' || request.requestedBy === 'AI Analytics Dashboard'
+              ? t('inventory.analytics.redistributionRequestName', 'Smart Redistribution Request')
+              : request.requestedBy}
+          </p>
         </div>
         <div className="col-span-2">
           <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">

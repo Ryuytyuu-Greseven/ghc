@@ -44,6 +44,60 @@
 .dark ::-webkit-scrollbar-thumb {
   background: #475569; /* slate-600 */
 }
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #64748b; /* slate-500 */
+
+@keyframes smooth-glow {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.2);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.2);
+  }
+}
+
+.animate-flicker {
+  animation: smooth-glow 2.5s infinite ease-in-out;
+}
+
+@keyframes smooth-glow-blue {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 4px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 4px rgba(59, 130, 246, 0.2);
+  }
+}
+
+.animate-flicker-blue {
+  animation: smooth-glow-blue 2.5s infinite ease-in-out;
+}
+
+@keyframes smooth-glow-amber {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 4px rgba(245, 158, 11, 0.2);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 4px rgba(245, 158, 11, 0.2);
+  }
+}
+
+.animate-flicker-amber {
+  animation: smooth-glow-amber 2.5s infinite ease-in-out;
 }

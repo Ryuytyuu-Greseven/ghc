@@ -8,6 +8,7 @@ import { InventoryModule } from '../inventory/inventory.module';
 import { PatientsModule } from '../patients/patients.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { StaffModule } from '../staff/staff.module';
+import { MedicineReminderService } from './medicine-reminder.service';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { StaffModule } from '../staff/staff.module';
     StaffModule,
   ],
   controllers: [PatientDataController],
-  providers: [PatientDataService, PatientDataRepository],
+  providers: [PatientDataService, PatientDataRepository, MedicineReminderService],
   exports: [PatientDataRepository],
 })
 export class PatientDataModule {}

@@ -118,15 +118,26 @@ export interface PatientFormValues {
   bedRequired: boolean;
 }
 
+export interface PatientMedicine {
+  name: string;
+  quantity: number;
+  days?: number;
+  sessions?: string[];
+  quantityPerSession?: number;
+}
+
 export interface PatientData {
   id: string;
   patientId: string;
   problem: string;
   visitDate: string;
   category: string;
-  medicines: { name: string; quantity: number }[];
+  medicines: PatientMedicine[];
   doctor?: string;
+  nurse?: string;
+  nurseUserId?: string;
   notes?: string;
+  recommendedTests?: string[];
 }
 
 export type MedicineCategory = 'medication' | 'equipment' | 'consumable' | 'diagnostic';
@@ -306,6 +317,7 @@ export interface RedistributionRecommendation {
   toBranchName: string;
   recommendedQuantity: number;
   justification: string;
+  isAlreadyRequested?: boolean;
 }
 
 // ── Diagnostic Test Tracking ──────────────────────────────────────────────────
