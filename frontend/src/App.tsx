@@ -17,6 +17,7 @@ import { Availability } from './pages/Availability';
 import { Transfers } from './pages/Transfers';
 import { Audits } from './pages/Audits';
 import { Reports } from './pages/Reports';
+import { Attendance } from './pages/Attendance';
 
 interface GuardProps {
   allowedRoles: string[];
@@ -122,6 +123,14 @@ export default function App() {
                     element={
                       <RoleGuard allowedRoles={['Doctor', 'Nurse', 'Receptionist', 'Pharmacist', 'Compounder', 'Lab Technician', 'Cashier']}>
                         <Availability />
+                      </RoleGuard>
+                    }
+                  />
+                  <Route
+                    path="/attendance"
+                    element={
+                      <RoleGuard allowedRoles={['Admin', 'Doctor', 'Nurse', 'Receptionist', 'Pharmacist', 'Compounder', 'Lab Technician', 'Cashier']}>
+                        <Attendance />
                       </RoleGuard>
                     }
                   />
