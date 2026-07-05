@@ -6,6 +6,8 @@ import { Hospital, HospitalDocument } from '../schemas/hospital.schema';
 import { Staff, StaffDocument } from '../schemas/staff.schema';
 import { Patient, PatientDocument } from '../schemas/patient.schema';
 import { BranchInventory, BranchInventoryDocument } from '../schemas/branch-inventory.schema';
+import { llmInstance } from '../google/vertex.config';
+import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 
 @Injectable()
 export class ReportsService {
@@ -134,11 +136,137 @@ export class ReportsService {
       },
     ]);
 
+    // Daily walk-in time-series trend
+    const trendMatch = { ...match };
+    if (!trendMatch.visitDate) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      trendMatch.visitDate = { $gte: thirtyDaysAgo };
+    }
+
+    const dailyVisitsRaw = await this.patientDataModel.aggregate([
+      { $match: trendMatch },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$visitDate' } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const footfallTrend: { date: string; quantity: number }[] = [];
+    let startDate = new Date();
+    if (fromDate) {
+      startDate = new Date(fromDate);
+    } else {
+      startDate.setDate(startDate.getDate() - 30);
+    }
+    let endDate = new Date();
+    if (toDate) {
+      endDate = new Date(toDate);
+    }
+
+    const rawMap = new Map<string, number>();
+    dailyVisitsRaw.forEach((item) => {
+      if (item._id) rawMap.set(item._id, item.count);
+    });
+
+    const current = new Date(startDate);
+    while (current <= endDate) {
+      const dateStr = current.toISOString().split('T')[0];
+      footfallTrend.push({
+        date: dateStr,
+        quantity: rawMap.get(dateStr) || 0,
+      });
+      current.setDate(current.getDate() + 1);
+    }
+
+    const totalTrendVisits = footfallTrend.reduce((sum, item) => sum + item.quantity, 0);
+    const averageDailyVisits = footfallTrend.length > 0 ? totalTrendVisits / footfallTrend.length : 0;
+
+    let branchName = 'GHC Facility';
+    if (branchId) {
+      const selectedHospital = await this.hospitalModel.findById(branchId).exec();
+      if (selectedHospital) {
+        branchName = selectedHospital.name;
+      }
+    }
+
+    // Default/statistical fallback forecast
+    const footfallForecast: { date: string; quantity: number }[] = [];
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    for (let i = 0; i < 7; i++) {
+      const nextDate = new Date(tomorrow);
+      nextDate.setDate(nextDate.getDate() + i);
+      footfallForecast.push({
+        date: nextDate.toISOString().split('T')[0],
+        quantity: Math.round(averageDailyVisits),
+      });
+    }
+    let footfallSummary = `Based on historical patterns, daily visits are expected to average around ${Math.round(averageDailyVisits)} patients.`;
+
+    try {
+      const prompt = `Analyze this patient walk-in/footfall trend for a healthcare facility and predict daily visits for the next 7 days.
+      
+Facility/Branch: ${branchName}
+Average daily visits (past period): ${Math.round(averageDailyVisits * 100) / 100}
+Historical daily visits (past period): ${JSON.stringify(footfallTrend)}
+
+Return ONLY a valid JSON object with this exact shape:
+{
+  "summary": "a one or two sentence operational analysis explaining the forecast, busy days, and staffing recommendations",
+  "forecast7Day": [
+    {"date": "YYYY-MM-DD", "quantity": number},
+    {"date": "YYYY-MM-DD", "quantity": number},
+    {"date": "YYYY-MM-DD", "quantity": number},
+    {"date": "YYYY-MM-DD", "quantity": number},
+    {"date": "YYYY-MM-DD", "quantity": number},
+    {"date": "YYYY-MM-DD", "quantity": number},
+    {"date": "YYYY-MM-DD", "quantity": number}
+  ]
+}`;
+
+      const response = await llmInstance.invoke([
+        new SystemMessage(
+          'You are a healthcare analytics forecasting assistant. Respond with JSON only.',
+        ),
+        new HumanMessage(prompt),
+      ]);
+
+      const content = typeof response.content === 'string'
+        ? response.content
+        : JSON.stringify(response.content);
+        
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.summary) {
+          footfallSummary = parsed.summary;
+        }
+        if (Array.isArray(parsed.forecast7Day) && parsed.forecast7Day.length === 7) {
+          footfallForecast.length = 0;
+          parsed.forecast7Day.forEach((item: any) => {
+            footfallForecast.push({
+              date: item.date,
+              quantity: Math.max(0, Math.round(Number(item.quantity) || 0)),
+            });
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error generating AI footfall forecast:', err);
+    }
+
     return {
       totalVisits,
       topDiagnoses,
       topMedicines,
       topMedicinesByBranch,
+      footfallTrend,
+      footfallForecast,
+      footfallSummary,
     };
   }
 

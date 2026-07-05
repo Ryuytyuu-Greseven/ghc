@@ -6,6 +6,9 @@ export type PatientDataDocument = PatientData & Document;
 export class PatientMedicine {
   name: string;
   quantity: number;
+  days?: number;
+  sessions?: string[];
+  quantityPerSession?: number;
 }
 
 @Schema({ timestamps: true, collection: 'patientData' })
@@ -27,6 +30,9 @@ export class PatientData {
       {
         name: { type: String, required: true, trim: true },
         quantity: { type: Number, required: true, min: 1 },
+        days: { type: Number },
+        sessions: { type: [String] },
+        quantityPerSession: { type: Number },
       },
     ],
     default: [],
@@ -39,8 +45,17 @@ export class PatientData {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   doctorUserId?: Types.ObjectId;
 
+  @Prop({ trim: true, default: '' })
+  nurse?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  nurseUserId?: Types.ObjectId;
+
   @Prop({ trim: true })
   notes?: string;
+
+  @Prop({ type: [String], default: [] })
+  recommendedTests?: string[];
 
   @Prop({ default: true })
   isActive: boolean;

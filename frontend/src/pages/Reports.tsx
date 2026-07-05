@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   FileText, 
   Activity, 
@@ -22,6 +22,88 @@ import { environment } from '@env/environment';
 import { useTranslation } from 'react-i18next';
 
 type TabType = 'clinical' | 'occupancy' | 'staffing' | 'inventory';
+
+function FootfallForecastChart({
+  historical,
+  projected,
+  historicLabel,
+  projectedLabel,
+}: {
+  historical: { date: string; quantity: number }[];
+  projected: { date: string; quantity: number }[];
+  historicLabel: string;
+  projectedLabel: string;
+}) {
+  const chartData = useMemo(() => {
+    const recentHistoric = historical.slice(-14);
+    return [
+      ...recentHistoric.map((point) => ({ ...point, type: 'historic' as const })),
+      ...projected.map((point) => ({ ...point, type: 'projected' as const })),
+    ];
+  }, [historical, projected]);
+
+  const maxValue = Math.max(...chartData.map((point) => point.quantity), 1);
+  const width = 640;
+  const height = 220;
+  const padding = 28;
+  const barWidth = Math.max(8, (width - padding * 2) / Math.max(chartData.length, 1) - 4);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <span className="inline-flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-sm bg-slate-400" />
+          {historicLabel}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-sm bg-primary-500" />
+          {projectedLabel}
+        </span>
+      </div>
+      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/40 p-4">
+        <svg viewBox={`0 0 ${width} ${height}`} className="min-w-[640px] w-full h-[220px]">
+          {chartData.map((point, index) => {
+            const barHeight = (point.quantity / maxValue) * (height - padding * 2);
+            const x = padding + index * (barWidth + 4);
+            const y = height - padding - barHeight;
+            return (
+              <g key={`${point.type}-${point.date}-${index}`}>
+                {point.quantity > 0 && (
+                  <text
+                    x={x + barWidth / 2}
+                    y={y - 5}
+                    textAnchor="middle"
+                    className="fill-slate-600 dark:fill-slate-350 text-[8px] font-bold"
+                  >
+                    {point.quantity}
+                  </text>
+                )}
+                <rect
+                  x={x}
+                  y={y}
+                  width={barWidth}
+                  height={barHeight}
+                  rx={3}
+                  className={point.type === 'historic' ? 'fill-slate-400/80' : 'fill-primary-500/90'}
+                />
+                {index % 3 === 0 && (
+                  <text
+                    x={x + barWidth / 2}
+                    y={height - 8}
+                    textAnchor="middle"
+                    className="fill-slate-500 text-[9px]"
+                  >
+                    {point.date.slice(5)}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </div>
+  );
+}
 
 export function Reports() {
   const { t } = useTranslation();
@@ -79,11 +161,7 @@ export function Reports() {
 
   // Set default tab based on role permissions
   useEffect(() => {
-    if (userRole === 'Pharmacist') {
-      setActiveTab('inventory');
-    } else if (userRole === 'Nurse' || userRole === 'Receptionist') {
-      setActiveTab('occupancy');
-    } else if (userRole === 'Doctor') {
+    if (userRole === 'Doctor') {
       setActiveTab('clinical');
     } else {
       setActiveTab('occupancy');
@@ -615,26 +693,34 @@ export function Reports() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                          {occupancyData.details.map((b: any) => (
-                            <tr key={b.hospitalId} className="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
-                              <td className="px-5 py-3.5 font-semibold text-slate-800 dark:text-slate-200">{b.name}</td>
-                              <td className="px-5 py-3.5"><Badge variant="info">{b.type}</Badge></td>
-                              <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.totalBeds}</td>
-                              <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.occupiedBeds}</td>
-                              <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.availableBeds}</td>
-                              <td className="px-5 py-3.5">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-slate-800 dark:text-slate-250 font-mono">{b.occupancyRate}%</span>
-                                  <div className="w-16 bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                                    <div 
-                                      className={`h-full rounded-full ${b.occupancyRate > 85 ? 'bg-red-500' : 'bg-primary-500'}`} 
-                                      style={{ width: `${b.occupancyRate}%` }} 
-                                    />
-                                  </div>
-                                </div>
+                          {!occupancyData.details || occupancyData.details.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="px-5 py-8 text-center text-slate-400 dark:text-slate-500 italic">
+                                {t('reports.noBranchCapacityData', 'No branch capacity data available.')}
                               </td>
                             </tr>
-                          ))}
+                          ) : (
+                            occupancyData.details.map((b: any) => (
+                              <tr key={b.hospitalId} className="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
+                                <td className="px-5 py-3.5 font-semibold text-slate-800 dark:text-slate-200">{b.name}</td>
+                                <td className="px-5 py-3.5"><Badge variant="info">{b.type}</Badge></td>
+                                <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.totalBeds}</td>
+                                <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.occupiedBeds}</td>
+                                <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 font-mono">{b.availableBeds}</td>
+                                <td className="px-5 py-3.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-slate-800 dark:text-slate-250 font-mono">{b.occupancyRate}%</span>
+                                    <div className="w-16 bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                      <div 
+                                        className={`h-full rounded-full ${b.occupancyRate > 85 ? 'bg-red-500' : 'bg-primary-500'}`} 
+                                        style={{ width: `${b.occupancyRate}%` }} 
+                                      />
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -730,6 +816,41 @@ export function Reports() {
                     )}
                   </div>
                 </div>
+
+                {/* Patient Footfall Forecast Chart Card */}
+                {clinicalData.footfallTrend && clinicalData.footfallTrend.length > 0 && (
+                  <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden p-6 space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <TrendingUp size={16} className="text-primary-500" />
+                        {t('reports.patientFootfallForecast', 'Patient Walk-in & Footfall Forecast')}
+                      </h4>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-2">
+                        <FootfallForecastChart
+                          historical={clinicalData.footfallTrend}
+                          projected={clinicalData.footfallForecast || []}
+                          historicLabel={t('reports.historicWalkins', 'Historical Daily Walk-ins')}
+                          projectedLabel={t('reports.projectedWalkins', 'Projected Daily Walk-ins')}
+                        />
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-5 border border-slate-150 dark:border-slate-800 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                            {t('reports.aiForecastSummary', 'Operational Insights')}
+                          </h5>
+                          <p className="text-sm text-slate-700 dark:text-slate-350 leading-relaxed">
+                            {clinicalData.footfallSummary}
+                          </p>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400">
+                          {t('reports.aiForecastNote', 'Forecast automatically compiled using historical clinic visits.')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Medicines by Branch breakdown — full width */}
                 {clinicalData.topMedicinesByBranch && clinicalData.topMedicinesByBranch.length > 0 && (

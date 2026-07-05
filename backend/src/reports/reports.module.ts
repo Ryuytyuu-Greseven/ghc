@@ -7,6 +7,7 @@ import { Hospital, HospitalSchema } from '../schemas/hospital.schema';
 import { Staff, StaffSchema } from '../schemas/staff.schema';
 import { Patient, PatientSchema } from '../schemas/patient.schema';
 import { BranchInventory, BranchInventorySchema } from '../schemas/branch-inventory.schema';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { BranchInventory, BranchInventorySchema } from '../schemas/branch-invent
       { name: Patient.name, schema: PatientSchema },
       { name: BranchInventory.name, schema: BranchInventorySchema },
     ]),
+    UsersModule,
   ],
   controllers: [ReportsController],
   providers: [ReportsService],

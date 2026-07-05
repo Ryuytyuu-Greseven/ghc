@@ -20,6 +20,6 @@ import { NotificationsModule } from '../notifications/notifications.module';
   ],
   controllers: [PatientsController],
   providers: [PatientsService, PatientsHelperService, PatientRepository],
-  exports: [PatientRepository],
+  exports: [PatientRepository, MongooseModule],
 })
 export class PatientsModule {}
