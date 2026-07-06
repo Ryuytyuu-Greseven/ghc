@@ -9,9 +9,12 @@ const BRAND = {
   white: '#ffffff',
 };
 
-const DEFAULT_LOGO_URL = process.env.API_BASE_URL?.trim()
-  ? `${process.env.API_BASE_URL.replace(/\/$/, '')}/email-assets/logo-email.png`
-  : 'https://ghc-login.web.app/logo-email.png';
+const DEFAULT_LOGO_URL =
+  process.env.API_BASE_URL?.trim() &&
+  !process.env.API_BASE_URL.includes('localhost') &&
+  !process.env.API_BASE_URL.includes('127.0.0.1')
+    ? `${process.env.API_BASE_URL.replace(/\/$/, '')}/email-assets/logo-email.png`
+    : 'https://ghc-login.web.app/logo-email.png';
 
 function getLogoUrl(): string {
   return process.env.EMAIL_LOGO_URL?.trim() || DEFAULT_LOGO_URL;
@@ -242,6 +245,73 @@ export function staffAccountCreatedTemplate(name: string, username: string, pass
       ${infoCard('Username', username)}
       ${pwdBlock}
       <p style="margin:12px 0 0;">For security reasons, we strongly recommend that you log in and update your password immediately after your first access.</p>
+    `,
+  });
+}
+
+export function inventoryRequestProcessedTemplate(
+  requestNumber: string,
+  status: string,
+  performedBy: string,
+  remarks?: string,
+): string {
+  const loginUrl = process.env.LOGIN_FRONTEND_URL || 'http://localhost:4005';
+  const statusLower = status.toLowerCase();
+  
+  return wrapEmailLayout({
+    title: `Inventory Request #${requestNumber}: ${status}`,
+    preheader: `Your inventory request #${requestNumber} was ${statusLower} by ${performedBy}.`,
+    accentColor: status === 'Approved' ? BRAND.green : status === 'Rejected' ? '#ef4444' : BRAND.teal,
+    badgeLabel: 'Inventory Update',
+    bodyHtml: `
+      <p style="margin:0 0 12px;">Hello,</p>
+      <p style="margin:0 0 12px;">Your inventory request <strong>#${escapeHtml(requestNumber)}</strong> has been <strong>${escapeHtml(statusLower)}</strong> by ${escapeHtml(performedBy)}.</p>
+      ${infoCard('Request Number', `#${requestNumber}`)}
+      ${infoCard('Status', status)}
+      ${infoCard('Remarks', remarks || 'No remarks provided.')}
+      <p style="margin:16px 0 12px;">Please log in to the GHC platform to view the request details.</p>
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 20px 0;">
+        <tr>
+          <td align="center" style="border-radius: 4px; background-color: ${BRAND.teal};">
+            <a href="${loginUrl}" target="_blank" style="border: 1px solid ${BRAND.teal}; border-radius: 4px; display: inline-block; font-size: 14px; font-weight: bold; color: #ffffff; text-decoration: none; padding: 12px 24px; font-family: Arial, sans-serif;">
+              Log In & View Details
+            </a>
+          </td>
+        </tr>
+      </table>
+    `,
+  });
+}
+
+export function inventoryRequestRaisedTemplate(
+  requestNumber: string,
+  performedBy: string,
+  branchName?: string,
+): string {
+  const loginUrl = process.env.LOGIN_FRONTEND_URL || 'http://localhost:4005';
+  const facility = branchName ? ` branch "${branchName}"` : ' branch';
+  
+  return wrapEmailLayout({
+    title: `New Inventory Request Raised: #${requestNumber}`,
+    preheader: `A new inventory request #${requestNumber} was raised by ${performedBy} for ${facility}.`,
+    accentColor: BRAND.teal,
+    badgeLabel: 'New Inventory Request',
+    bodyHtml: `
+      <p style="margin:0 0 12px;">Hello Admin,</p>
+      <p style="margin:0 0 12px;">A new inventory request <strong>#${escapeHtml(requestNumber)}</strong> has been raised by <strong>${escapeHtml(performedBy)}</strong> for ${escapeHtml(facility)}.</p>
+      ${infoCard('Request Number', `#${requestNumber}`)}
+      ${infoCard('Raised By', performedBy)}
+      ${infoCard('Status', 'Pending')}
+      <p style="margin:16px 0 12px;">Please log in to the GHC platform to approve, reject, or partially approve the requested items.</p>
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 20px 0;">
+        <tr>
+          <td align="center" style="border-radius: 4px; background-color: ${BRAND.teal};">
+            <a href="${loginUrl}" target="_blank" style="border: 1px solid ${BRAND.teal}; border-radius: 4px; display: inline-block; font-size: 14px; font-weight: bold; color: #ffffff; text-decoration: none; padding: 12px 24px; font-family: Arial, sans-serif;">
+              Log In & Review Request
+            </a>
+          </td>
+        </tr>
+      </table>
     `,
   });
 }
