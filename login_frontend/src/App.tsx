@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { Lock, User, AlertCircle, Loader2, ShieldCheck, Languages, ChevronDown, ArrowLeft, Mail, Eye, EyeOff } from 'lucide-react';
-import logo from './assets/logo.png';
 import { environment } from '@env/environment';
 import { useTranslation } from 'react-i18next';
 
@@ -236,8 +235,8 @@ export default function App() {
             {/* Logo */}
             <div className="flex justify-center mb-6">
               <img 
-                src={logo} 
-                alt="Government Health Connect Logo" 
+                src={environment.logoUrl} 
+                alt="Government Health Connect Logo"
                 className="h-28 w-28 object-contain drop-shadow-sm select-none"
               />
             </div>

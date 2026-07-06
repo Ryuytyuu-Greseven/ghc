@@ -15,6 +15,10 @@ import {
   TestAvailabilityAudit,
   TestAvailabilityAuditSchema,
 } from '../schemas/test-availability-audit.schema';
+import {
+  Hospital,
+  HospitalSchema,
+} from '../schemas/hospital.schema';
 import { DiagnosticTestRepository } from '../repositories/diagnostic-test.repository';
 import { FacilityTestAvailabilityRepository } from '../repositories/facility-test-availability.repository';
 import { TestAvailabilityAuditRepository } from '../repositories/test-availability-audit.repository';
@@ -29,6 +33,7 @@ import { FacilityTestAvailabilityService } from './facility-test-availability/fa
     UsersModule,
     MongooseModule.forFeature([
       { name: DiagnosticTest.name, schema: DiagnosticTestSchema },
+      { name: Hospital.name, schema: HospitalSchema },
       {
         name: FacilityTestAvailability.name,
         schema: FacilityTestAvailabilitySchema,

@@ -57,6 +57,15 @@ export class PatientData {
   @Prop({ type: [String], default: [] })
   recommendedTests?: string[];
 
+  @Prop({ type: String, default: 'General Visit' })
+  status: string;
+
+  @Prop({ type: Date })
+  admittedAt?: Date;
+
+  @Prop({ type: Date })
+  dischargedAt?: Date;
+
   @Prop({ default: true })
   isActive: boolean;
 }

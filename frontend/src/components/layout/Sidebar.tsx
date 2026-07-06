@@ -19,6 +19,7 @@ import { clsx } from 'clsx';
 import { useSidebar } from '../../context/SidebarContext';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from 'react-i18next';
+import { environment } from '@env/environment';
 
 const allNavItems = [
   { to: '/', key: 'dashboard', icon: LayoutDashboard, end: true },
@@ -69,7 +70,7 @@ export function Sidebar() {
       {/* Brand */}
       <div className="h-20 flex items-center justify-between px-5 border-b border-slate-200 dark:border-slate-700/60">
         <div className="flex items-center gap-3 min-w-0">
-          <img src="/logo.png" alt="GHC Logo" className="h-10 w-10 rounded-xl shrink-0 object-contain" />
+          <img src={environment.logoUrl} alt="GHC Logo" className="h-10 w-10 rounded-xl shrink-0 object-contain" />
           <div className="min-w-0">
             <p className="text-slate-800 dark:text-white font-bold text-sm leading-tight truncate">{t('common.appName')}</p>
             <p className="text-slate-500 dark:text-slate-400 text-xs truncate">{t('common.appSubtitle')}</p>

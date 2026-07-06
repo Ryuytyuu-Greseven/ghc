@@ -65,19 +65,25 @@ export class StaffController {
   }
 
   @Get('available-doctors')
-  getAvailableDoctors(@Query('date') date: string) {
+  getAvailableDoctors(
+    @Query('date') date: string,
+    @Query('hospitalId') hospitalId?: string,
+  ) {
     if (!date) {
       throw new BadRequestException('date query parameter is required');
     }
-    return this.staffService.getAvailableDoctors(date);
+    return this.staffService.getAvailableDoctors(date, hospitalId);
   }
 
   @Get('available-nurses')
-  getAvailableNurses(@Query('date') date: string) {
+  getAvailableNurses(
+    @Query('date') date: string,
+    @Query('hospitalId') hospitalId?: string,
+  ) {
     if (!date) {
       throw new BadRequestException('date query parameter is required');
     }
-    return this.staffService.getAvailableNurses(date);
+    return this.staffService.getAvailableNurses(date, hospitalId);
   }
 
   @Get(':id')

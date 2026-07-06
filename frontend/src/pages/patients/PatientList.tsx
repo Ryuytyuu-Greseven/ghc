@@ -15,8 +15,10 @@ import { useTranslation } from 'react-i18next';
 
 const API_BASE = environment.mainBackendUrl;
 
-function getBackendId(value: any): string {
-  return value?._id ?? value?.id ?? value ?? '';
+function getPatientHospitalId(value: any): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  return value.hospitalId ?? value._id?.toString?.() ?? value.id ?? '';
 }
 
 function mapPatientFromBackendForList(item: any): Patient {
@@ -30,13 +32,14 @@ function mapPatientFromBackendForList(item: any): Patient {
     email: item.email ?? '',
     aadhaarNumber: item.aadhaarNumber ?? '',
     address: item.address ?? '',
+    hospitalId: getPatientHospitalId(item.hospitalId),
     state: item.state,
     city: item.city,
     stateCode: item.stateCode,
     cityCode: item.cityCode,
-    hospitalId: getBackendId(item.hospitalId),
     bedRequired: item.bedRequired ?? false,
     admittedAt: item.admittedAt ? new Date(item.admittedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    dischargedAt: item.dischargedAt ? new Date(item.dischargedAt).toISOString().split('T')[0] : undefined,
   };
 }
 
@@ -298,6 +301,16 @@ export function PatientList() {
                     <div className="flex justify-between gap-2">
                       <span className="text-slate-500 dark:text-slate-400 shrink-0">{t('patients.admitted')}</span>
                       <span className="text-slate-700 dark:text-slate-200 tabular-nums">{p.admittedAt}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-slate-500 dark:text-slate-400 shrink-0">Status</span>
+                      <span className={`font-semibold ${
+                        p.bedRequired
+                          ? 'text-rose-600 dark:text-rose-400'
+                          : 'text-slate-500'
+                      }`}>
+                        {p.bedRequired ? 'Admitted' : 'Discharged / Outpatient'}
+                      </span>
                     </div>
                     <div className="flex justify-between gap-2">
                       <span className="text-slate-500 dark:text-slate-400 shrink-0">{t('patients.phoneLabel')}</span>

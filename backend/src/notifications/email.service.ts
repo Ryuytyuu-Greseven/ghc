@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
+import { getEmailLogoUrl, injectEmailLogo } from './email-logo.constants';
 import type { EmailNotificationItem } from './notification-types';
 
 @Injectable()
@@ -37,12 +38,16 @@ export class EmailService {
       return false;
     }
 
+    const html = injectEmailLogo(item.html);
+    const logoUrl = getEmailLogoUrl();
+    this.logger.debug(`Email logo URL: ${logoUrl}`);
+
     try {
       await this.transporter.sendMail({
         from: `GHC Portal <${this.fromAddress}>`,
         to: item.to,
         subject: item.subject,
-        html: item.html,
+        html,
       });
       return true;
     } catch (err) {
