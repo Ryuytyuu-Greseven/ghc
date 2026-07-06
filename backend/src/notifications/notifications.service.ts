@@ -4,6 +4,7 @@ import { NotificationRepository } from '../repositories/notification.repository'
 import { EmailService } from './email.service';
 import { notificationTypeConfig, NotificationType } from './notification-types';
 import { NotificationDocument } from '../schemas/notification.schema';
+import { NotificationsGatewayService } from './notifications-gateway.service';
 
 @Injectable()
 export class NotificationsService {
@@ -12,6 +13,7 @@ export class NotificationsService {
   constructor(
     private readonly notificationRepository: NotificationRepository,
     private readonly emailService: EmailService,
+    private readonly notificationsGatewayService: NotificationsGatewayService,
   ) {}
 
   async dispatch(type: NotificationType, payload: unknown): Promise<void> {
@@ -22,7 +24,7 @@ export class NotificationsService {
     }
     const inAppItems = config.buildInApp(payload);
     if (inAppItems.length > 0) {
-      await this.notificationRepository.createMany(
+      const created = await this.notificationRepository.createMany(
         inAppItems.map((item) => ({
           userId: new Types.ObjectId(item.userId),
           type,
@@ -33,6 +35,13 @@ export class NotificationsService {
           metadata: item.metadata ?? {},
         })),
       );
+      for (const doc of created) {
+        const response = this.toResponse(doc);
+        this.notificationsGatewayService.emitNewNotification(
+          doc.userId.toString(),
+          response,
+        );
+      }
     }
 
     const emailItems = config.buildEmails(payload);
