@@ -491,7 +491,6 @@ export const notificationTypeConfig: Record<
         payload as InventoryRequestRaisedPayload;
       const emails: EmailNotificationItem[] = [];
       const branchLabel = branchName ? `branch "${branchName}"` : 'a branch';
-
       for (const admin of targetAdmins) {
         if (admin.email) {
           emails.push({
