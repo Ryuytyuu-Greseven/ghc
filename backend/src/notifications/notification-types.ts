@@ -457,10 +457,10 @@ export const notificationTypeConfig: Record<
           to: email,
           subject: `Inventory Request #${request.requestNumber}: ${status}`,
           html: inventoryRequestProcessedTemplate(
-            request.requestNumber,
+            String(request.requestNumber),
             status,
             performedBy,
-            request.remarks,
+            request.remarks || 'No remarks provided.',
           ),
         },
       ];
@@ -490,16 +490,16 @@ export const notificationTypeConfig: Record<
       const { request, performedBy, branchName, targetAdmins } =
         payload as InventoryRequestRaisedPayload;
       const emails: EmailNotificationItem[] = [];
-      
+      const branchLabel = branchName ? `branch "${branchName}"` : 'a branch';
       for (const admin of targetAdmins) {
         if (admin.email) {
           emails.push({
             to: admin.email,
             subject: `New Inventory Request Raised: #${request.requestNumber}`,
             html: inventoryRequestRaisedTemplate(
-              request.requestNumber,
+              String(request.requestNumber),
               performedBy,
-              branchName,
+              branchLabel,
             ),
           });
         }

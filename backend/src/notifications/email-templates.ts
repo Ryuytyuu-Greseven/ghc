@@ -1,3 +1,5 @@
+import { EMAIL_LOGO_PLACEHOLDER } from './email-logo.constants';
+
 const BRAND = {
   saffron: '#FF9933',
   green: '#138808',
@@ -9,16 +11,6 @@ const BRAND = {
   white: '#ffffff',
 };
 
-const DEFAULT_LOGO_URL =
-  process.env.API_BASE_URL?.trim() &&
-  !process.env.API_BASE_URL.includes('localhost') &&
-  !process.env.API_BASE_URL.includes('127.0.0.1')
-    ? `${process.env.API_BASE_URL.replace(/\/$/, '')}/email-assets/logo-email.png`
-    : 'https://ghc-login.web.app/logo-email.png';
-
-function getLogoUrl(): string {
-  return process.env.EMAIL_LOGO_URL?.trim() || DEFAULT_LOGO_URL;
-}
 
 function escapeHtml(value: string): string {
   return value
@@ -38,7 +30,6 @@ type EmailLayoutOptions = {
 
 function wrapEmailLayout(options: EmailLayoutOptions): string {
   const { title, preheader, accentColor, badgeLabel, bodyHtml } = options;
-  const logoUrl = escapeHtml(getLogoUrl());
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -60,7 +51,7 @@ function wrapEmailLayout(options: EmailLayoutOptions): string {
           </tr>
           <tr>
             <td colspan="3" align="center" style="padding:28px 24px 18px;background:${BRAND.cream};border-bottom:1px solid #e2e8f0;">
-              <img src="${logoUrl}" alt="Government Health Connect" width="80" height="80" style="display:block;margin:0 auto 12px;border:0;outline:none;text-decoration:none;" />
+              <img src="${EMAIL_LOGO_PLACEHOLDER}" alt="Government Health Connect" width="80" height="80" style="display:block;margin:0 auto 12px;border:0;outline:none;text-decoration:none;" />
               <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND.slateMuted};">Government Health Connect</div>
             </td>
           </tr>
@@ -99,6 +90,32 @@ function infoCard(label: string, value: string): string {
     </tr>
   </table>`;
 }
+
+function loginButton(label: string): string {
+  const loginUrl =
+    process.env.LOGIN_FRONTEND_URL?.trim() || 'https://ghc-login.web.app';
+  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:16px 0;">
+    <tr>
+      <td align="center">
+        <a href="${escapeHtml(loginUrl)}" target="_blank" style="display:inline-block;padding:12px 24px;background:${BRAND.tealDark};color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:8px;">${escapeHtml(label)}</a>
+      </td>
+    </tr>
+  </table>`;
+}
+
+export type PrescriptionVisit = {
+  visitDate: string;
+  doctor?: string;
+  medicines: Array<{
+    name: string;
+    quantity: number;
+    days?: number;
+    sessions?: string[];
+    quantityPerSession?: number;
+  }>;
+  recommendedTests?: string[];
+  notes?: string;
+};
 
 export function patientOnboardedTemplate(
   patientName: string,
@@ -253,15 +270,13 @@ export function inventoryRequestProcessedTemplate(
   requestNumber: string,
   status: string,
   performedBy: string,
-  remarks?: string,
+  remarks: string,
 ): string {
-  const loginUrl = process.env.LOGIN_FRONTEND_URL || 'http://localhost:4005';
   const statusLower = status.toLowerCase();
-  
   return wrapEmailLayout({
-    title: `Inventory Request #${requestNumber}: ${status}`,
-    preheader: `Your inventory request #${requestNumber} was ${statusLower} by ${performedBy}.`,
-    accentColor: status === 'Approved' ? BRAND.green : status === 'Rejected' ? '#ef4444' : BRAND.teal,
+    title: `Inventory Request ${status}`,
+    preheader: `Your inventory request #${requestNumber} was ${statusLower}.`,
+    accentColor: BRAND.teal,
     badgeLabel: 'Inventory Update',
     bodyHtml: `
       <p style="margin:0 0 12px;">Hello,</p>
@@ -269,16 +284,8 @@ export function inventoryRequestProcessedTemplate(
       ${infoCard('Request Number', `#${requestNumber}`)}
       ${infoCard('Status', status)}
       ${infoCard('Remarks', remarks || 'No remarks provided.')}
-      <p style="margin:16px 0 12px;">Please log in to the GHC platform to view the request details.</p>
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 20px 0;">
-        <tr>
-          <td align="center" style="border-radius: 4px; background-color: ${BRAND.teal};">
-            <a href="${loginUrl}" target="_blank" style="border: 1px solid ${BRAND.teal}; border-radius: 4px; display: inline-block; font-size: 14px; font-weight: bold; color: #ffffff; text-decoration: none; padding: 12px 24px; font-family: Arial, sans-serif;">
-              Log In & View Details
-            </a>
-          </td>
-        </tr>
-      </table>
+      <p style="margin:12px 0 0;">Please log in to the GHC platform to view the request details.</p>
+      ${loginButton('Log In & View Details')}
     `,
   });
 }
@@ -286,32 +293,88 @@ export function inventoryRequestProcessedTemplate(
 export function inventoryRequestRaisedTemplate(
   requestNumber: string,
   performedBy: string,
-  branchName?: string,
+  branchLabel: string,
 ): string {
-  const loginUrl = process.env.LOGIN_FRONTEND_URL || 'http://localhost:4005';
-  const facility = branchName ? ` branch "${branchName}"` : ' branch';
-  
   return wrapEmailLayout({
-    title: `New Inventory Request Raised: #${requestNumber}`,
-    preheader: `A new inventory request #${requestNumber} was raised by ${performedBy} for ${facility}.`,
-    accentColor: BRAND.teal,
-    badgeLabel: 'New Inventory Request',
+    title: 'New Inventory Request Raised',
+    preheader: `Inventory request #${requestNumber} requires your review.`,
+    accentColor: BRAND.saffron,
+    badgeLabel: 'Inventory Request',
     bodyHtml: `
       <p style="margin:0 0 12px;">Hello Admin,</p>
-      <p style="margin:0 0 12px;">A new inventory request <strong>#${escapeHtml(requestNumber)}</strong> has been raised by <strong>${escapeHtml(performedBy)}</strong> for ${escapeHtml(facility)}.</p>
+      <p style="margin:0 0 12px;">A new inventory request <strong>#${escapeHtml(requestNumber)}</strong> has been raised by <strong>${escapeHtml(performedBy)}</strong> for ${escapeHtml(branchLabel)}.</p>
       ${infoCard('Request Number', `#${requestNumber}`)}
       ${infoCard('Raised By', performedBy)}
       ${infoCard('Status', 'Pending')}
-      <p style="margin:16px 0 12px;">Please log in to the GHC platform to approve, reject, or partially approve the requested items.</p>
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 20px 0;">
-        <tr>
-          <td align="center" style="border-radius: 4px; background-color: ${BRAND.teal};">
-            <a href="${loginUrl}" target="_blank" style="border: 1px solid ${BRAND.teal}; border-radius: 4px; display: inline-block; font-size: 14px; font-weight: bold; color: #ffffff; text-decoration: none; padding: 12px 24px; font-family: Arial, sans-serif;">
-              Log In & Review Request
-            </a>
-          </td>
-        </tr>
-      </table>
+      <p style="margin:12px 0 0;">Please log in to approve, reject, or partially approve the requested items.</p>
+      ${loginButton('Log In & Review Request')}
+    `,
+  });
+}
+
+function buildPrescriptionVisitsHtml(visits: PrescriptionVisit[]): string {
+  return visits
+    .map((v) => {
+      const medicinesRows = v.medicines
+        .map((m) => {
+          const timingParts: string[] = [];
+          if (m.days) timingParts.push(`${m.days} days`);
+          if (m.sessions?.length) timingParts.push(m.sessions.join(' / '));
+          if (m.quantityPerSession) timingParts.push(`${m.quantityPerSession} per dose`);
+          return `<tr style="background:#ffffff;">
+              <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:${BRAND.slate};">${escapeHtml(m.name)}</td>
+              <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:${BRAND.slate};text-align:center;">${m.quantity}</td>
+              <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;color:${BRAND.slateMuted};">${escapeHtml(timingParts.join(', ') || '—')}</td>
+            </tr>`;
+        })
+        .join('');
+
+      const testsHtml = v.recommendedTests?.length
+        ? `<p style="margin:12px 0 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:${BRAND.slateMuted};">Recommended Tests</p>
+           <p style="margin:0 0 12px;font-size:14px;color:${BRAND.slate};">${v.recommendedTests.map(t => escapeHtml(t)).join(', ')}</p>`
+        : '';
+
+      const notesHtml = v.notes
+        ? infoCard('Notes', v.notes)
+        : '';
+
+      const visitHeader = `${v.visitDate}${v.doctor ? ` · ${v.doctor}` : ''}`;
+      const medicinesTable = v.medicines.length
+        ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e2e8f0;margin:8px 0 12px;">
+            <tr style="background:${BRAND.tealDark};">
+              <th align="left" style="padding:10px 12px;font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#ffffff;">Medicine</th>
+              <th align="center" style="padding:10px 12px;font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#ffffff;">Qty</th>
+              <th align="left" style="padding:10px 12px;font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#ffffff;">Timing / Dosage</th>
+            </tr>
+            ${medicinesRows}
+          </table>`
+        : '';
+
+      return `<div style="margin-bottom:16px;padding:14px;border:1px solid #e2e8f0;background:#fafafa;">
+          <p style="margin:0 0 8px;font-size:12px;font-weight:700;color:${BRAND.slateMuted};">${escapeHtml(visitHeader)}</p>
+          ${medicinesTable}
+          ${testsHtml}
+          ${notesHtml}
+        </div>`;
+    })
+    .join('');
+}
+
+export function prescriptionEmailTemplate(
+  patientName: string,
+  problem: string,
+  visits: PrescriptionVisit[],
+): string {
+  return wrapEmailLayout({
+    title: 'Your Digital Prescription',
+    preheader: `Prescription for ${patientName} — ${problem}`,
+    accentColor: BRAND.tealDark,
+    badgeLabel: 'Prescription',
+    bodyHtml: `
+      <p style="margin:0 0 12px;">Dear <strong>${escapeHtml(patientName)}</strong>,</p>
+      ${infoCard('Problem / Diagnosis', problem)}
+      ${buildPrescriptionVisitsHtml(visits)}
+      <p style="margin:12px 0 0;">This prescription was sent digitally. Please follow your doctor's instructions carefully.</p>
     `,
   });
 }

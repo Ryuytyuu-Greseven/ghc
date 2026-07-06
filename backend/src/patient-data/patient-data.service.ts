@@ -11,6 +11,8 @@ import { PatientRepository } from '../repositories/patient.repository';
 import { StaffRepository } from '../repositories/staff.repository';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-types';
+import { EmailService } from '../notifications/email.service';
+import { prescriptionEmailTemplate } from '../notifications/email-templates';
 import { llmInstance } from '../google/vertex.config';
 import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 import * as nodemailer from 'nodemailer';
@@ -41,6 +43,7 @@ export class PatientDataService {
     private readonly notificationsService: NotificationsService,
     private readonly hospitalsCommonService: HospitalsCommonService,
     private readonly auditLogsService: AuditLogsService,
+    private readonly emailService: EmailService,
   ) {}
 
   async findByPatient(patientId: string) {
@@ -467,95 +470,12 @@ Return ONLY valid JSON with this exact shape:
       notes?: string;
     }>;
   }) {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
-    const visitsHtml = payload.visits
-      .map((v) => {
-        const medicinesRows = v.medicines
-          .map((m) => {
-            const timingParts: string[] = [];
-            if (m.days) timingParts.push(`${m.days} days`);
-            if (m.sessions?.length) timingParts.push(m.sessions.join(' / '));
-            if (m.quantityPerSession) timingParts.push(`${m.quantityPerSession} per dose`);
-            return `
-              <tr>
-                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#1e293b">${m.name}</td>
-                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#475569;text-align:center">${m.quantity}</td>
-                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#475569">${timingParts.join(', ') || '—'}</td>
-              </tr>`;
-          })
-          .join('');
-
-        const testsHtml = v.recommendedTests?.length
-          ? `<div style="margin-top:10px">
-              <p style="font-size:12px;font-weight:600;color:#64748b;margin:0 0 6px">RECOMMENDED TESTS</p>
-              <div style="display:flex;flex-wrap:wrap;gap:6px">${v.recommendedTests.map((t) => `<span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:2px 10px;font-size:12px;color:#334155">${t}</span>`).join('')}</div>
-            </div>`
-          : '';
-
-        const notesHtml = v.notes
-          ? `<div style="margin-top:10px;padding:10px;background:#fafafa;border-left:3px solid #94a3b8;border-radius:4px">
-              <p style="font-size:12px;font-weight:600;color:#64748b;margin:0 0 4px">NOTES</p>
-              <p style="font-size:13px;color:#475569;margin:0;font-style:italic">${v.notes}</p>
-            </div>`
-          : '';
-
-        return `
-          <div style="margin-bottom:20px;padding:16px;border:1px solid #e2e8f0;border-radius:10px;background:#fff">
-            <p style="font-size:12px;font-weight:600;color:#64748b;margin:0 0 10px;letter-spacing:.05em">
-              ${v.visitDate}${v.doctor ? ` &middot; ${v.doctor}` : ''}
-            </p>
-            ${v.medicines.length ? `
-            <table width="100%" style="border-collapse:collapse;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
-              <thead>
-                <tr style="background:#f8fafc">
-                  <th style="padding:8px 12px;text-align:left;font-size:11px;color:#64748b;font-weight:600">MEDICINE</th>
-                  <th style="padding:8px 12px;text-align:center;font-size:11px;color:#64748b;font-weight:600">QTY</th>
-                  <th style="padding:8px 12px;text-align:left;font-size:11px;color:#64748b;font-weight:600">TIMING / DOSAGE</th>
-                </tr>
-              </thead>
-              <tbody>${medicinesRows}</tbody>
-            </table>` : ''}
-            ${testsHtml}${notesHtml}
-          </div>`;
-      })
-      .join('');
-
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <body style="margin:0;padding:0;background:#f8fafc;font-family:sans-serif">
-        <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0">
-          <div style="background:linear-gradient(135deg,#0f766e,#0369a1);padding:24px 28px">
-            <p style="margin:0;font-size:11px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.1em">PRESCRIPTION</p>
-            <h1 style="margin:6px 0 0;font-size:20px;font-weight:700;color:#fff">${payload.patientName}</h1>
-            <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,.8)">Problem: ${payload.problem}</p>
-          </div>
-          <div style="padding:24px 28px">
-            ${visitsHtml}
-          </div>
-          <div style="padding:16px 28px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center">
-            <p style="margin:0;font-size:11px;color:#94a3b8">This prescription was sent digitally. Please follow your doctor's instructions carefully.</p>
-          </div>
-        </div>
-      </body>
-      </html>`;
-
-    await transporter.sendMail({
-      from: `GHC Portal <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    const sent = await this.emailService.send({
       to: payload.patientEmail,
       subject: `Prescription for ${payload.patientName} — ${payload.problem}`,
-      html,
+      html: prescriptionEmailTemplate(payload.patientName, payload.problem, payload.visits),
     });
 
-    return { success: true };
+    return { success: sent };
   }
 }

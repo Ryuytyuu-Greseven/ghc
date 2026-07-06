@@ -3,4 +3,5 @@ export const environment = {
   loginFrontendUrl: 'http://localhost:4005',
   mainBackendUrl: 'http://localhost:3000',
   loginBackendUrl: 'http://localhost:3001',
+  logoUrl: 'https://storage.googleapis.com/ghcai-medsynai/logoghc.png',
 };
