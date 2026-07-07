@@ -110,6 +110,7 @@ export interface Patient {
   hospitalId: string;
   bedRequired: boolean;
   admittedAt: string;
+  dischargedAt?: string;
 }
 
 export type PatientDraft = Omit<Patient, 'id' | 'admittedAt'>;
@@ -147,9 +148,11 @@ export interface PatientData {
   doctor?: string;
   nurse?: string;
   nurseUserId?: string;
-  nurse?: string;
   notes?: string;
   recommendedTests?: string[];
+  status: string;
+  admittedAt?: string;
+  dischargedAt?: string;
 }
 
 export type MedicineCategory = 'medication' | 'equipment' | 'consumable' | 'diagnostic';

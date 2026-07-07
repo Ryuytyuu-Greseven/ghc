@@ -208,7 +208,6 @@ export function HospitalDetail() {
   const occupancyPct = hospital.totalBeds
     ? Math.round((occupiedBeds / hospital.totalBeds) * 100)
     : 0;
-  const bedPatientsCount = facilityPatients.filter(p => p.bedRequired).length;
 
   const staffByRole = assignedStaff.reduce<Record<string, number>>((acc, s) => {
     acc[s.role] = (acc[s.role] ?? 0) + 1;
@@ -300,9 +299,6 @@ export function HospitalDetail() {
                   <p className="text-xs text-slate-500 dark:text-slate-400">{t('hospitals.detail.activePatients')}</p>
                   <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tabular-nums">
                     {facilityPatients.length}
-                  </p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                    {t('hospitals.detail.needBeds', { count: bedPatientsCount })}
                   </p>
                 </div>
               </div>
@@ -495,14 +491,6 @@ export function HospitalDetail() {
                   ))}
                 </div>
 
-                {bedPatientsCount > 0 && (
-                  <div className="flex items-center gap-2 text-sm bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded-lg px-3 py-2">
-                    <AlertTriangle size={14} />
-                    <span>
-                      {t('hospitals.detail.needBeds', { count: bedPatientsCount })}
-                    </span>
-                  </div>
-                )}
               </CardBody>
             </Card>
           </div>

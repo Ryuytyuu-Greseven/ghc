@@ -20,7 +20,6 @@ export function Dashboard() {
   const totalBeds = hospitals.reduce((s, h) => s + h.totalBeds, 0);
   const availableBeds = hospitals.reduce((s, h) => s + h.availableBeds, 0);
   const unassignedStaff = staff.filter(s => !s.assignedHospitalId).length;
-  const bedPatients = patients.filter(p => p.bedRequired).length;
 
   const recentPatients = [...patients]
     .sort((a, b) => b.admittedAt.localeCompare(a.admittedAt))
@@ -102,7 +101,6 @@ export function Dashboard() {
               value={patients.length}
               icon={<UserRound size={20} className="text-cyan-600 dark:text-cyan-400" />}
               color="bg-cyan-50 dark:bg-cyan-900/30"
-              sub={`${bedPatients} ${t('dashboard.requiringBeds')}`}
             />
             <StatCard
               label={t('common.medicines')}
