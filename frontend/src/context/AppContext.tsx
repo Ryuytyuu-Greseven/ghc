@@ -4,12 +4,6 @@ import { hospitalApi } from '../services/hospitalApi';
 import type { ReactNode } from 'react';
 import { environment } from '@env/environment';
 import type { Hospital, Staff, Patient, PatientDraft, Medicine, HospitalMedicine } from '../types';
-import {
-  mockHospitals,
-  mockStaff,
-  mockPatients,
-  mockHospitalMedicines,
-} from '../data/mockData';
 
 interface AppContextValue {
   hospitals: Hospital[];
@@ -311,7 +305,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [dbMedicines, setDbMedicines] = useState<Medicine[]>([]);
   const [hospitalMedicines, setHospitalMedicines] = useState<HospitalMedicine[]>(() => {
     const local = localStorage.getItem('hospitalMedicines');
-    return local ? JSON.parse(local) : mockHospitalMedicines;
+    return local ? JSON.parse(local) : [];
   });
 
   useEffect(() => {
@@ -366,59 +360,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ]);
         dbSData = await dbSRes.json();
         dbMData = await dbMRes.json();
-      }
-
-      if (hData.length === 0 && sData.length === 0) {
-        console.log('Database empty. Seeding initial data...');
-
-        const seededHospitals: Hospital[] = [];
-        for (const h of mockHospitals) {
-          const { id, createdAt, ...rest } = h;
-          const res = await authFetch(`${API_BASE}/hospitals`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(rest),
-          });
-          const created = await res.json();
-          seededHospitals.push(mapHospitalFromBackend(created));
-        }
-        hData = seededHospitals;
-
-        const seededStaff: Staff[] = [];
-        for (const s of mockStaff) {
-          const originalHospital = mockHospitals.find(h => h.id === s.assignedHospitalId);
-          const newHospital = originalHospital ? hData.find((h: any) => h.name === originalHospital.name) : null;
-          const body = mapStaffToBackend({ ...s, assignedHospitalId: newHospital ? newHospital.id : null });
-
-          const res = await authFetch(`${API_BASE}/staff`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          });
-          const created = await res.json();
-          seededStaff.push(mapStaffFromBackend(created));
-        }
-        sData = seededStaff;
-
-        const seededPatients: Patient[] = [];
-        for (const p of mockPatients) {
-          const originalHospital = mockHospitals.find(h => h.id === p.hospitalId);
-          const newHospital = originalHospital ? hData.find((h: any) => h.name === originalHospital.name) : null;
-          const body = mapPatientToBackend({ ...p, hospitalId: newHospital ? newHospital.id : null });
-
-          const res = await authFetch(`${API_BASE}/patients/create`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          });
-          const created = await res.json();
-          seededPatients.push(mapPatientFromBackend(created));
-        }
-        pData = seededPatients;
-
-        dbHData = seededHospitals;
-        dbSData = seededStaff;
-        dbPData = seededPatients;
       }
 
       setHospitals(hData.map(mapHospitalFromBackend));
