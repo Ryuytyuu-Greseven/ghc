@@ -119,11 +119,15 @@ function mapRoleFromBackend(backendRole: string): any {
 function mapStaffFromBackend(item: any): Staff {
   return {
     id: item._id ?? item.id ?? '',
-    name: item.name || `${item.firstName || ''} ${item.lastName || ''}`.trim() || 'Unnamed',
+    name:
+      item.displayName ||
+      item.name ||
+      `${item.firstName || ''} ${item.lastName || ''}`.trim() ||
+      'Unnamed',
     role: mapRoleFromBackend(item.role),
     phone: item.phone ?? item.mobileNumber ?? '',
     email: item.email ?? '',
-    assignedHospitalId: item.hospitalId?._id ?? item.hospitalId ?? null,
+    assignedHospitalId: item.hospitalId?._id ?? item.hospitalId ?? item.assignedHospitalId ?? null,
     createdAt: item.createdAt ? new Date(item.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
 
     firstName: item.firstName,
@@ -435,8 +439,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, 'Failed to create staff in backend'));
+      }
       const created = await res.json();
-      setStaff(prev => [...prev, mapStaffFromBackend(created)]);
+      const raw = created?.data ?? created;
+      setStaff(prev => [...prev, mapStaffFromBackend({ ...s, ...raw })]);
     } catch (err) {
       console.error('Failed to create staff in backend:', err);
     }
@@ -450,8 +458,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+      if (!res.ok) {
+        throw new Error(await getApiErrorMessage(res, 'Failed to update staff in backend'));
+      }
       const updated = await res.json();
-      setStaff(prev => prev.map(x => (x.id === id ? mapStaffFromBackend(updated) : x)));
+      const raw = updated?.data ?? updated;
+      setStaff(prev =>
+        prev.map(x => (x.id === id ? mapStaffFromBackend({ ...x, ...s, ...raw }) : x)),
+      );
     } catch (err) {
       console.error('Failed to update staff in backend:', err);
     }
@@ -479,7 +493,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(body),
       });
       const updated = await res.json();
-      setStaff(prev => prev.map(x => (x.id === staffId ? mapStaffFromBackend(updated) : x)));
+      const raw = updated?.data ?? updated;
+      setStaff(prev =>
+        prev.map(x =>
+          x.id === staffId ? mapStaffFromBackend({ ...staffMember, ...raw }) : x,
+        ),
+      );
     } catch (err) {
       console.error('Failed to assign staff in backend:', err);
     }
