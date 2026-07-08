@@ -10,25 +10,25 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { InventoryAnalyticsService } from './inventory-analytics.service';
-import { UsersService } from '../../users/users.service';
 import { ApplyRedistributionDto } from './dto/apply-redistribution.dto';
 
 @Controller('inventory-analytics')
 @UseGuards(JwtAuthGuard)
 export class InventoryAnalyticsController {
-  constructor(
-    private readonly service: InventoryAnalyticsService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly service: InventoryAnalyticsService) {}
+
+  private assertAdmin(user: { role?: string }) {
+    if (user.role !== 'Admin') {
+      throw new ForbiddenException(
+        'Only Administrators can access AI inventory analytics',
+      );
+    }
+  }
 
   @Get('stockout-warnings')
   async getStockoutWarnings(@Req() req: any) {
-    const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(
-      user.userId,
-      user.role,
-    );
-    return this.service.getLowStockWarnings(hospitalId || undefined);
+    this.assertAdmin(req.user);
+    return this.service.getLowStockWarnings();
   }
 
   @Get('forecast/:itemId/:branchId')
@@ -37,33 +37,14 @@ export class InventoryAnalyticsController {
     @Param('itemId') itemId: string,
     @Param('branchId') branchId: string,
   ) {
-    const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(
-      user.userId,
-      user.role,
-    );
-    if (hospitalId) {
-      const hasAccess = await this.service.verifyBranchAccess(
-        hospitalId,
-        branchId,
-      );
-      if (!hasAccess) {
-        throw new ForbiddenException('Access to this facility is denied.');
-      }
-    }
+    this.assertAdmin(req.user);
     return this.service.getDemandForecast(itemId, branchId);
   }
 
   @Get('redistribution-recommendations')
   async getRedistributionRecommendations(@Req() req: any) {
-    const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(
-      user.userId,
-      user.role,
-    );
-    return this.service.getRedistributionRecommendations(
-      hospitalId || undefined,
-    );
+    this.assertAdmin(req.user);
+    return this.service.getRedistributionRecommendations();
   }
 
   @Post('redistribution/apply')
@@ -71,24 +52,7 @@ export class InventoryAnalyticsController {
     @Req() req: any,
     @Body() body: ApplyRedistributionDto,
   ) {
-    const user = req.user;
-    const hospitalId = await this.usersService.getAssignedHospitalId(
-      user.userId,
-      user.role,
-    );
-    if (hospitalId) {
-      const fromBranchAccess = await this.service.verifyBranchAccess(
-        hospitalId,
-        body.fromBranchId,
-      );
-      const toBranchAccess = await this.service.verifyBranchAccess(
-        hospitalId,
-        body.toBranchId,
-      );
-      if (!fromBranchAccess && !toBranchAccess) {
-        throw new ForbiddenException('Access to these facilities is denied.');
-      }
-    }
+    this.assertAdmin(req.user);
     return this.service.applyRecommendation(
       body.fromBranchId,
       body.toBranchId,
