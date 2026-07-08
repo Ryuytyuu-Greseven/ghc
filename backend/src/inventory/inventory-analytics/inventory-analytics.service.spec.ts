@@ -5,9 +5,9 @@ jest.mock('../../repositories/branch-inventory.repository', () => ({
   },
 }));
 
-jest.mock('../../repositories/inventory-transaction.repository', () => ({
-  InventoryTransactionRepository: class {
-    findByItem = jest.fn();
+jest.mock('../../repositories/audit-log.repository', () => ({
+  AuditLogRepository: class {
+    findAll = jest.fn();
   },
 }));
 
@@ -15,6 +15,8 @@ jest.mock('../../repositories/inventory-request.repository', () => ({
   InventoryRequestRepository: class {
     generateRequestNumber = jest.fn();
     create = jest.fn();
+    findAll = jest.fn();
+    findOne = jest.fn();
   },
 }));
 
@@ -52,11 +54,13 @@ describe('InventoryAnalyticsService', () => {
       findByBranchAndItem: jest.fn(),
     };
     transactionRepo = {
-      findByItem: jest.fn(),
+      findAll: jest.fn(),
     };
     requestRepo = {
       generateRequestNumber: jest.fn(),
       create: jest.fn(),
+      findAll: jest.fn().mockResolvedValue([]),
+      findOne: jest.fn().mockResolvedValue(null),
     };
     masterRepo = {
       findById: jest.fn(),
@@ -94,17 +98,21 @@ describe('InventoryAnalyticsService', () => {
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - 5);
 
-      transactionRepo.findByItem.mockResolvedValue([
+      transactionRepo.findAll.mockResolvedValue([
         {
-          fromLocation: 'branch1',
-          transactionType: TransactionType.ISSUE,
-          quantity: 30,
+          metadata: {
+            fromLocation: 'branch1',
+            transactionType: TransactionType.ISSUE,
+            quantity: 30,
+          },
           createdAt: cutoff,
         },
         {
-          fromLocation: 'branch1',
-          transactionType: TransactionType.ISSUE,
-          quantity: 30,
+          metadata: {
+            fromLocation: 'branch1',
+            transactionType: TransactionType.ISSUE,
+            quantity: 30,
+          },
           createdAt: cutoff,
         },
       ]);
@@ -114,7 +122,7 @@ describe('InventoryAnalyticsService', () => {
     });
 
     it('returns zero when there is no stock and no consumption history', async () => {
-      transactionRepo.findByItem.mockResolvedValue([]);
+      transactionRepo.findAll.mockResolvedValue([]);
       branchRepo.findByBranchAndItem.mockResolvedValue([]);
 
       const rate = await service.getDailyConsumptionRate('item1', 'branch1');
@@ -133,8 +141,8 @@ describe('InventoryAnalyticsService', () => {
 
       const warnings = await service.getLowStockWarnings();
 
-      expect(warnings).toHaveLength(1);
-      expect(warnings[0]).toMatchObject({
+      expect(warnings.filter(w => w.alertType === 'low_stock')).toHaveLength(1);
+      expect(warnings.find(w => w.alertType === 'low_stock')).toMatchObject({
         branchId: 'branch1',
         itemId: 'item1',
         itemName: 'Paracetamol',
@@ -142,6 +150,7 @@ describe('InventoryAnalyticsService', () => {
         availableQty: 10,
         dailyConsumptionRate: 2,
         daysOfStock: 5,
+        alertType: 'low_stock',
       });
     });
 
@@ -152,7 +161,67 @@ describe('InventoryAnalyticsService', () => {
       jest.spyOn(service, 'getDailyConsumptionRate').mockResolvedValue(2);
 
       const warnings = await service.getLowStockWarnings();
-      expect(warnings).toHaveLength(0);
+      expect(warnings.filter(w => w.alertType === 'low_stock')).toHaveLength(0);
+    });
+
+    it('flags stockout (0 available qty) even if daily rate is zero', async () => {
+      branchRepo.findAll.mockResolvedValue([
+        { branchId: 'branch1', itemId: 'item1', availableQty: 0 },
+      ]);
+      jest.spyOn(service, 'getDailyConsumptionRate').mockResolvedValue(0);
+      masterRepo.findById.mockResolvedValue({ itemName: 'Paracetamol' });
+      hospitalRepo.findById.mockResolvedValue({ name: 'PHC A' });
+
+      const warnings = await service.getLowStockWarnings();
+      expect(warnings.filter(w => w.alertType === 'stockout')).toHaveLength(1);
+      expect(warnings.find(w => w.alertType === 'stockout')).toMatchObject({
+        branchId: 'branch1',
+        itemId: 'item1',
+        itemName: 'Paracetamol',
+        branchName: 'PHC A',
+        availableQty: 0,
+        daysOfStock: 0,
+        alertType: 'stockout',
+      });
+    });
+
+    it('flags expired and expiring batches', async () => {
+      const now = new Date();
+      const expiredDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const expiringSoonDate = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
+
+      branchRepo.findAll.mockResolvedValue([
+        { branchId: 'branch1', itemId: 'item1', availableQty: 10, expiryDate: expiredDate, batchNo: 'B1' },
+        { branchId: 'branch1', itemId: 'item2', availableQty: 15, expiryDate: expiringSoonDate, batchNo: 'B2' },
+      ]);
+      jest.spyOn(service, 'getDailyConsumptionRate').mockResolvedValue(10);
+      masterRepo.findById.mockImplementation(async (id) => ({
+        itemName: id === 'item1' ? 'Paracetamol' : 'Aspirin',
+      }));
+      hospitalRepo.findById.mockResolvedValue({ name: 'PHC A' });
+
+      const warnings = await service.getLowStockWarnings();
+
+      const expiredWarning = warnings.find(w => w.alertType === 'expired');
+      const expiringWarning = warnings.find(w => w.alertType === 'expiring');
+
+      expect(expiredWarning).toMatchObject({
+        itemId: 'item1',
+        itemName: 'Paracetamol',
+        availableQty: 10,
+        daysOfStock: 0,
+        alertType: 'expired',
+        batchNo: 'B1',
+      });
+
+      expect(expiringWarning).toMatchObject({
+        itemId: 'item2',
+        itemName: 'Aspirin',
+        availableQty: 15,
+        alertType: 'expiring',
+        batchNo: 'B2',
+      });
+      expect(expiringWarning.daysOfStock).toBeGreaterThan(0);
     });
   });
 
@@ -181,6 +250,30 @@ describe('InventoryAnalyticsService', () => {
         itemId: 'item1',
         fromBranchId: 'surplus-branch',
         toBranchId: 'low-branch',
+      });
+    });
+
+    it('recommends redistribution for stockout items even with zero consumption rate', async () => {
+      branchRepo.findAll.mockResolvedValue([
+        { branchId: 'stockout-branch', itemId: 'item1', availableQty: 0 },
+        { branchId: 'surplus-branch', itemId: 'item1', availableQty: 200 },
+      ]);
+
+      jest.spyOn(service, 'getDailyConsumptionRate').mockResolvedValue(0);
+
+      masterRepo.findById.mockResolvedValue({ itemName: 'Saline' });
+      hospitalRepo.findById.mockImplementation(async (id: string) => ({
+        name: id === 'stockout-branch' ? 'PHC Stockout' : 'PHC Surplus',
+      }));
+
+      const recommendations = await service.getRedistributionRecommendations();
+
+      expect(recommendations.length).toBeGreaterThan(0);
+      expect(recommendations[0]).toMatchObject({
+        itemId: 'item1',
+        fromBranchId: 'surplus-branch',
+        toBranchId: 'stockout-branch',
+        recommendedQuantity: 10,
       });
     });
   });

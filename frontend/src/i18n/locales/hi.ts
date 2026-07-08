@@ -156,7 +156,7 @@ export const hi = {
         bed_shortage: "बिस्तरों की कमी",
         severe_stockout: "दवाओं की गंभीर कमी",
         staff_crunch: "कर्मचारियों की कमी",
-        action_transfer: "एआई स्थानांतरण शुरू करें",
+        action_transfer: "स्थानांतरण शुरू करें",
         action_staff: "कर्मचारियों को संतुलित करें",
         action_view_hospital: "सुविधाओं का प्रबंधन करें",
         justification_bed: "गंभीर बेड क्षमता सीमा पहुंच गई है। अधिभोग {{occupancy}}% पर है और केवल {{beds}} बिस्तर बचे हैं।",

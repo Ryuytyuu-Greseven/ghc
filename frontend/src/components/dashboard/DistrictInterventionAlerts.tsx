@@ -295,10 +295,10 @@ export function DistrictInterventionAlerts({ mode = 'banner' }: DistrictInterven
               <div>
                 {alert.type === 'Severe Stockout' && isAdmin && (
                   <Link
-                    to="/ai-analytics"
+                    to={`/ai-analytics?branchId=${alert.branchId}`}
                     className="w-full flex items-center justify-center gap-1 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 bg-primary-50 dark:bg-primary-950/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 py-2 rounded-lg transition-colors"
                   >
-                    {t('dashboard.intervention.action_transfer', 'Initiate AI Transfer')}
+                    {t('dashboard.intervention.action_transfer', 'Initiate Transfer')}
                     <ChevronRight size={14} />
                   </Link>
                 )}

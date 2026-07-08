@@ -157,7 +157,7 @@ export const en = {
         severe_stockout: "Severe Stockout",
         staff_crunch: "Staff Crunch",
         test_unavailable: "Test Unavailable",
-        action_transfer: "Initiate AI Transfer",
+        action_transfer: "Initiate Transfer",
         action_staff: "Rebalance Staff",
         action_view_hospital: "Manage Facilities",
         action_tests: "Review Test Availability",

@@ -156,7 +156,7 @@ export const te = {
         bed_shortage: "బెడ్ కొరత",
         severe_stockout: "తీవ్రమైన స్టాక్ కొరత",
         staff_crunch: "సిబ్బంది కొరత",
-        action_transfer: "AI బదిలీని ప్రారంభించు",
+        action_transfer: "బదిలీని ప్రారంభించు",
         action_staff: "సిబ్బందిని సర్దుబాటు చేయి",
         action_view_hospital: "సదుపాయాలను నిర్వహించు",
         justification_bed: "క్లిష్టమైన బెడ్ సామర్థ్య పరిమితి చేరింది. ఆక్యుపెన్సీ {{occupancy}}% వద్ద ఉంది మరియు కేవలం {{beds}} పడకలు మాత్రమే మిగిలి ఉన్నాయి.",

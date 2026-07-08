@@ -104,7 +104,10 @@ export function AIInventoryAnalyticsTab() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const [selectedBranchId, setSelectedBranchId] = useState('');
+  const [selectedBranchId, setSelectedBranchId] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('branchId') || '';
+  });
   const [selectedItemId, setSelectedItemId] = useState('');
 
   useEffect(() => {
@@ -232,32 +235,58 @@ export function AIInventoryAnalyticsTab() {
               </div>
             ) : (
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {warnings.map((warning) => (
-                  <div
-                    key={`${warning.branchId}-${warning.itemId}`}
-                    className="rounded-xl border border-amber-200/80 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20 p-4"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">{warning.itemName}</p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">{warning.branchName}</p>
+                {warnings.map((warning) => {
+                  const isCritical = warning.alertType === 'stockout' || warning.alertType === 'expired';
+                  const badgeText = warning.alertType === 'expired'
+                    ? t('inventory.fields.expired', 'Expired')
+                    : warning.alertType === 'stockout'
+                    ? t('inventory.fields.stockout', 'Stockout')
+                    : warning.alertType === 'expiring'
+                    ? t('inventory.fields.expiringSoon', 'Expiring ({{days}}d)', { days: warning.daysOfStock })
+                    : `${warning.daysOfStock}d`;
+
+                  return (
+                    <div
+                      key={`${warning.branchId}-${warning.itemId}-${warning.batchNo || ''}-${warning.alertType || ''}`}
+                      className={clsx(
+                        "rounded-xl border p-4",
+                        isCritical
+                          ? "border-red-200/80 dark:border-red-900/40 bg-red-50/30 dark:bg-red-950/10"
+                          : "border-amber-200/80 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-semibold text-slate-900 dark:text-white">{warning.itemName}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">{warning.branchName}</p>
+                          {warning.batchNo && (
+                            <p className="text-[10px] text-slate-400 mt-0.5">
+                              {t('inventory.fields.batch', 'Batch')}: {warning.batchNo}
+                            </p>
+                          )}
+                          {warning.expiryDate && (
+                            <p className="text-[10px] text-slate-400">
+                              {t('inventory.fields.expiry', 'Expiry')}: {new Date(warning.expiryDate).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                        <Badge variant={isCritical ? 'danger' : 'warning'}>{badgeText}</Badge>
                       </div>
-                      <Badge variant="warning">{warning.daysOfStock}d</Badge>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <p className="text-slate-500">{t('inventory.analytics.availableQty')}</p>
+                          <p className="font-medium text-slate-800 dark:text-slate-200">{warning.availableQty}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-500">{t('inventory.analytics.dailyConsumption')}</p>
+                          <p className="font-medium text-slate-800 dark:text-slate-200">
+                            {warning.alertType === 'expiring' || warning.alertType === 'expired' ? '-' : warning.dailyConsumptionRate}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <p className="text-slate-500">{t('inventory.analytics.availableQty')}</p>
-                        <p className="font-medium text-slate-800 dark:text-slate-200">{warning.availableQty}</p>
-                      </div>
-                      <div>
-                        <p className="text-slate-500">{t('inventory.analytics.dailyConsumption')}</p>
-                        <p className="font-medium text-slate-800 dark:text-slate-200">
-                          {warning.dailyConsumptionRate}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
