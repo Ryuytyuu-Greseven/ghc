@@ -157,7 +157,7 @@ export const ta = {
         bed_shortage: "படுக்கை பற்றாக்குறை",
         severe_stockout: "கடுமையான சரக்கு இல்லாமை",
         staff_crunch: "பணியாளர் பற்றாக்குறை",
-        action_transfer: "AI இடமாற்றம் தொடங்கு",
+        action_transfer: "இடமாற்றம் தொடங்கு",
         action_staff: "பணியாளர்களை மீண்டும் சமப்படுத்து",
         action_view_hospital: "மையங்களை நிர்வகி",
         justification_bed: "முக்கிய திறன் எட்டப்பட்டது. ஆக்கிரமிப்பு {{occupancy}}% மற்றும் {{beds}} படுக்கைகள் மட்டுமே உள்ளன.",

@@ -304,6 +304,9 @@ export interface StockoutWarning {
   availableQty: number;
   dailyConsumptionRate: number;
   daysOfStock: number;
+  alertType?: 'low_stock' | 'stockout' | 'expiring' | 'expired';
+  expiryDate?: string | null;
+  batchNo?: string;
 }
 
 export interface DailyDataPoint {

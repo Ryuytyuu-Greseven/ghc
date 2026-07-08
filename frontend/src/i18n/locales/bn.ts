@@ -156,7 +156,7 @@ export const bn = {
         bed_shortage: "শয্যা সংকট",
         severe_stockout: "গুরুতর ওষুধ সংকট",
         staff_crunch: "কর্মী সংকট",
-        action_transfer: "এআই স্থানান্তর শুরু করুন",
+        action_transfer: "স্থানান্তর শুরু করুন",
         action_staff: "কর্মী সুষম করুন",
         action_view_hospital: "সুপারিশ ব্যবস্থাপনা করুন",
         justification_bed: "গুরুতর শয্যা ধারণক্ষমতার সীমাবদ্ধতায় পৌঁছেছে। শয্যা পূরণ রয়েছে {{occupancy}}% এবং মাত্র {{beds}} টি শয্যা খালি রয়েছে।",

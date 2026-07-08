@@ -157,7 +157,7 @@ export const gu = {
       "bed_shortage": "બેડ અછત",
       "severe_stockout": "ગંભીર સ્ટોક ખૂટ",
       "staff_crunch": "સ્ટાફ અછત",
-      "action_transfer": "AI ટ્રાન્સફર શરૂ કરો",
+      "action_transfer": "ટ્રાન્સફર શરૂ કરો",
       "action_staff": "સ્ટાફ ફેરફેગ કરો",
       "action_view_hospital": "સ્થળોનું સંચાલન",
       "justification_bed": "ગંભીર ક્ષમતા પ્રાપ્ત. {{occupancy}}% ઓક્યુપન્સી અને ફક્ત {{beds}} બેડ બચ્યા.",

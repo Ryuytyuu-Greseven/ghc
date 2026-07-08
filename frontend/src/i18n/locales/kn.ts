@@ -157,7 +157,7 @@ export const kn = {
         bed_shortage: "ಹಾಸಿಗೆ ಕೊರತೆ",
         severe_stockout: "ತೀವ್ರ ಸ್ಟಾಕ್‌ಔಟ್",
         staff_crunch: "ಸಿಬ್ಬಂದಿ ಕೊರತೆ",
-        action_transfer: "AI ವರ್ಗಾವಣೆ ಪ್ರಾರಂಭಿಸಿ",
+        action_transfer: "ವರ್ಗಾವಣೆ ಪ್ರಾರಂಭಿಸಿ",
         action_staff: "ಸಿಬ್ಬಂದಿ ಮರು-ಹಂಚಿಕೆ",
         action_view_hospital: "ಕೇಂದ್ರಗಳನ್ನು ನಿರ್ವಹಿಸಿ",
         justification_bed: "ತೀವ್ರ ಸಾಮರ್ಥ್ಯ ತಲುಪಲಾಗಿದೆ. ಆಕ್ಯುಪೆನ್ಸಿ {{occupancy}}% ಮತ್ತು ಕೇವಲ {{beds}} ಹಾಸಿಗೆಗಳು ಉಳಿದಿವೆ.",
