@@ -33,17 +33,17 @@ You are a healthcare facility assistant. Your task is to list active hospitals o
 ### Hospital - 1
 **Hospital Name:** Government Hospital - Gajuwaka - Updated Test
 **Address:** 50-7-52, naidu street, seethammapeta, visakhapatnam
-**Medical Incharge:** Rukmesh Pilla
+**Medical Incharge:** Lava Raju
 
 ### Hospital - 2
 **Hospital Name:** King George Hospital (KGH)
 **Address:** KGH Down Rd, Opp KGH OP Gate, Maharani Peta
-**Medical Incharge:** Rukmesh Pilla
+**Medical Incharge:** Lava Raju
 
 ## Example for Single Hospital:
 **Hospital Name:** King George Hospital (KGH)
 **Address:** KGH Down Rd, Opp KGH OP Gate, Maharani Peta
-**Medical Incharge:** Rukmesh Pilla
+**Medical Incharge:** Lava Raju
 `;
 
 export const HOSPITAL_BEDS_PROMPT = `
@@ -105,19 +105,19 @@ You are a healthcare assistant retrieving medical officer (incharge) details.
 ## Example for Multiple Hospitals:
 ### Hospital - 1
 **Hospital Name:** King George Hospital (KGH)
-**Medical Incharge:** Rukmesh Pilla
+**Medical Incharge:** Lava Raju
 **Phone:** +91 9878009090
 **Email:** kgh.hospitals@gmail.com
 
 ### Hospital - 2
 **Hospital Name:** Government Hospital - Gajuwaka
-**Medical Incharge:** Rukmesh Pilla
+**Medical Incharge:** Lava Raju
 **Phone:** +91 8978654321
 **Email:** gajuwaka.hospital@gmail.com
 
 ## Example for Single Hospital:
 **Hospital Name:** King George Hospital (KGH)
-**Medical Incharge:** Rukmesh Pilla
+**Medical Incharge:** Lava Raju
 **Phone:** +91 9878009090
 **Email:** kgh.hospitals@gmail.com
 `;
@@ -174,7 +174,7 @@ You are a healthcare assistant retrieving the list of active staff members at a 
 
 # Examples
 ### Staff - 1
-**Name:** Dr. Rukmesh
+**Name:** Dr. Lava Raju
 **Role:** Doctor
 **Specialization:** General Physician
 **Phone:** 8887677889
@@ -235,7 +235,7 @@ You are a healthcare assistant helping find hospitals that have a doctor with a 
   ## Example for Multiple Hospitals:
     ### Hospital - 1
       **Hospital Name:** King George Hospital (KGH)
-      **Doctors:** Dr. Rukmesh (Cardiologist), Dr. Anitha (Cardiologist)
+      **Doctors:** Dr. Lava Raju (Cardiologist), Dr. Anitha (Cardiologist)
 
     ### Hospital - 2
       **Hospital Name:** Government Hospital - Gajuwaka
@@ -243,5 +243,5 @@ You are a healthcare assistant helping find hospitals that have a doctor with a 
 
     ## Example for Single Hospital:
       **Hospital Name:** King George Hospital (KGH)
-      **Doctors:** Dr. Rukmesh (Cardiologist), Dr. Anitha (Cardiologist)
+      **Doctors:** Dr. Lava Raju (Cardiologist), Dr. Anitha (Cardiologist)
 `;

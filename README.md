@@ -16,6 +16,11 @@ GHC is an enterprise-grade cloud-native public health management platform design
 > [!NOTE]
 > **Government Health Connect (GHC)** is a unified healthcare management ecosystem built for government stakeholders, district administrators, and clinical staff. GHC consolidates fragmented medical operations—patient admissions, bed allocations, staff tracking, and pharmaceutical supply chains—into a single secure, role-aware cloud platform. By combining real-time dashboards, an AI-powered conversational voice assistant (via LangGraph and Google Vertex AI), and dynamic inventory redistribution, GHC eliminates manual delays, prevents critical medicine stockouts, and guarantees digital accessibility for rural healthcare workers.
 
+> [!IMPORTANT]
+> **Live Demo Portals**:
+> * 🌐 **SSO Authentication Portal**: [https://ghc-login.web.app](https://ghc-login.web.app)
+> * 🏢 **Main Application Dashboard**: [https://project-3857994f-2565-4c14-9a7.web.app](https://project-3857994f-2565-4c14-9a7.web.app) *(Note: Logging in via the SSO Portal automatically redirects you here)*
+
 ### Project Highlights
 | Category | Technology / Capability | Key Use Case / Description |
 | :--- | :--- | :--- |
@@ -105,10 +110,10 @@ Government Health Connect (GHC)
 23. [Government Impact](#government-impact)
 24. [Future Roadmap](#24-future-roadmap)
 25. [What Makes GHC Different?](#what-makes-ghc-different)
-26. [Demo](#25-demo)
+26. [Demo](#26-demo)
 27. [Contributing](#27-contributing)
 28. [License](#28-license)
-29. [Contact](#28-contact)
+29. [Contact](#29-contact)
 
 ---
 
@@ -908,15 +913,19 @@ Provides administrators with the exact forecasting analytics required to make in
 
 ## 26. Demo
 
+### Live Demonstration
+* 🌐 **Live SSO Login Portal**: [https://ghc-login.web.app](https://ghc-login.web.app)
+* 🎥 **Walkthrough Video**: [Watch the Demo on Google Drive](https://drive.google.com/drive/folders/1g5QLVdhPISPj9mrcQmKVwprn1uC3xGxB)
+
 ### Seed Accounts
-Log in via the portal (port `4005`) using these accounts:
+Log in via the **[Live SSO Login Portal](https://ghc-login.web.app)** using these accounts:
 
 * **District Admin**:
   * Username: `admin`
   * Password: `admin123`
 * **Hospital Doctor (King George Hospital)**:
-  * Username: `rukmesh`
-  * Password: `admin123`
+  * Username: `lava raju`
+  * Password: `12345678`
 
 ---
 
