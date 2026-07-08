@@ -11,6 +11,7 @@ const BRAND = {
   white: '#ffffff',
 };
 
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
