@@ -25,6 +25,9 @@ export interface StockoutWarning {
   availableQty: number;
   dailyConsumptionRate: number;
   daysOfStock: number;
+  alertType?: 'low_stock' | 'stockout' | 'expiring' | 'expired';
+  expiryDate?: Date | null;
+  batchNo?: string;
 }
 
 export interface DailyDataPoint {
@@ -101,30 +104,90 @@ export class InventoryAnalyticsService {
     const aggregated = this.aggregateBranchStock(branchStock);
     const warnings: StockoutWarning[] = [];
 
+    // 1. Low stock / stockout warnings (based on aggregated stock)
     for (const entry of aggregated) {
       const dailyRate = await this.getDailyConsumptionRate(
         entry.itemId,
         entry.branchId,
       );
-      if (dailyRate <= 0) continue;
-
-      const daysOfStock = entry.availableQty / dailyRate;
-      if (daysOfStock >= DOS_THRESHOLD_DAYS) continue;
 
       const [item, branch] = await Promise.all([
         this.masterRepo.findById(entry.itemId),
         this.hospitalRepo.findById(entry.branchId),
       ]);
 
-      warnings.push({
-        branchId: entry.branchId,
-        branchName: branch?.name ?? entry.branchId,
-        itemId: entry.itemId,
-        itemName: item?.itemName ?? 'Unknown Item',
-        availableQty: entry.availableQty,
-        dailyConsumptionRate: Math.round(dailyRate * 100) / 100,
-        daysOfStock: Math.round(daysOfStock * 10) / 10,
-      });
+      if (entry.availableQty <= 0) {
+        warnings.push({
+          branchId: entry.branchId,
+          branchName: branch?.name ?? entry.branchId,
+          itemId: entry.itemId,
+          itemName: item?.itemName ?? 'Unknown Item',
+          availableQty: 0,
+          dailyConsumptionRate: Math.round(dailyRate * 100) / 100,
+          daysOfStock: 0,
+          alertType: 'stockout',
+        });
+      } else if (dailyRate > 0) {
+        const daysOfStock = entry.availableQty / dailyRate;
+        if (daysOfStock < DOS_THRESHOLD_DAYS) {
+          warnings.push({
+            branchId: entry.branchId,
+            branchName: branch?.name ?? entry.branchId,
+            itemId: entry.itemId,
+            itemName: item?.itemName ?? 'Unknown Item',
+            availableQty: entry.availableQty,
+            dailyConsumptionRate: Math.round(dailyRate * 100) / 100,
+            daysOfStock: Math.round(daysOfStock * 10) / 10,
+            alertType: 'low_stock',
+          });
+        }
+      }
+    }
+
+    // 2. Expiration Warnings (based on individual batches)
+    const now = new Date();
+    const ninetyDaysFromNow = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+
+    for (const batch of branchStock) {
+      const itemIdStr = ((batch.itemId as any)?._id ?? batch.itemId)?.toString();
+      const branchIdStr = ((batch.branchId as any)?._id ?? batch.branchId)?.toString();
+
+      if (itemIdStr && branchIdStr && batch.availableQty > 0 && batch.expiryDate) {
+        const expiry = new Date(batch.expiryDate);
+        const [item, branch] = await Promise.all([
+          this.masterRepo.findById(itemIdStr),
+          this.hospitalRepo.findById(branchIdStr),
+        ]);
+
+        if (expiry < now) {
+          warnings.push({
+            branchId: branchIdStr,
+            branchName: branch?.name ?? branchIdStr,
+            itemId: itemIdStr,
+            itemName: item?.itemName ?? 'Unknown Item',
+            availableQty: batch.availableQty,
+            dailyConsumptionRate: 0,
+            daysOfStock: 0,
+            alertType: 'expired',
+            expiryDate: batch.expiryDate,
+            batchNo: batch.batchNo,
+          });
+        } else if (expiry <= ninetyDaysFromNow) {
+          const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+          warnings.push({
+            branchId: branchIdStr,
+            branchName: branch?.name ?? branchIdStr,
+            itemId: itemIdStr,
+            itemName: item?.itemName ?? 'Unknown Item',
+            availableQty: batch.availableQty,
+            dailyConsumptionRate: 0,
+            daysOfStock: daysUntilExpiry,
+            alertType: 'expiring',
+            expiryDate: batch.expiryDate,
+            batchNo: batch.batchNo,
+          });
+        }
+      }
     }
 
     return warnings.sort((a, b) => a.daysOfStock - b.daysOfStock);
@@ -202,9 +265,10 @@ export class InventoryAnalyticsService {
       const forecast30Total = dailyRate * SURPLUS_FORECAST_DAYS;
       const forecast7Total = dailyRate * 7;
       const daysOfStock =
-        dailyRate > 0 ? entry.availableQty / dailyRate : Infinity;
+        dailyRate > 0 ? entry.availableQty / dailyRate : (entry.availableQty === 0 ? 0 : Infinity);
 
       if (
+        entry.availableQty === 0 ||
         daysOfStock < DOS_THRESHOLD_DAYS ||
         entry.availableQty < forecast7Total
       ) {
@@ -226,7 +290,7 @@ export class InventoryAnalyticsService {
       }
 
       const excess = entry.availableQty - forecast30Total;
-      if (excess > 0 && dailyRate > 0) {
+      if (excess > 0 && (dailyRate > 0 || entry.availableQty > 0)) {
         surplus.push({
           branchId: entry.branchId,
           itemId: entry.itemId,

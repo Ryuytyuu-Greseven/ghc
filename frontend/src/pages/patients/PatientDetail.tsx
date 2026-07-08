@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, CalendarDays, Pill, Plus, UserRound, FileText, X, Pencil, Activity, Sparkles, Mail, Check, Eye } from 'lucide-react';
@@ -320,6 +320,31 @@ export function PatientDetail() {
   const [aiPrescriptionValidation, setAiPrescriptionValidation] = useState<{ safetyWarnings: string[]; dietaryAdvice: string; suggestedAlternatives: { prescribed: string; alternative: string; reason: string }[] } | null>(null);
   const [showAiPrescriptionValidation, setShowAiPrescriptionValidation] = useState(false);
   const [loadingPrescriptionValidation, setLoadingPrescriptionValidation] = useState(false);
+
+  const riskProfileRef = useRef<HTMLDivElement>(null);
+  const visitSuggestionsRef = useRef<HTMLDivElement>(null);
+  const prescriptionValidationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      if (showAiRiskProfile && riskProfileRef.current && !riskProfileRef.current.contains(target)) {
+        setShowAiRiskProfile(false);
+      }
+      if (showAiVisitSuggestions && visitSuggestionsRef.current && !visitSuggestionsRef.current.contains(target)) {
+        setShowAiVisitSuggestions(false);
+      }
+      if (showAiPrescriptionValidation && prescriptionValidationRef.current && !prescriptionValidationRef.current.contains(target)) {
+        setShowAiPrescriptionValidation(false);
+      }
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+    return () => {
+      document.removeEventListener('click', handleDocumentClick);
+    };
+  }, [showAiRiskProfile, showAiVisitSuggestions, showAiPrescriptionValidation]);
 
   useEffect(() => {
     if (!id) return;
@@ -1027,7 +1052,7 @@ export function PatientDetail() {
                 <ArrowLeft size={16} /> {t('patients.detail.backToPatients')}
               </Link>
               {patient && canManageVisits && (
-                <div className="relative">
+                <div className="relative" ref={riskProfileRef}>
                   <button
                     type="button"
                     onClick={handleTriggerRiskProfile}
@@ -1263,7 +1288,7 @@ export function PatientDetail() {
                       <p className="text-sm text-slate-500 dark:text-slate-400">{t('patients.detail.recordVisitDesc')}</p>
                     </div>
                     {form.problem.trim().length >= 3 && (
-                      <div className="relative">
+                      <div className="relative" ref={visitSuggestionsRef}>
                         <button
                           type="button"
                           onClick={handleTriggerVisitSuggestions}
@@ -1635,7 +1660,7 @@ export function PatientDetail() {
               </div>
             )}
             {medicineDraft.medicines.length > 0 && (
-              <div className="relative">
+              <div className="relative" ref={prescriptionValidationRef}>
                 <button
                   type="button"
                   onClick={() => handleTriggerPrescriptionValidation(medicineVisit.id)}
